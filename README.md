@@ -1,2 +1,3 @@
 # TourPlanner
-2023/2023 SWEN2 
+Alexander Nachtmann && Stephanie Rauscher
+2023/2024 SWEN2 
