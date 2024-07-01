@@ -1,8 +1,9 @@
-# TourPlanner
 
-Alexander Nachtmann & Stephanie Rauscher
+<h1 align="center">TourPlanner</h1>
 
-2023/2024 SWEN2 
+<h2 align="center">Alexander Nachtmann & Stephanie Rauscher
+
+2023/2024 SWEN2</h2>
 
 
 
