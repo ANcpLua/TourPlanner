@@ -78,7 +78,7 @@ public static class TestData
     public static List<TourPersistence> CreateSampleTourPersistenceList() =>
     [
         CreateSampleTourPersistence(),
-        new TourPersistence
+        new()
         {
             Id = new Guid("00000000-0000-0000-0000-000000000002"),
             Name = "Another Tour",
@@ -97,7 +97,7 @@ public static class TestData
     public static List<TourLogPersistence> CreateSampleTourLogPersistenceList() =>
     [
         CreateSampleTourLogPersistence(),
-        new TourLogPersistence
+        new()
         {
             Id = new Guid("00000000-0000-0000-0000-000000000003"),
             TourPersistenceId = TestGuid,
@@ -140,7 +140,7 @@ public static class TestData
     public static List<TourDomain> CreateSampleTourDomainList() =>
     [
         CreateSampleTourDomain(),
-        new TourDomain
+        new()
         {
             Id = new Guid("00000000-0000-0000-0000-000000000002"),
             Name = "Another Tour Domain",
@@ -159,7 +159,7 @@ public static class TestData
     public static List<TourLogDomain> CreateSampleTourLogDomainList() =>
     [
         CreateSampleTourLogDomain(),
-        new TourLogDomain
+        new()
         {
             Id = new Guid("00000000-0000-0000-0000-000000000003"),
             TourDomainId = TestGuid,
@@ -202,7 +202,7 @@ public static class TestData
     public static List<TourLog> CreateSampleTourLogDtoList() =>
     [
         CreateSampleTourLogDto(),
-        new TourLog
+        new()
         {
             Id = new Guid("00000000-0000-0000-0000-000000000003"),
             TourId = TestGuid,

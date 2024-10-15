@@ -11,6 +11,7 @@ namespace Test;
 [TestFixture]
 public class FileControllerTests
 {
+
     [SetUp]
     public void Setup()
     {
@@ -23,7 +24,6 @@ public class FileControllerTests
         _mockMapper.Object
         );
     }
-
     private Mock<IFileService> _mockFileService;
     private Mock<ITourService> _mockTourService;
     private Mock<IMapper> _mockMapper;
