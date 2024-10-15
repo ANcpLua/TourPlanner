@@ -5,11 +5,12 @@ using DAL.PersistenceModel;
 using MapsterMapper;
 using Moq;
 
-namespace Test;
+namespace Test.BL;
 
 [TestFixture]
 public class TourServiceTests
 {
+
     [SetUp]
     public void Setup()
     {
@@ -17,7 +18,6 @@ public class TourServiceTests
         _mockMapper = new Mock<IMapper>();
         _tourService = new TourService(_mockTourRepository.Object, _mockMapper.Object);
     }
-
     private Mock<ITourRepository> _mockTourRepository;
     private Mock<IMapper> _mockMapper;
     private TourService _tourService;
