@@ -9,8 +9,6 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ASPNETCORE_URLS": "https://localhost:7102",
-        "OpenRouteServiceApiKey": "https://openrouteservice.org/dev/#/login",
-        // check commit history
         "TourPlannerDatabase": "Host=localhost;Port=5432;Database=postgres;Username=postgres;Password=postgres"
       }
     }
