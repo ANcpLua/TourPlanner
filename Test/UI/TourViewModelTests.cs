@@ -6,11 +6,21 @@ using UI.Model;
 using UI.Service.Interface;
 using UI.ViewModel;
 
-namespace Test;
+namespace Test.UI;
 
 [TestFixture]
 public class TourViewModelTests
 {
+    private Mock<IHttpService> _mockHttpService;
+    private Mock<IToastServiceWrapper> _mockToastService;
+    private Mock<IConfiguration> _mockConfiguration;
+    private Mock<IJSRuntime> _mockJsRuntime;
+    private Mock<IRouteApiService> _mockRouteApiService;
+    private Mock<ILogger> _mockLogger;
+    private Mock<IViewModelHelperService> _mockViewModelHelperService;
+    private Mock<MapViewModel> _mockMapViewModel;
+    private TourViewModel _viewModel;
+
     [SetUp]
     public void Setup()
     {
@@ -24,26 +34,16 @@ public class TourViewModelTests
         _mockViewModelHelperService = TestData.CreateMockViewModelHelperService();
 
         _viewModel = new TourViewModel(
-        _mockHttpService.Object,
-        _mockToastService.Object,
-        _mockConfiguration.Object,
-        _mockJsRuntime.Object,
-        _mockRouteApiService.Object,
-        _mockLogger.Object,
-        _mockMapViewModel.Object,
-        _mockViewModelHelperService.Object
+            _mockHttpService.Object,
+            _mockToastService.Object,
+            _mockConfiguration.Object,
+            _mockJsRuntime.Object,
+            _mockRouteApiService.Object,
+            _mockLogger.Object,
+            _mockMapViewModel.Object,
+            _mockViewModelHelperService.Object
         );
     }
-
-    private Mock<IHttpService> _mockHttpService;
-    private Mock<IToastServiceWrapper> _mockToastService;
-    private Mock<IConfiguration> _mockConfiguration;
-    private Mock<IJSRuntime> _mockJsRuntime;
-    private Mock<IRouteApiService> _mockRouteApiService;
-    private Mock<ILogger> _mockLogger;
-    private Mock<IViewModelHelperService> _mockViewModelHelperService;
-    private Mock<MapViewModel> _mockMapViewModel;
-    private TourViewModel _viewModel;
 
     [Test]
     public async Task LoadToursAsync_LoadsToursSuccessfully()
@@ -69,8 +69,8 @@ public class TourViewModelTests
 
         // Assert
         _mockToastService.Verify(
-        t => t.ShowError(It.Is<string>(msg => msg.Contains("Error loading tours"))),
-        Times.Once
+            t => t.ShowError(It.Is<string>(msg => msg.Contains("Error loading tours"))),
+            Times.Once
         );
     }
 
@@ -103,7 +103,8 @@ public class TourViewModelTests
         // Act
         await _viewModel.ShowTourDetailsAsync(testTour.Id);
 
-        Assert.Multiple(() => {
+        Assert.Multiple(() =>
+        {
             // Assert
             Assert.That(_viewModel.ModalTour.Id, Is.EqualTo(testTour.Id));
             Assert.That(_viewModel.ModalTour.Name, Is.EqualTo(testTour.Name));
@@ -129,8 +130,8 @@ public class TourViewModelTests
         // Assert
         Assert.That(result, Is.False);
         _mockToastService.Verify(
-        t => t.ShowError(It.Is<string>(msg => msg.Contains("Error saving tour"))),
-        Times.Once
+            t => t.ShowError(It.Is<string>(msg => msg.Contains("Error saving tour"))),
+            Times.Once
         );
     }
 
@@ -147,8 +148,8 @@ public class TourViewModelTests
 
         // Assert
         _mockToastService.Verify(
-        t => t.ShowError(It.Is<string>(msg => msg.Contains("Error loading tour details"))),
-        Times.Once
+            t => t.ShowError(It.Is<string>(msg => msg.Contains("Error loading tour details"))),
+            Times.Once
         );
     }
 
@@ -162,7 +163,8 @@ public class TourViewModelTests
         // Act
         await _viewModel.EditTourAsync(testTour.Id);
 
-        Assert.Multiple(() => {
+        Assert.Multiple(() =>
+        {
             // Assert
             Assert.That(_viewModel.SelectedTour.Id, Is.EqualTo(testTour.Id));
             Assert.That(_viewModel.SelectedTour.Name, Is.EqualTo(testTour.Name));
@@ -184,8 +186,8 @@ public class TourViewModelTests
 
         // Assert
         _mockToastService.Verify(
-        t => t.ShowError(It.Is<string>(msg => msg.Contains("Error handling tour edit action"))),
-        Times.Once
+            t => t.ShowError(It.Is<string>(msg => msg.Contains("Error handling tour edit action"))),
+            Times.Once
         );
     }
 
@@ -209,12 +211,12 @@ public class TourViewModelTests
         // Assert
         Assert.That(result, Is.True);
         _mockHttpService.Verify(
-        s => s.PutAsync<Tour>($"api/tour/{testTour.Id}", It.IsAny<Tour>()),
-        Times.Once
+            s => s.PutAsync<Tour>($"api/tour/{testTour.Id}", It.IsAny<Tour>()),
+            Times.Once
         );
         _mockToastService.Verify(
-        t => t.ShowSuccess(It.Is<string>(msg => msg.Contains("Tour updated successfully"))),
-        Times.Once
+            t => t.ShowSuccess(It.Is<string>(msg => msg.Contains("Tour updated successfully"))),
+            Times.Once
         );
     }
 
@@ -241,12 +243,12 @@ public class TourViewModelTests
         // Assert
         Assert.That(result, Is.True);
         _mockHttpService.Verify(
-        s => s.PostAsync<Tour>("api/tour", It.Is<Tour>(t => t.Id == Guid.Empty)),
-        Times.Once
+            s => s.PostAsync<Tour>("api/tour", It.Is<Tour>(t => t.Id == Guid.Empty)),
+            Times.Once
         );
         _mockToastService.Verify(
-        t => t.ShowSuccess(It.Is<string>(msg => msg.Contains("Tour saved successfully"))),
-        Times.Once
+            t => t.ShowSuccess(It.Is<string>(msg => msg.Contains("Tour saved successfully"))),
+            Times.Once
         );
     }
 

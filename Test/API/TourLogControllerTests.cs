@@ -7,11 +7,15 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using UI.Model;
 
-namespace Test;
+namespace Test.API;
 
 [TestFixture]
 public class TourLogControllerTests
 {
+    private Mock<ITourLogService> _mockTourLogService;
+    private Mock<IMapper> _mockMapper;
+    private TourLogController _controller;
+
     [SetUp]
     public void Setup()
     {
@@ -19,10 +23,6 @@ public class TourLogControllerTests
         _mockMapper = new Mock<IMapper>();
         _controller = new TourLogController(_mockTourLogService.Object, _mockMapper.Object);
     }
-
-    private Mock<ITourLogService> _mockTourLogService;
-    private Mock<IMapper> _mockMapper;
-    private TourLogController _controller;
 
     [Test]
     public async Task CreateTourLog_HappyPath_ReturnsCreatedTourLog()
@@ -165,7 +165,7 @@ public class TourLogControllerTests
 
         // Act & Assert
         Assert.ThrowsAsync<DbUpdateConcurrencyException>(
-        () => _controller.UpdateTourLog(tourLogId, tourLogDto)
+            () => _controller.UpdateTourLog(tourLogId, tourLogDto)
         );
         return Task.CompletedTask;
     }
@@ -210,9 +210,9 @@ public class TourLogControllerTests
         _mockTourLogService
             .Setup(s => s.CreateTourLogAsync(tourLogDomain, It.IsAny<CancellationToken>()))
             .ThrowsAsync(
-            new InvalidOperationException(
-            "TourLog with the same date already exists for this tour"
-            )
+                new InvalidOperationException(
+                    "TourLog with the same date already exists for this tour"
+                )
             );
 
         // Act & Assert

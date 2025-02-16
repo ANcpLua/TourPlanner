@@ -4,11 +4,13 @@ using MapsterMapper;
 using ORM;
 using UI.Model;
 
-namespace Test;
+namespace Test.ORM;
 
 [TestFixture]
 public class MappingConfigurationTests
 {
+
+    private IMapper _mapper;
 
     [SetUp]
     public void Setup()
@@ -16,7 +18,6 @@ public class MappingConfigurationTests
         var config = MappingConfiguration.RegisterMapping();
         _mapper = new Mapper(config);
     }
-    private IMapper _mapper;
 
     [Test]
     public void TourPersistence_To_TourDomain_MapsTourLogsCorrectly()

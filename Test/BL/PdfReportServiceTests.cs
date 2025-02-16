@@ -1,15 +1,15 @@
 ﻿using System.Text;
 using BL.Service;
 
-namespace Test;
+namespace Test.BL;
 
 [TestFixture]
 public class PdfReportServiceTests
 {
+    private PdfReportService _pdfReportService;
+
     [SetUp]
     public void Setup() => _pdfReportService = new PdfReportService();
-
-    private PdfReportService _pdfReportService;
 
     [Test]
     public void GenerateTourReport_ValidTour_ReturnsPdfBytes()
@@ -22,7 +22,8 @@ public class PdfReportServiceTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.Multiple(() => {
+        Assert.Multiple(() =>
+        {
             Assert.That(result, Is.Not.Empty);
             Assert.That(Encoding.UTF8.GetString(result.Take(4).ToArray()), Is.EqualTo("%PDF"));
         });
@@ -39,7 +40,8 @@ public class PdfReportServiceTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.Multiple(() => {
+        Assert.Multiple(() =>
+        {
             Assert.That(result, Is.Not.Empty);
             Assert.That(Encoding.UTF8.GetString(result.Take(4).ToArray()), Is.EqualTo("%PDF"));
         });

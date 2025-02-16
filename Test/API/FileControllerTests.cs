@@ -6,11 +6,15 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using UI.Model;
 
-namespace Test;
+namespace Test.API;
 
 [TestFixture]
 public class FileControllerTests
 {
+    private Mock<IFileService> _mockFileService;
+    private Mock<ITourService> _mockTourService;
+    private Mock<IMapper> _mockMapper;
+    private FileController _controller;
 
     [SetUp]
     public void Setup()
@@ -19,15 +23,11 @@ public class FileControllerTests
         _mockTourService = new Mock<ITourService>();
         _mockMapper = new Mock<IMapper>();
         _controller = new FileController(
-        _mockFileService.Object,
-        _mockTourService.Object,
-        _mockMapper.Object
+            _mockFileService.Object,
+            _mockTourService.Object,
+            _mockMapper.Object
         );
     }
-    private Mock<IFileService> _mockFileService;
-    private Mock<ITourService> _mockTourService;
-    private Mock<IMapper> _mockMapper;
-    private FileController _controller;
 
     [Test]
     public async Task GetSummaryReport_HappyPath_ReturnsPdfFile()
@@ -35,9 +35,9 @@ public class FileControllerTests
         // Arrange
         var tours = TestData.CreateSampleTourDomainList();
         byte[] pdfBytes =
-        {
+        [
             1, 2, 3
-        };
+        ];
         _mockTourService.Setup(s => s.GetAllToursAsync()).ReturnsAsync(tours);
         _mockFileService.Setup(s => s.GenerateSummaryReportAsync(tours)).ReturnsAsync(pdfBytes);
 
@@ -47,7 +47,8 @@ public class FileControllerTests
         // Assert
         Assert.That(result, Is.TypeOf<FileContentResult>());
         var fileResult = (FileContentResult)result;
-        Assert.Multiple(() => {
+        Assert.Multiple(() =>
+        {
             Assert.That(fileResult.FileContents, Is.EqualTo(pdfBytes));
             Assert.That(fileResult.ContentType, Is.EqualTo("application/pdf"));
             Assert.That(fileResult.FileDownloadName, Is.EqualTo("SummaryReport.pdf"));
@@ -73,9 +74,9 @@ public class FileControllerTests
         // Arrange
         var tourId = TestData.TestGuid;
         byte[] pdfBytes =
-        {
+        [
             4, 5, 6
-        };
+        ];
         _mockFileService.Setup(s => s.GenerateTourReportAsync(tourId)).ReturnsAsync(pdfBytes);
 
         // Act
@@ -84,7 +85,8 @@ public class FileControllerTests
         // Assert
         Assert.That(result, Is.TypeOf<FileContentResult>());
         var fileResult = (FileContentResult)result;
-        Assert.Multiple(() => {
+        Assert.Multiple(() =>
+        {
             Assert.That(fileResult.FileContents, Is.EqualTo(pdfBytes));
             Assert.That(fileResult.ContentType, Is.EqualTo("application/pdf"));
             Assert.That(fileResult.FileDownloadName, Is.EqualTo($"TourReport_{tourId}.pdf"));
@@ -121,7 +123,8 @@ public class FileControllerTests
         // Assert
         Assert.That(result, Is.TypeOf<JsonResult>());
         var jsonResult = (JsonResult)result;
-        Assert.Multiple(() => {
+        Assert.Multiple(() =>
+        {
             Assert.That(jsonResult.Value, Is.EqualTo(tourDto));
             Assert.That(jsonResult.ContentType, Is.EqualTo("application/json"));
             Assert.That(jsonResult.StatusCode, Is.EqualTo(200));

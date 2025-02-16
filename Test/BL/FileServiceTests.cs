@@ -4,11 +4,15 @@ using BL.Interface;
 using BL.Service;
 using Moq;
 
-namespace Test;
+namespace Test.BL;
 
 [TestFixture]
 public class FileServiceTests
 {
+    private Mock<ITourService> _mockTourService;
+    private Mock<IPdfReportService> _mockPdfReportService;
+    private FileService _fileService;
+
     [SetUp]
     public void Setup()
     {
@@ -17,10 +21,6 @@ public class FileServiceTests
         _fileService = new FileService(_mockTourService.Object, _mockPdfReportService.Object);
     }
 
-    private Mock<ITourService> _mockTourService;
-    private Mock<IPdfReportService> _mockPdfReportService;
-    private FileService _fileService;
-
     [Test]
     public async Task GenerateTourReportAsync_ValidTourId_ReturnsPdfBytes()
     {
@@ -28,9 +28,9 @@ public class FileServiceTests
         var tourId = TestData.TestGuid;
         var tour = TestData.CreateSampleTourDomain();
         byte[] expectedPdfBytes =
-        {
+        [
             1, 2, 3, 4, 5
-        };
+        ];
 
         _mockTourService.Setup(s => s.GetTourById(tourId)).Returns(tour);
         _mockPdfReportService.Setup(s => s.GenerateTourReport(tour)).Returns(expectedPdfBytes);
@@ -50,9 +50,9 @@ public class FileServiceTests
         // Arrange
         var tours = TestData.CreateSampleTourDomainList();
         byte[] expectedPdfBytes =
-        {
+        [
             1, 2, 3, 4, 5
-        };
+        ];
 
         _mockPdfReportService.Setup(s => s.GenerateSummaryReport(tours)).Returns(expectedPdfBytes);
 
@@ -97,8 +97,8 @@ public class FileServiceTests
 
         // Assert
         _mockTourService.Verify(
-        s => s.CreateTourAsync(It.Is<TourDomain>(t => t.Id == expectedTour.Id)),
-        Times.Once
+            s => s.CreateTourAsync(It.Is<TourDomain>(t => t.Id == expectedTour.Id)),
+            Times.Once
         );
     }
 
@@ -110,7 +110,7 @@ public class FileServiceTests
             .Range(0, 1000)
             .Select(_ => TestData.CreateSampleTourDomain())
             .ToList();
-        var expectedPdfBytes = new byte[1024 * 1024];// 1MB of data
+        var expectedPdfBytes = new byte[1024 * 1024]; // 1MB of data
 
         _mockPdfReportService
             .Setup(s => s.GenerateSummaryReport(largeTourList))
@@ -167,7 +167,7 @@ public class FileServiceTests
         // Arrange
         var invalidTourId = TestData.NonexistentGuid;
         _mockTourService.Setup(s => s.GetTourById(invalidTourId)).Returns((TourDomain)null!);
-        _mockPdfReportService.Setup(s => s.GenerateTourReport(null!)).Returns(new byte[0]);
+        _mockPdfReportService.Setup(s => s.GenerateTourReport(null!)).Returns([]);
 
         // Act
         var result = await _fileService.GenerateTourReportAsync(invalidTourId);

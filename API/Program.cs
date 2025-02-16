@@ -1,6 +1,7 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using BL.Module;
+using DAL.Infrastructure;
 using DAL.Module;
 using ORM.Module;
 using Serilog;
@@ -31,7 +32,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpClient();
 
 var app = builder.Build();
-
+await using var scope = app.Services.CreateAsyncScope();
+await scope.ServiceProvider.GetRequiredService<TourPlannerContext>().Database.EnsureCreatedAsync();
 app.UseRouting();
 app.UseCors("AllowUI");
 app.UseStaticFiles();

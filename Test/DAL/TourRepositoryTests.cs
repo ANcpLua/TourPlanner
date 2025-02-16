@@ -2,11 +2,14 @@
 using DAL.Repository;
 using Microsoft.EntityFrameworkCore;
 
-namespace Test;
+namespace Test.DAL;
 
 [TestFixture]
 public class TourRepositoryTests
 {
+    private TourPlannerContext _context;
+    private TourRepository _repository;
+
     [SetUp]
     public void Setup()
     {
@@ -24,9 +27,6 @@ public class TourRepositoryTests
         _context.Dispose();
     }
 
-    private TourPlannerContext _context;
-    private TourRepository _repository;
-
     [Test]
     public async Task CreateTourAsync_WithValidTour_ReturnsSavedTour()
     {
@@ -35,13 +35,15 @@ public class TourRepositoryTests
 
         // Act
         var result = await _repository.CreateTourAsync(tour);
+        var tourCount = await _context.ToursPersistence.CountAsync();
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.Multiple(async () => {
+        Assert.Multiple(() =>
+        {
             Assert.That(result.Id, Is.EqualTo(tour.Id));
             Assert.That(result.Name, Is.EqualTo(tour.Name));
-            Assert.That(await _context.ToursPersistence.CountAsync(), Is.EqualTo(1));
+            Assert.That(tourCount, Is.EqualTo(1));
         });
     }
 
@@ -53,7 +55,7 @@ public class TourRepositoryTests
         tour.Name = null!;
 
         // Act & Assert
-        Assert.ThrowsAsync<DbUpdateException>(() => _repository.CreateTourAsync(tour));
+        Assert.ThatAsync(async () => await _repository.CreateTourAsync(tour), Throws.InstanceOf<DbUpdateException>());
     }
 
     [Test]
@@ -96,7 +98,8 @@ public class TourRepositoryTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.Multiple(() => {
+        Assert.Multiple(() =>
+        {
             Assert.That(result.Id, Is.EqualTo(tour.Id));
             Assert.That(result.Name, Is.EqualTo(tour.Name));
         });
@@ -120,22 +123,21 @@ public class TourRepositoryTests
     {
         // Arrange
         var tour = TestData.CreateSampleTourPersistence();
-        _context.ToursPersistence.Add(tour);
+        await _context.ToursPersistence.AddAsync(tour);
         await _context.SaveChangesAsync();
 
         tour.Name = "Updated Tour Name";
 
         // Act
         var result = await _repository.UpdateTourAsync(tour);
+        var dbTour = await _context.ToursPersistence.FirstAsync(t => t.Id == tour.Id);
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.Multiple(async () => {
+        Assert.Multiple(() =>
+        {
             Assert.That(result.Name, Is.EqualTo("Updated Tour Name"));
-            Assert.That(
-            await _context.ToursPersistence.FirstAsync(t => t.Id == tour.Id),
-            Has.Property("Name").EqualTo("Updated Tour Name")
-            );
+            Assert.That(dbTour.Name, Is.EqualTo("Updated Tour Name"));
         });
     }
 
@@ -146,7 +148,7 @@ public class TourRepositoryTests
         var tour = TestData.CreateSampleTourPersistence();
 
         // Act & Assert
-        Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => _repository.UpdateTourAsync(tour));
+        Assert.That(async () => await _repository.UpdateTourAsync(tour), Throws.InstanceOf<DbUpdateConcurrencyException>());
         return Task.CompletedTask;
     }
 
@@ -193,7 +195,8 @@ public class TourRepositoryTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.Multiple(() => {
+        Assert.Multiple(() =>
+        {
             Assert.That(result.Count(), Is.EqualTo(1));
             Assert.That(result.First().Name, Is.EqualTo("Sample Tour"));
         });

@@ -45,10 +45,7 @@ public class ReportViewModel : BaseViewModel
         set => SetProperty(ref _selectedDetailedTourId, value);
     }
 
-    public IEnumerable<Tour> Tours
-    {
-        get => _tourViewModel.Tours;
-    }
+    public IEnumerable<Tour> Tours => _tourViewModel.Tours;
 
     [UiMethodDecorator]
     public Task InitializeAsync() => _tourViewModel.LoadToursAsync();

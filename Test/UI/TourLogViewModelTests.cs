@@ -1,15 +1,22 @@
 ﻿using Microsoft.JSInterop;
 using Moq;
+using Serilog;
 using UI.Model;
 using UI.Service.Interface;
 using UI.ViewModel;
-using ILogger=Serilog.ILogger;
 
-namespace Test;
+namespace Test.UI;
 
 [TestFixture]
 public class TourLogViewModelTests
 {
+    private Mock<IHttpService> _mockHttpService;
+    private Mock<IToastServiceWrapper> _mockToastService;
+    private Mock<IJSRuntime> _mockJsRuntime;
+    private Mock<IViewModelHelperService> _mockViewModelHelperService;
+    private Mock<ILogger> _mockLogger;
+    private TourLogViewModel _viewModel;
+
     [SetUp]
     public void Setup()
     {
@@ -20,26 +27,21 @@ public class TourLogViewModelTests
         _mockViewModelHelperService = TestData.CreateMockViewModelHelperService();
 
         _viewModel = new TourLogViewModel(
-        _mockHttpService.Object,
-        _mockToastService.Object,
-        _mockJsRuntime.Object,
-        _mockLogger.Object,
-        _mockViewModelHelperService.Object
+            _mockHttpService.Object,
+            _mockToastService.Object,
+            _mockJsRuntime.Object,
+            _mockLogger.Object,
+            _mockViewModelHelperService.Object
         );
     }
 
-    private Mock<IHttpService> _mockHttpService;
-    private Mock<IToastServiceWrapper> _mockToastService;
-    private Mock<IJSRuntime> _mockJsRuntime;
-    private Mock<IViewModelHelperService> _mockViewModelHelperService;
-    private Mock<ILogger> _mockLogger;
-    private TourLogViewModel _viewModel;
 
     [Test]
     public void Constructor_InitializesPropertiesCorrectly()
     {
         Assert.That(_viewModel.TourLogs, Is.Not.Null);
-        Assert.Multiple(() => {
+        Assert.Multiple(() =>
+        {
             Assert.That(_viewModel.TourLogs, Is.Empty);
             Assert.That(_viewModel.SelectedTourLog, Is.Not.Null);
             Assert.That(_viewModel.IsLogFormVisible, Is.False);
@@ -57,7 +59,8 @@ public class TourLogViewModelTests
         _viewModel.PropertyChanged += (_, _) => eventRaised = true;
         _viewModel.SelectedTourLog = newTourLog;
 
-        Assert.Multiple(() => {
+        Assert.Multiple(() =>
+        {
             Assert.That(_viewModel.SelectedTourLog, Is.EqualTo(newTourLog));
             Assert.That(eventRaised, Is.True);
         });
@@ -114,7 +117,8 @@ public class TourLogViewModelTests
         _viewModel.SelectedTourId = null;
         _viewModel.ToggleLogForm();
 
-        Assert.Multiple(() => {
+        Assert.Multiple(() =>
+        {
             Assert.That(_viewModel.IsLogFormVisible, Is.False);
             Assert.That(_viewModel.IsEditing, Is.False);
         });
@@ -137,8 +141,8 @@ public class TourLogViewModelTests
 
         Assert.That(result, Is.True);
         _mockHttpService.Verify(
-        s => s.PostAsync<TourLog>("api/tourlog", It.IsAny<TourLog>()),
-        Times.Once
+            s => s.PostAsync<TourLog>("api/tourlog", It.IsAny<TourLog>()),
+            Times.Once
         );
         _mockToastService.Verify(t => t.ShowSuccess("Tour log created successfully."), Times.Once);
     }
@@ -158,8 +162,8 @@ public class TourLogViewModelTests
 
         Assert.That(result, Is.True);
         _mockHttpService.Verify(
-        s => s.PutAsync<TourLog>($"api/tourlog/{existingLog.Id}", It.IsAny<TourLog>()),
-        Times.Once
+            s => s.PutAsync<TourLog>($"api/tourlog/{existingLog.Id}", It.IsAny<TourLog>()),
+            Times.Once
         );
         _mockToastService.Verify(t => t.ShowSuccess("Tour log updated successfully."), Times.Once);
     }
@@ -168,7 +172,7 @@ public class TourLogViewModelTests
     public async Task SaveTourLogAsync_InvalidForm_ReturnsFalse()
     {
         _viewModel.SelectedTourId = TestData.CreateSampleTour().Id;
-        _viewModel.SelectedTourLog = new TourLog();// Invalid log
+        _viewModel.SelectedTourLog = new TourLog(); // Invalid log
 
         var result = await _viewModel.SaveTourLogAsync();
 
@@ -186,7 +190,8 @@ public class TourLogViewModelTests
 
         await _viewModel.EditHandleTourLogAction(existingLog.Id);
 
-        Assert.Multiple(() => {
+        Assert.Multiple(() =>
+        {
             Assert.That(_viewModel.SelectedTourLog, Is.EqualTo(existingLog));
             Assert.That(_viewModel.SelectedTourId, Is.EqualTo(existingLog.TourId));
             Assert.That(_viewModel.IsLogFormVisible, Is.True);
@@ -199,7 +204,8 @@ public class TourLogViewModelTests
     {
         await _viewModel.EditHandleTourLogAction(Guid.Empty);
 
-        Assert.Multiple(() => {
+        Assert.Multiple(() =>
+        {
             Assert.That(_viewModel.SelectedTourLog, Is.Not.Null);
             Assert.That(_viewModel.SelectedTourId, Is.Null);
             Assert.That(_viewModel.IsLogFormVisible, Is.False);

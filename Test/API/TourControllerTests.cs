@@ -6,11 +6,15 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using UI.Model;
 
-namespace Test;
+namespace Test.API;
 
 [TestFixture]
 public class TourControllerTests
 {
+    private Mock<ITourService> _mockTourService;
+    private Mock<IMapper> _mockMapper;
+    private TourController _controller;
+
     [SetUp]
     public void Setup()
     {
@@ -18,10 +22,6 @@ public class TourControllerTests
         _mockMapper = new Mock<IMapper>();
         _controller = new TourController(_mockTourService.Object, _mockMapper.Object);
     }
-
-    private Mock<ITourService> _mockTourService;
-    private Mock<IMapper> _mockMapper;
-    private TourController _controller;
 
     [Test]
     public async Task CreateTour_HappyPath_ReturnsCreatedTour()
@@ -148,7 +148,7 @@ public class TourControllerTests
         // Arrange
         var tourId = Guid.NewGuid();
         var tourDto = TestData.CreateSampleTour();
-        tourDto.Id = Guid.NewGuid();// Different from tourId
+        tourDto.Id = Guid.NewGuid(); // Different from tourId
 
         // Act
         var result = await _controller.UpdateTour(tourId, tourDto);

@@ -5,7 +5,7 @@ namespace DAL.PersistenceModel;
 
 public class TourPersistence
 {
-    public List<TourLogPersistence> TourLogPersistence { get; set; } = new();
+    public List<TourLogPersistence> TourLogPersistence { get; set; } = [];
 
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
