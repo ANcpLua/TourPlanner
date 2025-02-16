@@ -1,14 +1,20 @@
 ﻿using Microsoft.JSInterop;
 using Moq;
+using Serilog;
 using UI.Service.Interface;
 using UI.ViewModel;
-using ILogger=Serilog.ILogger;
 
-namespace Test;
+namespace Test.UI;
 
 [TestFixture]
 public class MapViewModelTests
 {
+    private Mock<IJSRuntime> _mockJsRuntime;
+    private Mock<IHttpService> _mockHttpService;
+    private Mock<IToastServiceWrapper> _mockToastService;
+    private Mock<ILogger> _mockLogger;
+    private MapViewModel _viewModel;
+
     [SetUp]
     public void Setup()
     {
@@ -18,25 +24,20 @@ public class MapViewModelTests
         _mockLogger = TestData.CreateMockLogger();
 
         _viewModel = new MapViewModel(
-        _mockJsRuntime.Object,
-        _mockHttpService.Object,
-        _mockToastService.Object,
-        _mockLogger.Object
+            _mockJsRuntime.Object,
+            _mockHttpService.Object,
+            _mockToastService.Object,
+            _mockLogger.Object
         );
     }
-
-    private Mock<IJSRuntime> _mockJsRuntime;
-    private Mock<IHttpService> _mockHttpService;
-    private Mock<IToastServiceWrapper> _mockToastService;
-    private Mock<ILogger> _mockLogger;
-    private MapViewModel _viewModel;
 
     [Test]
     public void Constructor_InitializesPropertiesCorrectly()
     {
         Assert.That(_viewModel.CityNames, Is.Not.Null);
-        Assert.Multiple(() => {
-            Assert.That(_viewModel.CityNames, Has.Count.EqualTo(MapViewModel._coordinates.Count));
+        Assert.Multiple(() =>
+        {
+            Assert.That(_viewModel.CityNames, Has.Count.EqualTo(MapViewModel.Coordinates.Count));
             Assert.That(_viewModel.FromCity, Is.Empty);
             Assert.That(_viewModel.ToCity, Is.Empty);
         });
@@ -48,13 +49,14 @@ public class MapViewModelTests
         const string selectedCity = "Vienna";
         _viewModel.FromCity = selectedCity;
 
-        Assert.Multiple(() => {
+        Assert.Multiple(() =>
+        {
             Assert.That(_viewModel.FromCity, Is.EqualTo(selectedCity));
             Assert.That(_viewModel.FilteredToCities, Does.Not.Contain(selectedCity));
         });
         Assert.That(
-        _viewModel.FilteredToCities.Count(),
-        Is.EqualTo(_viewModel.CityNames.Count - 1)
+            _viewModel.FilteredToCities.Count(),
+            Is.EqualTo(_viewModel.CityNames.Count - 1)
         );
     }
 
@@ -65,7 +67,8 @@ public class MapViewModelTests
         _viewModel.ToCity = city;
         _viewModel.FromCity = city;
 
-        Assert.Multiple(() => {
+        Assert.Multiple(() =>
+        {
             Assert.That(_viewModel.FromCity, Is.EqualTo(city));
             Assert.That(_viewModel.ToCity, Is.Empty);
         });
@@ -77,7 +80,8 @@ public class MapViewModelTests
         var result = _viewModel.GetCoordinates("Vienna");
 
         Assert.That(result, Is.Not.Null);
-        Assert.Multiple(() => {
+        Assert.Multiple(() =>
+        {
             Assert.That(result.Value.Latitude, Is.EqualTo(48.2082));
             Assert.That(result.Value.Longitude, Is.EqualTo(16.3738));
         });

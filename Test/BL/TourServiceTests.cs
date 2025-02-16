@@ -10,6 +10,9 @@ namespace Test.BL;
 [TestFixture]
 public class TourServiceTests
 {
+    private Mock<ITourRepository> _mockTourRepository;
+    private Mock<IMapper> _mockMapper;
+    private TourService _tourService;
 
     [SetUp]
     public void Setup()
@@ -18,9 +21,6 @@ public class TourServiceTests
         _mockMapper = new Mock<IMapper>();
         _tourService = new TourService(_mockTourRepository.Object, _mockMapper.Object);
     }
-    private Mock<ITourRepository> _mockTourRepository;
-    private Mock<IMapper> _mockMapper;
-    private TourService _tourService;
 
     [Test]
     public async Task CreateTourAsync_ValidTour_ReturnsMappedTourDomain()
@@ -39,7 +39,8 @@ public class TourServiceTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.Multiple(() => {
+        Assert.Multiple(() =>
+        {
             Assert.That(result.Id, Is.EqualTo(tourDomain.Id));
             Assert.That(result.Name, Is.EqualTo(tourDomain.Name));
             Assert.That(result.Description, Is.EqualTo(tourDomain.Description));
@@ -60,7 +61,7 @@ public class TourServiceTests
 
         // Act & Assert
         var ex = Assert.ThrowsAsync<Exception>(
-        async () => await _tourService.CreateTourAsync(tourDomain)
+            async () => await _tourService.CreateTourAsync(tourDomain)
         );
         Assert.That(ex.Message, Is.EqualTo("Database error"));
         return Task.CompletedTask;
@@ -171,7 +172,7 @@ public class TourServiceTests
 
         // Act & Assert
         var ex = Assert.ThrowsAsync<InvalidOperationException>(
-        async () => await _tourService.UpdateTourAsync(tourDomain)
+            async () => await _tourService.UpdateTourAsync(tourDomain)
         );
         Assert.That(ex.Message, Is.EqualTo("Tour not found"));
         return Task.CompletedTask;

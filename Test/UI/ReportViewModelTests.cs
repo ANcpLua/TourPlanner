@@ -3,16 +3,24 @@ using System.Text;
 using BlazorDownloadFile;
 using Microsoft.AspNetCore.Components.Forms;
 using Moq;
+using Serilog;
 using UI.Model;
 using UI.Service.Interface;
 using UI.ViewModel;
-using ILogger=Serilog.ILogger;
 
-namespace Test;
+namespace Test.UI;
 
 [TestFixture]
 public class ReportViewModelTests
 {
+    private Mock<IHttpService> _mockHttpService;
+    private Mock<IToastServiceWrapper> _mockToastService;
+    private Mock<IBlazorDownloadFileService> _mockBlazorDownloadFile;
+    private Mock<IViewModelHelperService> _mockViewModelHelper;
+    private Mock<TourViewModel> _mockTourViewModel;
+    private Mock<ILogger> _mockLogger;
+    private ReportViewModel _viewModel;
+
     [SetUp]
     public void Setup()
     {
@@ -22,44 +30,36 @@ public class ReportViewModelTests
         _mockBlazorDownloadFile = TestData.CreateMockBlazorDownloadFileService();
         _mockLogger = TestData.CreateMockLogger();
         _mockTourViewModel = new Mock<TourViewModel>(
-        TestData.CreateMockHttpService().Object,
-        TestData.CreateMockToastService().Object,
-        TestData.CreateMockConfiguration().Object,
-        TestData.CreateMockJsRuntime().Object,
-        TestData.CreateMockRouteApiService().Object,
-        TestData.CreateMockLogger().Object,
-        TestData.CreateMockMapViewModel().Object,
-        TestData.CreateMockViewModelHelperService().Object
+            TestData.CreateMockHttpService().Object,
+            TestData.CreateMockToastService().Object,
+            TestData.CreateMockConfiguration().Object,
+            TestData.CreateMockJsRuntime().Object,
+            TestData.CreateMockRouteApiService().Object,
+            TestData.CreateMockLogger().Object,
+            TestData.CreateMockMapViewModel().Object,
+            TestData.CreateMockViewModelHelperService().Object
         )
         {
             CallBase = true
         };
 
         _viewModel = new ReportViewModel(
-        _mockHttpService.Object,
-        _mockToastService.Object,
-        _mockLogger.Object,
-        _mockBlazorDownloadFile.Object,
-        _mockTourViewModel.Object,
-        _mockViewModelHelper.Object
+            _mockHttpService.Object,
+            _mockToastService.Object,
+            _mockLogger.Object,
+            _mockBlazorDownloadFile.Object,
+            _mockTourViewModel.Object,
+            _mockViewModelHelper.Object
         );
     }
-
-    private Mock<IHttpService> _mockHttpService;
-    private Mock<IToastServiceWrapper> _mockToastService;
-    private Mock<IBlazorDownloadFileService> _mockBlazorDownloadFile;
-    private Mock<IViewModelHelperService> _mockViewModelHelper;
-    private Mock<TourViewModel> _mockTourViewModel;
-    private Mock<ILogger> _mockLogger;
-    private ReportViewModel _viewModel;
 
     [Test]
     public async Task GenerateSummaryReportAsync_GeneratesAndDownloadsReport()
     {
         byte[] reportBytes =
-        {
+        [
             1, 2, 3
-        };
+        ];
         _mockHttpService
             .Setup(s => s.GetByteArrayAsync("api/reports/summary"))
             .ReturnsAsync(reportBytes);
@@ -67,17 +67,17 @@ public class ReportViewModelTests
         await _viewModel.GenerateSummaryReportAsync();
 
         _mockBlazorDownloadFile.Verify(
-        b =>
-            b.DownloadFile(
-            It.IsRegex(@"SummaryReport_\d{8}_\d{6}\.pdf"),
-            reportBytes,
-            "application/pdf"
-            ),
-        Times.Once
+            b =>
+                b.DownloadFile(
+                    It.IsRegex(@"SummaryReport_\d{8}_\d{6}\.pdf"),
+                    reportBytes,
+                    "application/pdf"
+                ),
+            Times.Once
         );
         _mockToastService.Verify(
-        t => t.ShowSuccess("SummaryReport generated successfully."),
-        Times.Once
+            t => t.ShowSuccess("SummaryReport generated successfully."),
+            Times.Once
         );
     }
 
@@ -87,9 +87,9 @@ public class ReportViewModelTests
         var tourId = Guid.NewGuid();
         _viewModel.SelectedDetailedTourId = tourId;
         byte[] reportBytes =
-        {
+        [
             1, 2, 3
-        };
+        ];
         _mockHttpService
             .Setup(s => s.GetByteArrayAsync($"api/reports/tour/{tourId}"))
             .ReturnsAsync(reportBytes);
@@ -97,17 +97,17 @@ public class ReportViewModelTests
         await _viewModel.GenerateDetailedReportAsync();
 
         _mockBlazorDownloadFile.Verify(
-        b =>
-            b.DownloadFile(
-            It.IsRegex(@"DetailedReport_\d{8}_\d{6}\.pdf"),
-            reportBytes,
-            "application/pdf"
-            ),
-        Times.Once
+            b =>
+                b.DownloadFile(
+                    It.IsRegex(@"DetailedReport_\d{8}_\d{6}\.pdf"),
+                    reportBytes,
+                    "application/pdf"
+                ),
+            Times.Once
         );
         _mockToastService.Verify(
-        t => t.ShowSuccess("DetailedReport generated successfully."),
-        Times.Once
+            t => t.ShowSuccess("DetailedReport generated successfully."),
+            Times.Once
         );
     }
 
@@ -123,13 +123,13 @@ public class ReportViewModelTests
         await _viewModel.ExportTourToJsonAsync(tourId);
 
         _mockBlazorDownloadFile.Verify(
-        b =>
-            b.DownloadFile(
-            It.IsRegex($@"Tour_{tourId}_\d{{8}}_\d{{6}}\.json"),
-            It.Is<byte[]>(bytes => Encoding.UTF8.GetString(bytes) == jsonContent),
-            "application/json"
-            ),
-        Times.Once
+            b =>
+                b.DownloadFile(
+                    It.IsRegex($@"Tour_{tourId}_\d{{8}}_\d{{6}}\.json"),
+                    It.Is<byte[]>(bytes => Encoding.UTF8.GetString(bytes) == jsonContent),
+                    "application/json"
+                ),
+            Times.Once
         );
         _mockToastService.Verify(t => t.ShowSuccess("Tour exported successfully."), Times.Once);
     }
@@ -145,37 +145,34 @@ public class ReportViewModelTests
         await _viewModel.ExportTourToJsonAsync(tourId);
 
         _mockToastService.Verify(
-        t => t.ShowError("Error exporting tour: Invalid tour data."),
-        Times.Once
+            t => t.ShowError("Error exporting tour: Invalid tour data."),
+            Times.Once
         );
         _mockBlazorDownloadFile.Verify(
-        b => b.DownloadFile(It.IsAny<string>(), It.IsAny<byte[]>(), It.IsAny<string>()),
-        Times.Never
+            b => b.DownloadFile(It.IsAny<string>(), It.IsAny<byte[]>(), It.IsAny<string>()),
+            Times.Never
         );
     }
 
     [Test]
     public async Task ImportTourFromJsonAsync_WithInvalidJson_ShowsErrorToast()
     {
-        var invalidJson = "{invalid json}";
-        var mockFile = TestData.CreateMockBrowserFile(content: invalidJson);
+        const string invalidJson = "{invalid json}";
+        var mockFile = TestData.CreateMockBrowserFile(invalidJson);
         mockFile
             .Setup(f => f.OpenReadStream(It.IsAny<long>(), It.IsAny<CancellationToken>()))
             .Returns(new MemoryStream(Encoding.UTF8.GetBytes(invalidJson)));
-        var inputFileChangeEventArgs = new InputFileChangeEventArgs(new[]
-        {
-            mockFile.Object
-        });
+        var inputFileChangeEventArgs = new InputFileChangeEventArgs([mockFile.Object]);
 
         await _viewModel.ImportTourFromJsonAsync(inputFileChangeEventArgs);
 
         _mockToastService.Verify(
-        t => t.ShowError(It.Is<string>(s => s.StartsWith("Error importing tour"))),
-        Times.Once
+            t => t.ShowError(It.Is<string>(s => s.StartsWith("Error importing tour"))),
+            Times.Once
         );
         _mockHttpService.Verify(
-        s => s.PostAsync(It.IsAny<string>(), It.IsAny<Tour>()),
-        Times.Never
+            s => s.PostAsync(It.IsAny<string>(), It.IsAny<Tour>()),
+            Times.Never
         );
     }
 
@@ -183,14 +180,11 @@ public class ReportViewModelTests
     public async Task ImportTourFromJsonAsync_WithValidJson_ImportsTourSuccessfully()
     {
         var jsonContent = TestData.CreateSampleTourJson();
-        var mockFile = TestData.CreateMockBrowserFile(content: jsonContent);
+        var mockFile = TestData.CreateMockBrowserFile(jsonContent);
         mockFile
             .Setup(f => f.OpenReadStream(It.IsAny<long>(), It.IsAny<CancellationToken>()))
             .Returns(new MemoryStream(Encoding.UTF8.GetBytes(jsonContent)));
-        var inputFileChangeEventArgs = new InputFileChangeEventArgs(new[]
-        {
-            mockFile.Object
-        });
+        var inputFileChangeEventArgs = new InputFileChangeEventArgs([mockFile.Object]);
         _mockHttpService
             .Setup(s => s.GetListAsync<Tour>("api/tour"))
             .ReturnsAsync(new ObservableCollection<Tour>());
@@ -214,13 +208,13 @@ public class ReportViewModelTests
 
         _mockHttpService.Verify(s => s.GetStringAsync($"api/reports/export/{tourId}"), Times.Once);
         _mockBlazorDownloadFile.Verify(
-        b =>
-            b.DownloadFile(
-            It.Is<string>(f => f.StartsWith("Tour_")),
-            It.Is<byte[]>(bytes => Encoding.UTF8.GetString(bytes) == jsonContent),
-            "application/json"
-            ),
-        Times.Once
+            b =>
+                b.DownloadFile(
+                    It.Is<string>(f => f.StartsWith("Tour_")),
+                    It.Is<byte[]>(bytes => Encoding.UTF8.GetString(bytes) == jsonContent),
+                    "application/json"
+                ),
+            Times.Once
         );
         _mockToastService.Verify(t => t.ShowSuccess("Tour exported successfully."), Times.Once);
     }
@@ -229,12 +223,12 @@ public class ReportViewModelTests
     public void InitializeViewModel_CreatesReportViewModel()
     {
         var viewModel = new ReportViewModel(
-        _mockHttpService.Object,
-        _mockToastService.Object,
-        _mockLogger.Object,
-        _mockBlazorDownloadFile.Object,
-        _mockTourViewModel.Object,
-        _mockViewModelHelper.Object
+            _mockHttpService.Object,
+            _mockToastService.Object,
+            _mockLogger.Object,
+            _mockBlazorDownloadFile.Object,
+            _mockTourViewModel.Object,
+            _mockViewModelHelper.Object
         );
 
         Assert.That(viewModel, Is.Not.Null);

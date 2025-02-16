@@ -2,16 +2,22 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Moq;
+using Serilog;
 using UI.Model;
 using UI.Service.Interface;
 using UI.ViewModel;
-using ILogger=Serilog.ILogger;
 
-namespace Test;
+namespace Test.UI;
 
 [TestFixture]
 public class SearchViewModelTests
 {
+    private Mock<IHttpService> _mockHttpService;
+    private Mock<IToastServiceWrapper> _mockToastService;
+    private Mock<ILogger> _mockLogger;
+    private Mock<NavigationManager> _mockNavigationManager;
+    private SearchViewModel _viewModel;
+
     [SetUp]
     public void Setup()
     {
@@ -21,24 +27,21 @@ public class SearchViewModelTests
         _mockNavigationManager = new Mock<NavigationManager>();
 
         _viewModel = new SearchViewModel(
-        _mockHttpService.Object,
-        _mockToastService.Object,
-        _mockLogger.Object,
-        _mockNavigationManager.Object
+            _mockHttpService.Object,
+            _mockToastService.Object,
+            _mockLogger.Object,
+            _mockNavigationManager.Object
         );
     }
-
-    private Mock<IHttpService> _mockHttpService;
-    private Mock<IToastServiceWrapper> _mockToastService;
-    private Mock<ILogger> _mockLogger;
-    private Mock<NavigationManager> _mockNavigationManager;
-    private SearchViewModel _viewModel;
 
     [Test]
     public void Constructor_InitializesPropertiesCorrectly()
     {
-        Assert.That(_viewModel.SearchText, Is.Empty);
-        Assert.That(_viewModel.SearchResults, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(_viewModel.SearchText, Is.Empty);
+            Assert.That(_viewModel.SearchResults, Is.Not.Null);
+        });
         Assert.That(_viewModel.SearchResults, Is.Empty);
     }
 
@@ -68,7 +71,6 @@ public class SearchViewModelTests
         Assert.That(_viewModel.SearchResults, Is.EqualTo(tours));
     }
 
-
     [Test]
     public async Task SearchToursAsync_WithEmptySearchText_ClearsSearchResults()
     {
@@ -93,8 +95,8 @@ public class SearchViewModelTests
 
         Assert.That(_viewModel.SearchResults, Is.Empty);
         _mockToastService.Verify(
-        t => t.ShowSuccess("No tours found matching your search criteria."),
-        Times.Once
+            t => t.ShowSuccess("No tours found matching your search criteria."),
+            Times.Once
         );
     }
 
@@ -106,7 +108,8 @@ public class SearchViewModelTests
 
         _viewModel.ClearSearch();
 
-        Assert.Multiple(() => {
+        Assert.Multiple(() =>
+        {
             Assert.That(_viewModel.SearchText, Is.Empty);
             Assert.That(_viewModel.SearchResults, Is.Empty);
         });
@@ -124,8 +127,8 @@ public class SearchViewModelTests
         await _viewModel.HandleKeyPress(keyboardEventArgs);
 
         _mockHttpService.Verify(
-        s => s.GetListAsync<Tour>($"api/tour/search/{TestData.ValidSearchText}"),
-        Times.Once
+            s => s.GetListAsync<Tour>($"api/tour/search/{TestData.ValidSearchText}"),
+            Times.Once
         );
     }
 

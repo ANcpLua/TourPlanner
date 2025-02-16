@@ -40,7 +40,7 @@ public class TourViewModel : BaseViewModel
         _routeApiService = routeApiService;
         _viewModelHelperService = viewModelHelperService;
 
-        Tours = new ObservableCollection<Tour>();
+        Tours = [];
     }
 
     public ObservableCollection<Tour> Tours { get; set; }
@@ -78,19 +78,14 @@ public class TourViewModel : BaseViewModel
         set => SetProperty(ref _isMapVisible, value);
     }
 
-    public bool IsFormValid
-    {
-        get => !string.IsNullOrWhiteSpace(SelectedTour.Name) &&
-               !string.IsNullOrWhiteSpace(SelectedTour.Description) &&
-               !string.IsNullOrWhiteSpace(SelectedTour.From) &&
-               !string.IsNullOrWhiteSpace(SelectedTour.To) &&
-               !string.IsNullOrWhiteSpace(SelectedTour.TransportType);
-    }
+    public bool IsFormValid =>
+        !string.IsNullOrWhiteSpace(SelectedTour.Name) &&
+        !string.IsNullOrWhiteSpace(SelectedTour.Description) &&
+        !string.IsNullOrWhiteSpace(SelectedTour.From) &&
+        !string.IsNullOrWhiteSpace(SelectedTour.To) &&
+        !string.IsNullOrWhiteSpace(SelectedTour.TransportType);
 
-    public IEnumerable<string> FilteredToCities
-    {
-        get => _mapViewModel.CityNames.Where(city => city != SelectedTour.From);
-    }
+    public IEnumerable<string> FilteredToCities => _mapViewModel.CityNames.Where(city => city != SelectedTour.From);
 
     public void ToggleMap()
     {

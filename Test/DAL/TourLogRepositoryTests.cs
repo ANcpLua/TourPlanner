@@ -2,11 +2,14 @@
 using DAL.Repository;
 using Microsoft.EntityFrameworkCore;
 
-namespace Test;
+namespace Test.DAL;
 
 [TestFixture]
 public class TourLogRepositoryTests
 {
+    private TourPlannerContext _context;
+    private TourLogRepository _repository;
+
     [SetUp]
     public void Setup()
     {
@@ -24,9 +27,6 @@ public class TourLogRepositoryTests
         _context.Dispose();
     }
 
-    private TourPlannerContext _context;
-    private TourLogRepository _repository;
-
     [Test]
     public async Task CreateTourLogAsync_WithValidTourLog_ReturnsSavedTourLog()
     {
@@ -35,12 +35,14 @@ public class TourLogRepositoryTests
 
         // Act
         var result = await _repository.CreateTourLogAsync(tourLog);
+        var logCount = await _context.TourLogsPersistence.CountAsync();
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.Multiple(async () => {
+        Assert.Multiple(() =>
+        {
             Assert.That(result.Id, Is.EqualTo(tourLog.Id));
-            Assert.That(await _context.TourLogsPersistence.CountAsync(), Is.EqualTo(1));
+            Assert.That(logCount, Is.EqualTo(1));
         });
     }
 
@@ -109,20 +111,20 @@ public class TourLogRepositoryTests
         var tourLog = TestData.CreateSampleTourLogPersistence();
         _context.TourLogsPersistence.Add(tourLog);
         await _context.SaveChangesAsync();
-
         tourLog.Comment = "Updated comment";
 
         // Act
         var result = await _repository.UpdateTourLogAsync(tourLog);
+        var dbTourLog = await _context.TourLogsPersistence
+            .FirstAsync(t => t.Id == tourLog.Id);
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.Multiple(async () => {
+        
+        Assert.Multiple(() =>
+        {
             Assert.That(result.Comment, Is.EqualTo("Updated comment"));
-            Assert.That(
-            await _context.TourLogsPersistence.FirstAsync(t => t.Id == tourLog.Id),
-            Has.Property("Comment").EqualTo("Updated comment")
-            );
+            Assert.That(dbTourLog.Comment, Is.EqualTo("Updated comment"));
         });
     }
 
@@ -168,10 +170,8 @@ public class TourLogRepositoryTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(
-        result.TotalDistance,
-        Is.EqualTo(10.123456789).Within(0.000000001),
-        "Distance should maintain its precision"
+        Assert.That(result.TotalDistance, Is.EqualTo(10.123456789).Within(0.000000001),
+            "Distance should maintain its precision"
         );
     }
 

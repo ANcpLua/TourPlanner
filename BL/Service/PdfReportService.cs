@@ -14,10 +14,9 @@ public class PdfReportService : IPdfReportService
     private const int SeparatorLength = 50;
     private const string NaValue = "N/A";
 
-    public byte[] GenerateTourReport(TourDomain tour) => GenerateReport("Tour Report", new[]
-    {
+    public byte[] GenerateTourReport(TourDomain tour) => GenerateReport("Tour Report", [
         tour
-    });
+    ]);
 
     public byte[] GenerateSummaryReport(IEnumerable<TourDomain> tours) => GenerateReport("Summary Report", tours);
 
@@ -50,9 +49,9 @@ public class PdfReportService : IPdfReportService
     private static void AddTourDetails(Section section, TourDomain tour, Font font)
     {
         string[] details =
-        {
+        [
             $"Tour Name: {tour.Name}", $"Description: {tour.Description}", $"From: {tour.From}", $"To: {tour.To}", $"Distance: {tour.Distance?.ToString() ?? NaValue} meters", $"Estimated Time: {tour.EstimatedTime?.ToString() ?? NaValue} minutes", $"Transport Type: {tour.TransportType}"
-        };
+        ];
 
         foreach (var detail in details)
         {
