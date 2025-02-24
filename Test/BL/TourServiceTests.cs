@@ -68,38 +68,38 @@ public class TourServiceTests
     }
 
     [Test]
-    public async Task GetAllToursAsync_ToursExist_ReturnsAllMappedTours()
+    public void GetAllToursAsync_ToursExist_ReturnsAllMappedTours()
     {
         // Arrange
         var toursPersistence = TestData.CreateSampleTourPersistenceList();
         var toursDomain = TestData.CreateSampleTourDomainList();
-        _mockTourRepository.Setup(r => r.GetAllToursAsync()).ReturnsAsync(toursPersistence);
+        _mockTourRepository.Setup(r => r.GetAllTours()).Returns(toursPersistence);
         _mockMapper
             .Setup(m => m.Map<IEnumerable<TourDomain>>(toursPersistence))
             .Returns(toursDomain);
 
         // Act
-        var result = (await _tourService.GetAllToursAsync()).ToList();
+        var result =  _tourService.GetAllTours().ToList();
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Has.Count.EqualTo(toursDomain.Count));
-        _mockTourRepository.Verify(r => r.GetAllToursAsync(), Times.Once);
+        _mockTourRepository.Verify(r => r.GetAllTours(), Times.Once);
     }
 
     [Test]
-    public async Task GetAllToursAsync_NoToursExist_ReturnsEmptyList()
+    public void GetAllToursAsync_NoToursExist_ReturnsEmptyList()
     {
         // Arrange
         _mockTourRepository
-            .Setup(r => r.GetAllToursAsync())
-            .ReturnsAsync(new List<TourPersistence>());
+            .Setup(r => r.GetAllTours())
+            .Returns(new List<TourPersistence>());
         _mockMapper
             .Setup(m => m.Map<IEnumerable<TourDomain>>(It.IsAny<IEnumerable<TourPersistence>>()))
             .Returns(new List<TourDomain>());
 
         // Act
-        var result = await _tourService.GetAllToursAsync();
+        var result =  _tourService.GetAllTours();
 
         // Assert
         Assert.That(result, Is.Empty);

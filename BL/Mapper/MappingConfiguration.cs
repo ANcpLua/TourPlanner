@@ -3,7 +3,7 @@ using DAL.PersistenceModel;
 using Mapster;
 using UI.Model;
 
-namespace ORM;
+namespace BL.Mapper;
 
 public static class MappingConfiguration
 {

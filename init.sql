@@ -36,6 +36,6 @@ CREATE TABLE "TourLogs" (
 CREATE INDEX "IX_TourLogs_TourPersistenceId" ON "TourLogs" ("TourPersistenceId");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20250216175508_Initial', '8.0.10');
+VALUES ('20250216175508_Initial', '8.0.0');
 
 COMMIT;

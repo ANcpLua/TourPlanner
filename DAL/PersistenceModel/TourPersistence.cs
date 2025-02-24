@@ -12,16 +12,16 @@ public class TourPersistence
     public Guid Id { get; set; }
 
     [Required]
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; set; } = null!;
 
     [Required]
-    public string Description { get; set; } = string.Empty;
+    public string Description { get; set; } = null!;
 
     [Required]
-    public string From { get; set; } = string.Empty;
+    public string From { get; set; } = null!;
 
     [Required]
-    public string To { get; set; } = string.Empty;
+    public string To { get; set; } = null!;
 
     public string? ImagePath { get; set; }
     public string? RouteInformation { get; set; }
@@ -29,5 +29,5 @@ public class TourPersistence
     public double? EstimatedTime { get; set; }
 
     [Required]
-    public string TransportType { get; set; } = string.Empty;
+    public string TransportType { get; set; } = null!;
 }

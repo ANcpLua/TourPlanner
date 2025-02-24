@@ -24,7 +24,7 @@ public class TourControllerTests
     }
 
     [Test]
-    public async Task CreateTour_HappyPath_ReturnsCreatedTour()
+    public async Task CreateTourAsync_HappyPath_ReturnsCreatedTour()
     {
         // Arrange
         var tourDto = TestData.CreateSampleTour();
@@ -43,7 +43,7 @@ public class TourControllerTests
     }
 
     [Test]
-    public Task CreateTour_UnhappyPath_ValidationFails()
+    public Task CreateTourAsync_UnhappyPath_ValidationFails()
     {
         // Arrange
         var tourDto = TestData.CreateSampleTour();
@@ -59,16 +59,16 @@ public class TourControllerTests
     }
 
     [Test]
-    public async Task GetAllTours_HappyPath_ReturnsAllTours()
+    public void GetAllTours_HappyPath_ReturnsAllTours()
     {
         // Arrange
         var toursDomain = TestData.CreateSampleTourDomainList();
         var toursDto = TestData.CreateSampleTourList();
-        _mockTourService.Setup(s => s.GetAllToursAsync()).ReturnsAsync(toursDomain);
+        _mockTourService.Setup(s => s.GetAllTours()).Returns(toursDomain);
         _mockMapper.Setup(m => m.Map<IEnumerable<Tour>>(toursDomain)).Returns(toursDto);
 
         // Act
-        var result = await _controller.GetAllTours();
+        var result =  _controller.GetAllTours();
 
         // Assert
         Assert.That(result.Result, Is.TypeOf<OkObjectResult>());
@@ -77,16 +77,15 @@ public class TourControllerTests
     }
 
     [Test]
-    public Task GetAllTours_UnhappyPath_DatabaseError()
+    public void GetAllTours_UnhappyPath_DatabaseError()
     {
         // Arrange
         _mockTourService
-            .Setup(s => s.GetAllToursAsync())
-            .ThrowsAsync(new Exception("Database connection error"));
+            .Setup(s => s.GetAllTours())
+            .Throws(new Exception("Database connection error"));
 
         // Act & Assert
-        Assert.ThrowsAsync<Exception>(() => _controller.GetAllTours());
-        return Task.CompletedTask;
+        Assert.Throws<Exception>(() => _controller.GetAllTours());
     }
 
     [Test]
@@ -122,7 +121,7 @@ public class TourControllerTests
     }
 
     [Test]
-    public async Task UpdateTour_HappyPath_ReturnsUpdatedTour()
+    public async Task UpdateTourAsync_HappyPath_ReturnsUpdatedTour()
     {
         // Arrange
         var tourId = Guid.NewGuid();
@@ -143,12 +142,12 @@ public class TourControllerTests
     }
 
     [Test]
-    public async Task UpdateTour_UnhappyPath_IdMismatch()
+    public async Task UpdateTourAsync_UnhappyPath_IdMismatch()
     {
         // Arrange
         var tourId = Guid.NewGuid();
         var tourDto = TestData.CreateSampleTour();
-        tourDto.Id = Guid.NewGuid(); // Different from tourId
+        tourDto.Id = Guid.NewGuid();
 
         // Act
         var result = await _controller.UpdateTour(tourId, tourDto);
@@ -160,7 +159,7 @@ public class TourControllerTests
     }
 
     [Test]
-    public async Task DeleteTour_HappyPath_ReturnsNoContent()
+    public async Task DeleteTourAsync_HappyPath_ReturnsNoContent()
     {
         // Arrange
         var tourId = Guid.NewGuid();
@@ -174,7 +173,7 @@ public class TourControllerTests
     }
 
     [Test]
-    public Task DeleteTour_UnhappyPath_TourNotFound()
+    public Task DeleteTourAsync_UnhappyPath_TourNotFound()
     {
         // Arrange
         var tourId = Guid.NewGuid();
