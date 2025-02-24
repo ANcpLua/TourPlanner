@@ -111,37 +111,36 @@ public class TourLogServiceTests
     }
 
     [Test]
-    public async Task GetTourLogsByTourIdAsync_ExistingTourId_ReturnsAllMappedTourLogs()
+    public void GetTourLogsByTourId_ExistingTourId_ReturnsAllMappedTourLogs()
     {
         // Arrange
         var tourLogsPersistence = TestData.CreateSampleTourLogPersistenceList();
         var tourLogsDomain = TestData.CreateSampleTourLogDomainList();
         _mockTourLogRepository
-            .Setup(r => r.GetTourLogsByTourIdAsync(TestData.TestGuid, CancellationToken.None))
-            .ReturnsAsync(tourLogsPersistence);
+            .Setup(r => r.GetTourLogsByTourId(TestData.TestGuid)).Returns(tourLogsPersistence);
+           
         _mockMapper
             .Setup(m => m.Map<IEnumerable<TourLogDomain>>(tourLogsPersistence))
             .Returns(tourLogsDomain);
 
         // Act
-        var result = (await _tourLogService.GetTourLogsByTourIdAsync(TestData.TestGuid)).ToList();
+        var result = _tourLogService.GetTourLogsByTourId(TestData.TestGuid).ToList();
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Has.Count.EqualTo(tourLogsDomain.Count));
         _mockTourLogRepository.Verify(
-            r => r.GetTourLogsByTourIdAsync(TestData.TestGuid, CancellationToken.None),
+            r => r.GetTourLogsByTourId(TestData.TestGuid),
             Times.Once
         );
     }
 
     [Test]
-    public async Task GetTourLogsByTourIdAsync_NonExistingTourId_ReturnsEmptyList()
+    public void GetTourLogsByTourId_NonExistingTourId_ReturnsEmptyList()
     {
         // Arrange
         _mockTourLogRepository
-            .Setup(r => r.GetTourLogsByTourIdAsync(TestData.NonexistentGuid, CancellationToken.None))
-            .ReturnsAsync(new List<TourLogPersistence>());
+            .Setup(r => r.GetTourLogsByTourId(TestData.NonexistentGuid));
         _mockMapper
             .Setup(m =>
                 m.Map<IEnumerable<TourLogDomain>>(It.IsAny<IEnumerable<TourLogPersistence>>())
@@ -149,7 +148,7 @@ public class TourLogServiceTests
             .Returns(new List<TourLogDomain>());
 
         // Act
-        var result = await _tourLogService.GetTourLogsByTourIdAsync(TestData.NonexistentGuid);
+        var result =  _tourLogService.GetTourLogsByTourId(TestData.NonexistentGuid);
 
         // Assert
         Assert.That(result, Is.Empty);
@@ -262,7 +261,7 @@ public class TourLogServiceTests
     }
 
     [Test]
-    public async Task GetTourLogsByTourIdAsync_LargeTourLogCount_HandlesLargeDataSet()
+    public void GetTourLogsByTourId_LargeTourLogCount_HandlesLargeDataSet()
     {
         // Arrange
         var largeTourLogList = Enumerable
@@ -276,21 +275,20 @@ public class TourLogServiceTests
             .ToList();
 
         _mockTourLogRepository
-            .Setup(r => r.GetTourLogsByTourIdAsync(TestData.TestGuid, CancellationToken.None))
-            .ReturnsAsync(largeTourLogList);
+            .Setup(r => r.GetTourLogsByTourId(TestData.TestGuid)).Returns(largeTourLogList);
 
         _mockMapper
             .Setup(m => m.Map<IEnumerable<TourLogDomain>>(largeTourLogList))
             .Returns(largeTourLogDomainList);
 
         // Act
-        var result = (await _tourLogService.GetTourLogsByTourIdAsync(TestData.TestGuid)).ToList();
+        var result = _tourLogService.GetTourLogsByTourId(TestData.TestGuid).ToList();
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Has.Count.EqualTo(largeTourLogDomainList.Count));
         _mockTourLogRepository.Verify(
-            r => r.GetTourLogsByTourIdAsync(TestData.TestGuid, CancellationToken.None),
+            r => r.GetTourLogsByTourId(TestData.TestGuid),
             Times.Once
         );
     }

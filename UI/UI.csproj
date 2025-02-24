@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
-
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
@@ -17,20 +17,16 @@
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
         <PackageReference Include="MethodDecorator.Fody" Version="1.1.1"/>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.10"/>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.10" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0" PrivateAssets="all" />
         <PackageReference Include="Serilog" Version="4.0.2"/>
         <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0"/>
-        <PackageReference Include="Serilog.Sinks.BrowserConsole" Version="8.0.0"/>
+        <PackageReference Include="Serilog.Sinks.BrowserConsole" Version="2.0.0" />
         <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0"/>
         <PackageReference Include="Serilog.Sinks.File" Version="6.0.0"/>
         <PackageReference Include="System.Text.Json" Version="8.0.5"/>
     </ItemGroup>
-    <ItemGroup>
-        <None Update="appsettings.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-    </ItemGroup>
+
     <ItemGroup>
         <None Update="View\Pages\FilePage.razor.css">
             <DependentUpon>FilePage.razor</DependentUpon>
@@ -38,17 +34,14 @@
         <None Update="View\Pages\TourPage.razor.css">
             <DependentUpon>TourPage.razor</DependentUpon>
         </None>
-
         <Content Update="wwwroot\appsettings.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
 
     <ItemGroup>
-        <ServiceWorker Include="wwwroot\js\service-worker.js">
+        <ServiceWorker Include="wwwroot\service-worker.js">
             <PublishedContent>wwwroot\service-worker.published.js</PublishedContent>
         </ServiceWorker>
     </ItemGroup>
-
-
 </Project>
