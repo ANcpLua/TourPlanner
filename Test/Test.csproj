@@ -39,12 +39,4 @@
         <ProjectReference Include="..\DAL\DAL.csproj"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <Folder Include="API\"/>
-        <Folder Include="BL\"/>
-        <Folder Include="DAL\"/>
-        <Folder Include="ORM\"/>
-        <Folder Include="UI\"/>
-    </ItemGroup>
-
 </Project>

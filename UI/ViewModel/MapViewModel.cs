@@ -80,7 +80,7 @@ public class MapViewModel : BaseViewModel
         _isMapInitialized = true;
     }
 
-    public async Task ShowMapAsync()
+    public Task ShowMapAsync() => ProcessAsync(async () =>
     {
         if (!_isMapInitialized)
         {
@@ -99,16 +99,17 @@ public class MapViewModel : BaseViewModel
 
         if (fromCoords.HasValue && toCoords.HasValue)
         {
+            await Task.Delay(500);
             await _jsRuntime.InvokeVoidAsync(
-            "TourPlannerMap.setRoute",
-            fromCoords.Value.Latitude,
-            fromCoords.Value.Longitude,
-            toCoords.Value.Latitude,
-            toCoords.Value.Longitude
+                "TourPlannerMap.setRoute",
+                fromCoords.Value.Latitude,
+                fromCoords.Value.Longitude,
+                toCoords.Value.Latitude,
+                toCoords.Value.Longitude
             );
         }
-    }
-
+    });
+    
     public async Task ClearMapAsync()
     {
         await _jsRuntime.InvokeVoidAsync("TourPlannerMap.clearMap");

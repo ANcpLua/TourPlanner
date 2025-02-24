@@ -21,11 +21,11 @@ public class TourLogRepository : ITourLogRepository
         return newTourLogPersistence;
     }
 
-    public async Task<IEnumerable<TourLogPersistence>> GetTourLogsByTourIdAsync(Guid tourId, CancellationToken cancellationToken = default)
+    public IEnumerable<TourLogPersistence> GetTourLogsByTourId(Guid tourId)
     {
-        return await _dbContext
+        return  _dbContext
             .TourLogsPersistence.Where(t => t.TourPersistenceId == tourId)
-            .ToListAsync(cancellationToken);
+            .ToList();
     }
 
     public TourLogPersistence? GetTourLogById(Guid id)
