@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using BL.DomainModel;
 using BL.Service;
 
 namespace Test.BL;
@@ -6,7 +7,8 @@ namespace Test.BL;
 [TestFixture]
 public class PdfReportServiceTests
 {
-    private PdfReportService _pdfReportService;
+    private PdfReportService _pdfReportService = null!;
+    private const string PdfHeader = "%PDF";
 
     [SetUp]
     public void Setup() => _pdfReportService = new PdfReportService();
@@ -14,162 +16,114 @@ public class PdfReportServiceTests
     [Test]
     public void GenerateTourReport_ValidTour_ReturnsPdfBytes()
     {
-        // Arrange
         var tour = TestData.CreateSampleTourDomain();
-
-        // Act
         var result = _pdfReportService.GenerateTourReport(tour);
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.Multiple(() =>
-        {
-            Assert.That(result, Is.Not.Empty);
-            Assert.That(Encoding.UTF8.GetString(result.Take(4).ToArray()), Is.EqualTo("%PDF"));
-        });
+        
+        AssertValidPdf(result);
     }
 
     [Test]
     public void GenerateSummaryReport_ValidTours_ReturnsPdfBytes()
     {
-        // Arrange
         var tours = TestData.CreateSampleTourDomainList();
-
-        // Act
         var result = _pdfReportService.GenerateSummaryReport(tours);
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.Multiple(() =>
-        {
-            Assert.That(result, Is.Not.Empty);
-            Assert.That(Encoding.UTF8.GetString(result.Take(4).ToArray()), Is.EqualTo("%PDF"));
-        });
+        
+        AssertValidPdf(result);
     }
 
     [Test]
-    public void GenerateTourReport_TourWithNoLogs_GeneratesReportWithoutLogs()
+    public void GenerateTourReport_InvalidImagePath_HandlesInvalidPath()
     {
-        // Arrange
-        var tour = TestData.CreateSampleTourDomain();
-        tour.Logs = [];
-
-        // Act
-        var result = _pdfReportService.GenerateTourReport(tour);
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result, Is.Not.Empty);
-    }
-
-    [Test]
-    public void GenerateTourReport_TourWithInvalidImagePath_GeneratesReportWithoutImage()
-    {
-        // Arrange
         var tour = TestData.CreateSampleTourDomain();
         tour.ImagePath = "invalid/path/to/image.png";
 
-        // Act
         var result = _pdfReportService.GenerateTourReport(tour);
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result, Is.Not.Empty);
+        
+        AssertValidPdf(result);
     }
 
     [Test]
     public void GenerateSummaryReport_EmptyTourList_GeneratesEmptyReport()
     {
-        // Arrange
-        var emptyTourList = TestData.CreateSampleTourDomainList();
-        emptyTourList.Clear();
-
-        // Act
-        var result = _pdfReportService.GenerateSummaryReport(emptyTourList);
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result, Is.Not.Empty);
+        var result = _pdfReportService.GenerateSummaryReport(Array.Empty<TourDomain>());
+        
+        AssertValidPdf(result);
+    }
+    
+    [Test]
+    public void GenerateTourReport_EmptyTour_GeneratesEmptyReport()
+    {
+        var result = _pdfReportService.GenerateTourReport(new TourDomain());
+        
+        AssertValidPdf(result);
     }
 
     [Test]
-    public void GenerateTourReport_TourWithLongDescription_HandlesLongText()
+    public void GenerateTourReport_ExtremeValues_HandlesExtremeValues()
     {
-        // Arrange
-        var tour = TestData.CreateSampleTourDomain();
-        tour.Description = new string('A', 10000);
-
-        // Act
-        var result = _pdfReportService.GenerateTourReport(tour);
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result, Is.Not.Empty);
-    }
-
-    [Test]
-    public void GenerateSummaryReport_LargeTourList_HandlesLargeDataSet()
-    {
-        // Arrange
-        var largeTourList = Enumerable
-            .Range(0, 1000)
-            .Select(_ => TestData.CreateSampleTourDomain())
-            .ToList();
-
-        // Act
-        var result = _pdfReportService.GenerateSummaryReport(largeTourList);
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result, Is.Not.Empty);
-    }
-
-    [Test]
-    public void GenerateTourReport_TourWithSpecialCharacters_HandlesSpecialCharacters()
-    {
-        // Arrange
-        var tour = TestData.CreateSampleTourDomain();
-        tour.Name = "Tour with special characters: áéíóú ñ ¿¡ €";
-
-        // Act
-        var result = _pdfReportService.GenerateTourReport(tour);
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result, Is.Not.Empty);
-    }
-
-    [Test]
-    public void GenerateTourReport_TourWithExtremeValues_HandlesExtremeValues()
-    {
-        // Arrange
         var tour = TestData.CreateSampleTourDomain();
         tour.Distance = double.MaxValue;
         tour.EstimatedTime = double.MinValue;
+        
+        foreach (var log in tour.Logs)
+        {
+            log.TotalDistance = double.MaxValue;
+            log.TotalTime = double.MinValue;
+            log.Rating = int.MaxValue;
+        }
 
-        // Act
         var result = _pdfReportService.GenerateTourReport(tour);
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result, Is.Not.Empty);
+        
+        AssertValidPdf(result);
     }
 
     [Test]
-    public void GenerateTourReport_TourWithMaximumLogs_HandlesLargeNumberOfLogs()
+    public void GenerateTourReport_SpecialCharacters_HandlesSpecialCharacters()
     {
-        // Arrange
         var tour = TestData.CreateSampleTourDomain();
-        tour.Logs = Enumerable
-            .Range(0, 1000)
-            .Select(_ => TestData.CreateSampleTourLogDomain())
+        const string specialChars = "Special characters: áéíóú ñ ¿¡ € &<>\"'";
+        tour.Name = specialChars;
+        tour.Description = specialChars;
+        tour.From = specialChars;
+        tour.To = specialChars;
+        
+        foreach (var log in tour.Logs)
+        {
+            log.Comment = specialChars;
+        }
+
+        var result = _pdfReportService.GenerateTourReport(tour);
+        
+        AssertValidPdf(result);
+    }
+
+    [Test]
+    public void GenerateReport_LargeDataSets_HandlesLargeData()
+    {
+        var tours = Enumerable.Range(0, 100)
+            .Select(_ => TestData.CreateSampleTourDomain())
             .ToList();
 
-        // Act
-        var result = _pdfReportService.GenerateTourReport(tour);
+        foreach (var tour in tours)
+        {
+            tour.Description = new string('A', 1000);
+            tour.Logs = Enumerable.Range(0, 50)
+                .Select(_ => TestData.CreateSampleTourLogDomain())
+                .ToList();
+        }
 
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result, Is.Not.Empty);
+        var result = _pdfReportService.GenerateSummaryReport(tours);
+        
+        AssertValidPdf(result);
+    }
+
+    private static void AssertValidPdf(byte[] pdfBytes)
+    {
+        Assert.Multiple(() =>
+        {
+            Assert.That(pdfBytes, Is.Not.Null);
+            Assert.That(pdfBytes, Is.Not.Empty);
+            Assert.That(Encoding.UTF8.GetString(pdfBytes.Take(4).ToArray()), Is.EqualTo(PdfHeader));
+        });
     }
 }

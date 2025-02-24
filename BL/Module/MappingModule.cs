@@ -1,8 +1,9 @@
 ﻿using Autofac;
+using BL.Mapper;
 using Mapster;
 using MapsterMapper;
 
-namespace ORM.Module;
+namespace BL.Module;
 
 public class OrmModule : Autofac.Module
 {
@@ -11,6 +12,6 @@ public class OrmModule : Autofac.Module
         var config = MappingConfiguration.RegisterMapping();
         config.Default.EnumMappingStrategy(EnumMappingStrategy.ByName);
         builder.RegisterInstance(config).As<TypeAdapterConfig>().SingleInstance();
-        builder.RegisterType<Mapper>().As<IMapper>().InstancePerLifetimeScope();
+        builder.RegisterType<MapsterMapper.Mapper>().As<IMapper>().InstancePerLifetimeScope();
     }
 }

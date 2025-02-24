@@ -47,15 +47,15 @@ public class TourLogRepositoryTests
     }
 
     [Test]
-    public async Task GetTourLogsByTourIdAsync_WithExistingTourId_ReturnsAllTourLogs()
+    public void GetTourLogsByTourId_WithExistingTourId_ReturnsAllTourLogs()
     {
         // Arrange
         var tourLogs = TestData.CreateSampleTourLogPersistenceList();
-        await _context.TourLogsPersistence.AddRangeAsync(tourLogs);
-        await _context.SaveChangesAsync();
+         _context.TourLogsPersistence.AddRange(tourLogs);
+         _context.SaveChanges();
 
         // Act
-        var result = (await _repository.GetTourLogsByTourIdAsync(TestData.TestGuid)).ToList();
+        var result =  _repository.GetTourLogsByTourId(TestData.TestGuid).ToList();
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -63,13 +63,13 @@ public class TourLogRepositoryTests
     }
 
     [Test]
-    public async Task GetTourLogsByTourIdAsync_WithNonExistentTourId_ReturnsEmptyList()
+    public void GetTourLogsByTourId_WithNonExistentTourId_ReturnsEmptyList()
     {
         // Arrange
         var nonExistentTourId = Guid.NewGuid();
 
         // Act
-        var result = await _repository.GetTourLogsByTourIdAsync(nonExistentTourId);
+        var result = _repository.GetTourLogsByTourId(nonExistentTourId);
 
         // Assert
         Assert.That(result, Is.Empty);

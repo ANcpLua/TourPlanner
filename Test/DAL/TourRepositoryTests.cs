@@ -55,19 +55,19 @@ public class TourRepositoryTests
         tour.Name = null!;
 
         // Act & Assert
-        Assert.ThatAsync(async () => await _repository.CreateTourAsync(tour), Throws.InstanceOf<DbUpdateException>());
+        Assert.That (async () => await _repository.CreateTourAsync(tour), Throws.InstanceOf<DbUpdateException>());
     }
 
     [Test]
-    public async Task GetAllToursAsync_WithExistingTours_ReturnsAllTours()
+    public void GetAllTours_WithExistingTours_ReturnsAllTours()
     {
         // Arrange
         var tours = TestData.CreateSampleTourPersistenceList();
-        await _context.ToursPersistence.AddRangeAsync(tours);
-        await _context.SaveChangesAsync();
+         _context.ToursPersistence.AddRange(tours);
+         _context.SaveChanges();
 
         // Act
-        var result = (await _repository.GetAllToursAsync()).ToList();
+        var result = _repository.GetAllTours().ToList();
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -75,10 +75,10 @@ public class TourRepositoryTests
     }
 
     [Test]
-    public void GetAllToursAsync_WithNoExistingTours_ReturnsEmptyList()
+    public void GetAllTours_WithNoExistingTours_ReturnsEmptyList()
     {
         // Act
-        var result = _repository.GetAllToursAsync().Result.ToList();
+        var result = _repository.GetAllTours().ToList();
 
         // Assert
         Assert.That(result, Is.Not.Null);

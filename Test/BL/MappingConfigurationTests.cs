@@ -1,10 +1,10 @@
 ﻿using BL.DomainModel;
+using BL.Mapper;
 using DAL.PersistenceModel;
 using MapsterMapper;
-using ORM;
 using UI.Model;
 
-namespace Test.ORM;
+namespace Test.BL;
 
 [TestFixture]
 public class MappingConfigurationTests
