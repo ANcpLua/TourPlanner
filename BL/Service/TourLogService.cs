@@ -1,4 +1,4 @@
-﻿using BL.DomainModel;
+using BL.DomainModel;
 using BL.Interface;
 using DAL.Interface;
 using DAL.PersistenceModel;
@@ -17,16 +17,10 @@ public class TourLogService : ITourLogService
         _mapper = mapper;
     }
 
-    public async Task<TourLogDomain> CreateTourLogAsync(
-        TourLogDomain tourLog,
-        CancellationToken cancellationToken = default
-    )
+    public async Task<TourLogDomain> CreateTourLogAsync(CancellationToken cancellationToken = default)
     {
         var tourLogPersistence = _mapper.Map<TourLogPersistence>(tourLog);
-        var createdTourLogPersistence = await _tourLogRepository.CreateTourLogAsync(
-        tourLogPersistence,
-        cancellationToken
-        );
+        var createdTourLogPersistence = await _tourLogRepository.CreateTourLogAsync(tourLogPersistence, cancellationToken);
         return _mapper.Map<TourLogDomain>(createdTourLogPersistence);
     }
 
@@ -36,26 +30,17 @@ public class TourLogService : ITourLogService
         return tourLogPersistence == null ? null : _mapper.Map<TourLogDomain>(tourLogPersistence);
     }
 
-    public IEnumerable<TourLogDomain> GetTourLogsByTourId(
-        Guid tourId
-    )
+    public IEnumerable<TourLogDomain> GetTourLogsByTourId(Guid tourId)
     {
-        var tourLogPersistence =  _tourLogRepository.GetTourLogsByTourId(
-        tourId
-        );
+        var tourLogPersistence = _tourLogRepository.GetTourLogsByTourId(tourId);
         return _mapper.Map<IEnumerable<TourLogDomain>>(tourLogPersistence);
     }
 
-    public async Task<TourLogDomain> UpdateTourLogAsync(
-        TourLogDomain tourLog,
-        CancellationToken cancellationToken = default
-    )
+    public async Task<TourLogDomain> UpdateTourLogAsync(TourLogDomain tourLog,
+        CancellationToken cancellationToken = default)
     {
         var tourLogPersistence = _mapper.Map<TourLogPersistence>(tourLog);
-        var updatedTourLogPersistence = await _tourLogRepository.UpdateTourLogAsync(
-        tourLogPersistence,
-        cancellationToken
-        );
+        var updatedTourLogPersistence = await _tourLogRepository.UpdateTourLogAsync(tourLogPersistence, cancellationToken;
         return _mapper.Map<TourLogDomain>(updatedTourLogPersistence);
     }
 
