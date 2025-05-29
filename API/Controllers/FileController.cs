@@ -49,13 +49,7 @@ public class FileController : ControllerBase
     {
         var tourDomain = _fileService.ExportTourToJson(tourId);
         var tourDto = _mapper.Map<Tour>(tourDomain);
-        return new JsonResult(
-            tourDto,
-            new JsonSerializerOptions
-            {
-                WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            }
-        )
+        return new JsonResult(tourDto,new JsonSerializerOptions{ WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase})
         {
             ContentType = "application/json", StatusCode = (int)HttpStatusCode.OK
         };
