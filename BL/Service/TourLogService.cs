@@ -36,8 +36,7 @@ public class TourLogService : ITourLogService
         return _mapper.Map<IEnumerable<TourLogDomain>>(tourLogPersistence);
     }
 
-    public async Task<TourLogDomain> UpdateTourLogAsync(TourLogDomain tourLog,
-        CancellationToken cancellationToken = default)
+    public async Task<TourLogDomain> UpdateTourLogAsync(TourLogDomain tourLog, CancellationToken cancellationToken = default)
     {
         var tourLogPersistence = _mapper.Map<TourLogPersistence>(tourLog);
         var updatedTourLogPersistence = await _tourLogRepository.UpdateTourLogAsync(tourLogPersistence, cancellationToken;
