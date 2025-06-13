@@ -46,12 +46,12 @@ public class FileControllerTests
 
         Assert.That(result, Is.TypeOf<FileContentResult>());
         var fileResult = (FileContentResult)result;
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(fileResult.FileContents, Is.EqualTo(pdfBytes));
             Assert.That(fileResult.ContentType, Is.EqualTo("application/pdf"));
             Assert.That(fileResult.FileDownloadName, Is.EqualTo("SummaryReport.pdf"));
-        });
+        }
     }
 
     [Test]
@@ -81,12 +81,12 @@ public class FileControllerTests
 
         Assert.That(result, Is.TypeOf<FileContentResult>());
         var fileResult = (FileContentResult)result;
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(fileResult.FileContents, Is.EqualTo(pdfBytes));
             Assert.That(fileResult.ContentType, Is.EqualTo("application/pdf"));
             Assert.That(fileResult.FileDownloadName, Is.EqualTo($"TourReport_{tourId}.pdf"));
-        });
+        }
     }
 
     [Test]
@@ -116,12 +116,12 @@ public class FileControllerTests
 
         Assert.That(result, Is.TypeOf<JsonResult>());
         var jsonResult = (JsonResult)result;
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(jsonResult.Value, Is.EqualTo(tourDto));
             Assert.That(jsonResult.ContentType, Is.EqualTo("application/json"));
             Assert.That(jsonResult.StatusCode, Is.EqualTo(200));
-        });
+        }
     }
 
     [Test]

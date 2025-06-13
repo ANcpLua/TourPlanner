@@ -41,12 +41,12 @@ public class TourLogServiceTests
 
 
         Assert.That(result, Is.Not.Null);
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result.Id, Is.EqualTo(tourLogDomain.Id));
             Assert.That(result.Comment, Is.EqualTo(tourLogDomain.Comment));
             Assert.That(result.DateTime, Is.EqualTo(tourLogDomain.DateTime));
-        });
+        }
         _mockTourLogRepository.Verify(
             r => r.CreateTourLogAsync(tourLogPersistence, CancellationToken.None),
             Times.Once
@@ -173,12 +173,12 @@ public class TourLogServiceTests
 
 
         Assert.That(result, Is.Not.Null);
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result.Id, Is.EqualTo(tourLogDomain.Id));
             Assert.That(result.Comment, Is.EqualTo(tourLogDomain.Comment));
             Assert.That(result.DateTime, Is.EqualTo(tourLogDomain.DateTime));
-        });
+        }
         _mockTourLogRepository.Verify(
             r => r.UpdateTourLogAsync(tourLogPersistence, CancellationToken.None),
             Times.Once

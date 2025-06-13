@@ -38,11 +38,11 @@ public class TourLogRepositoryTests
 
 
         Assert.That(result, Is.Not.Null);
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result.Id, Is.EqualTo(tourLog.Id));
             Assert.That(logCount, Is.EqualTo(1));
-        });
+        }
     }
 
     [Test]
@@ -114,12 +114,11 @@ public class TourLogRepositoryTests
 
 
         Assert.That(result, Is.Not.Null);
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result.Comment, Is.EqualTo("Updated comment"));
             Assert.That(dbTourLog.Comment, Is.EqualTo("Updated comment"));
-        });
+        }
     }
 
     [Test]

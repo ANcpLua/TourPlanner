@@ -20,12 +20,11 @@ public class ViewModelHelperServiceTests
         var flag = initialValue;
 
         var result = _service.ToggleVisibility(ref flag);
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.EqualTo(expectedResult));
             Assert.That(flag, Is.EqualTo(expectedResult));
-        });
+        }
     }
 
     [Test]
@@ -36,14 +35,13 @@ public class ViewModelHelperServiceTests
         var result1 = _service.ToggleVisibility(ref flag);
         var result2 = _service.ToggleVisibility(ref flag);
         var result3 = _service.ToggleVisibility(ref flag);
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result1, Is.True);
             Assert.That(result2, Is.False);
             Assert.That(result3, Is.True);
             Assert.That(flag, Is.True);
-        });
+        }
     }
 
     [TestCase(false)]
@@ -65,13 +63,12 @@ public class ViewModelHelperServiceTests
         var tourRef = originalTour;
 
         _service.ResetForm(ref tourRef, () => TestData.SampleTour(resetName));
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(tourRef, Is.Not.SameAs(originalTour));
             Assert.That(tourRef.Name, Is.EqualTo(resetName));
             Assert.That(tourRef.Id, Is.EqualTo(TestData.TestGuid));
-        });
+        }
     }
 
     [TestCase("Original Domain", "Reset Domain")]
@@ -82,13 +79,12 @@ public class ViewModelHelperServiceTests
         var domainRef = originalDomain;
 
         _service.ResetForm(ref domainRef, () => TestData.SampleTourDomain(resetName));
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(domainRef, Is.Not.SameAs(originalDomain));
             Assert.That(domainRef.Name, Is.EqualTo(resetName));
             Assert.That(domainRef.Id, Is.EqualTo(TestData.TestGuid));
-        });
+        }
     }
 
     [Test]
@@ -111,14 +107,13 @@ public class ViewModelHelperServiceTests
         originalLog.Comment = "Original Comment";
 
         _service.ResetForm(ref originalLog, () => TestData.SampleTourLogDto(newRating, newDifficulty));
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(originalLog.Rating, Is.EqualTo(newRating));
             Assert.That(originalLog.Difficulty, Is.EqualTo(newDifficulty));
             Assert.That(originalLog.Comment, Is.EqualTo("Sample tour log comment"));
             Assert.That(originalLog.TourId, Is.EqualTo(TestData.TestGuid));
-        });
+        }
     }
 
     [Test]
@@ -139,13 +134,12 @@ public class ViewModelHelperServiceTests
 
         _service.ResetForm(ref tourRef1, () => TestData.SampleTour("First Tour"));
         _service.ResetForm(ref tourRef2, () => TestData.SampleTour("Second Tour"));
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(tourRef1, Is.Not.SameAs(tourRef2));
             Assert.That(tourRef1.Name, Is.EqualTo("First Tour"));
             Assert.That(tourRef2.Name, Is.EqualTo("Second Tour"));
-        });
+        }
     }
 
     [Test]
@@ -159,11 +153,10 @@ public class ViewModelHelperServiceTests
             newTour.Distance = 999.9;
             return newTour;
         });
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(tourRef.Name, Is.EqualTo("Lambda Created"));
             Assert.That(tourRef.Distance, Is.EqualTo(999.9));
-        });
+        }
     }
 }
