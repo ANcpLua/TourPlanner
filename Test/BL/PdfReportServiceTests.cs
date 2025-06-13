@@ -1,8 +1,9 @@
-﻿using System.Drawing;
-using System.Drawing.Imaging;
-using System.Text;
+﻿using System.Text;
 using BL.DomainModel;
 using BL.Service;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Test.BL;
 
@@ -123,18 +124,16 @@ public class PdfReportServiceTests
         var result = _pdfReportService.GenerateTourReport(tour);
         AssertValidPdf(result);
     }
-
+    
     [Test]
     public void GenerateTourReport_ValidImagePath_IncludesImageInPdf()
     {
-        var tempImagePath = Path.GetTempFileName();
+        var tempImagePath = Path.GetTempFileName() + ".png";
 
-#pragma warning disable CA1416
-        using (var bitmap = new Bitmap(1, 1))
+        using (var image = new Image<Rgba32>(1, 1))
         {
-            bitmap.Save(tempImagePath, ImageFormat.Png);
+            image.Save(tempImagePath, new PngEncoder());
         }
-#pragma warning restore CA1416
 
         try
         {
