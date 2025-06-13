@@ -28,15 +28,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libgdiplus
-          sudo ln -s /usr/lib/libgdiplus.so /usr/lib/libgdiplus.dll
 
       - name: Test with coverage
-        run: |
-          dotnet test --no-build --configuration Release /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura
+        run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          slug: ANcpLua/TourPlanner
-          files: '**/coverage.cobertura.xml'
