@@ -21,7 +21,7 @@ public class BusinessLogicModuleTests
             .Build();
 
         var builder = new ContainerBuilder();
-
+        builder.RegisterInstance(config).As<IConfiguration>();
         builder.RegisterInstance(Mock.Of<ITourRepository>()).As<ITourRepository>();
         builder.RegisterInstance(Mock.Of<ITourLogRepository>()).As<ITourLogRepository>();
         builder.RegisterInstance(Mock.Of<IMapper>()).As<IMapper>();

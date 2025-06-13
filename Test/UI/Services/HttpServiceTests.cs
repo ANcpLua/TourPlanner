@@ -150,7 +150,7 @@ public class HttpServiceTests
     [Test]
     public async Task GetByteArrayAsync_EmptyResponse_ReturnsEmptyArray()
     {
-        SetupHttpResponse(HttpStatusCode.OK, Array.Empty<byte>());
+        SetupHttpResponse(HttpStatusCode.OK, []);
 
         var result = await _httpService.GetByteArrayAsync("api/reports/empty");
 

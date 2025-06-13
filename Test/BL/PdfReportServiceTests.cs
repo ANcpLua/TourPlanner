@@ -28,6 +28,31 @@ public class PdfReportServiceTests
     }
 
     [Test]
+    public void GenerateReport_NullValues_HandlesNullsGracefully()
+    {
+        var tour = TestData.SampleTourDomain();
+        
+        tour.Distance = null;
+        tour.EstimatedTime = null;
+        
+        tour.Logs =
+        [
+            new TourLogDomain
+            {
+                DateTime = DateTime.Now,
+                Comment = null,
+                Difficulty = 3,
+                Rating = 4,
+                TotalDistance = 100,
+                TotalTime = 60
+            }
+        ];
+
+        var result = _pdfReportService.GenerateTourReport(tour);
+        AssertValidPdf(result);
+    }
+
+    [Test]
     public void GenerateReport_HandlesSpecialCharactersAndLargeData()
     {
         const string specialChars = "Special: áéíóú ñ ¿¡ € &<>\"'";
@@ -48,6 +73,16 @@ public class PdfReportServiceTests
                 TotalTime = 68.90
             })
             .ToList();
+
+        var result = _pdfReportService.GenerateTourReport(tour);
+        AssertValidPdf(result);
+    }
+
+    [Test]
+    public void GenerateTourReport_NullImagePath_HandlesGracefully()
+    {
+        var tour = TestData.SampleTourDomain();
+        tour.ImagePath = null;
 
         var result = _pdfReportService.GenerateTourReport(tour);
         AssertValidPdf(result);
@@ -81,7 +116,7 @@ public class PdfReportServiceTests
         tour.ImagePath = null;
         var pdfWithoutImage = _pdfReportService.GenerateTourReport(tour);
         
-        Assert.That(pdfWithImage, Has.Length.GreaterThan(pdfWithoutImage.Length), 
+        Assert.That(pdfWithImage.Length, Is.GreaterThan(pdfWithoutImage.Length), 
             "PDF with image should be larger");
     }
 
