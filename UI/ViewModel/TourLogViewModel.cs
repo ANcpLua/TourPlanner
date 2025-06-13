@@ -79,13 +79,13 @@ public class TourLogViewModel : BaseViewModel
         );
     }
 
-    private void ClearTourData()
+    public void ClearTourData()
     {
         TourLogs.Clear();
         ResetForm();
     }
 
-    private void ShowAddLogForm()
+    public void ShowAddLogForm()
     {
         if (!SelectedTourId.HasValue) return;
 
@@ -103,7 +103,7 @@ public class TourLogViewModel : BaseViewModel
         OnPropertyChanged(nameof(IsEditing));
     }
 
-    private void ResetForm()
+    public void ResetForm()
     {
         _viewModelHelperService.ResetForm(
             ref _selectedTourLog,
@@ -139,7 +139,7 @@ public class TourLogViewModel : BaseViewModel
                     $"api/tourlog/bytour/{SelectedTourId}"
                 );
                 TourLogs.Clear();
-                foreach (var log in logs ?? Array.Empty<TourLog>()) TourLogs.Add(log);
+                foreach (var log in logs ?? []) TourLogs.Add(log);
 
                 ResetForm();
             },

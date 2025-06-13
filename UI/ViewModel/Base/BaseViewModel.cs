@@ -9,7 +9,7 @@ namespace UI.ViewModel.Base;
 public abstract class BaseViewModel : INotifyPropertyChanged
 {
     private readonly TryCatchToastWrapper _tryCatchToastWrapper;
-    protected readonly IHttpService HttpService;
+    public readonly IHttpService HttpService;
     public readonly IToastServiceWrapper ToastServiceWrapper;
 
     private bool _isProcessing;
@@ -17,8 +17,7 @@ public abstract class BaseViewModel : INotifyPropertyChanged
     protected BaseViewModel(
         IHttpService httpService,
         IToastServiceWrapper toastServiceWrapper,
-        ILogger logger
-    )
+        ILogger logger)
     {
         HttpService = httpService;
         ToastServiceWrapper = toastServiceWrapper;
@@ -28,7 +27,7 @@ public abstract class BaseViewModel : INotifyPropertyChanged
     public bool IsProcessing
     {
         get => _isProcessing;
-        protected set => SetProperty(ref _isProcessing, value);
+        set => SetProperty(ref _isProcessing, value);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -38,29 +37,14 @@ public abstract class BaseViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    protected async Task ProcessAsync(Func<Task> action)
-    {
-        if (IsProcessing) return;
-
-        try
-        {
-            IsProcessing = true;
-            await action();
-        }
-        finally
-        {
-            IsProcessing = false;
-        }
-    }
-
-    protected async Task<T> ProcessAsync<T>(Func<Task<T>> action)
+    public T Process<T>(Func<T> func)
     {
         if (IsProcessing) return default!;
 
         try
         {
             IsProcessing = true;
-            return await action();
+            return func();
         }
         finally
         {
@@ -71,8 +55,7 @@ public abstract class BaseViewModel : INotifyPropertyChanged
     protected bool SetProperty<T>(
         ref T field,
         T value,
-        [CallerMemberName] string? propertyName = null
-    )
+        [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value)) return false;
         field = value;

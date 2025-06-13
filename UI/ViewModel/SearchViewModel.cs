@@ -61,7 +61,7 @@ public class SearchViewModel : BaseViewModel
                         _ = tour.IsChildFriendly;
                         return tour;
                     }) ??
-                    Array.Empty<Tour>()
+                    []
                 );
 
                 if (!SearchResults.Any())

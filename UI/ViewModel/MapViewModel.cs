@@ -76,7 +76,7 @@ public class MapViewModel : BaseViewModel
 
     public Task ShowMapAsync()
     {
-        return ProcessAsync(async () =>
+        return Process(async () =>
         {
             if (!_isMapInitialized)
             {

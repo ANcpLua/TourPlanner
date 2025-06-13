@@ -68,19 +68,13 @@
 
     function addDrawingControls() {
         const drawOptions = {
-            position: 'topright',
-            draw: {
-                polyline: {shapeOptions: {color: '#f357a1', weight: 10}},
-                polygon: {
+            position: 'topright', draw: {
+                polyline: {shapeOptions: {color: '#f357a1', weight: 10}}, polygon: {
                     allowIntersection: false,
                     drawError: {color: '#e1e100', message: '<strong>Oh snap!</strong> you can\'t draw that!'},
                     shapeOptions: {color: '#bada55'}
-                },
-                circle: false,
-                rectangle: {shapeOptions: {clickable: false}},
-                marker: {icon: createIcon('red')}
-            },
-            edit: {featureGroup: drawnItems, remove: true}
+                }, circle: false, rectangle: {shapeOptions: {clickable: false}}, marker: {icon: createIcon('red')}
+            }, edit: {featureGroup: drawnItems, remove: true}
         };
         drawControl = new L.Control.Draw(drawOptions);
         map.addControl(drawControl);
@@ -201,9 +195,7 @@
         const R = 6371;
         const dLat = deg2rad(lat2 - lat1);
         const dLon = deg2rad(lon2 - lon1);
-        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;
     }
@@ -219,9 +211,6 @@
     }
 
     return {
-        initializeMap: initializeMap,
-        setRoute: setRoute,
-        clearMap: clearMap,
-        centerOnUserLocation: centerOnUserLocation
+        initializeMap: initializeMap, setRoute: setRoute, clearMap: clearMap, centerOnUserLocation: centerOnUserLocation
     };
 })();
