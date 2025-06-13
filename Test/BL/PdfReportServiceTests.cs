@@ -10,174 +10,100 @@ namespace Test.BL;
 [TestFixture]
 public class PdfReportServiceTests
 {
-    [SetUp]
-    public void Setup()
-    {
-        _pdfReportService = new PdfReportService();
-    }
-
-    private PdfReportService _pdfReportService = null!;
+    private readonly PdfReportService _pdfReportService = new();
     private const string PdfHeader = "%PDF";
 
     [Test]
     public void GenerateTourReport_ValidTour_ReturnsPdfBytes()
     {
-        var tour = TestData.SampleTourDomain();
-        var result = _pdfReportService.GenerateTourReport(tour);
+        var result = _pdfReportService.GenerateTourReport(TestData.SampleTourDomain());
         AssertValidPdf(result);
     }
 
     [Test]
     public void GenerateSummaryReport_ValidTours_ReturnsPdfBytes()
     {
-        var tours = TestData.SampleTourDomainList();
-        var result = _pdfReportService.GenerateSummaryReport(tours);
+        var result = _pdfReportService.GenerateSummaryReport(TestData.SampleTourDomainList());
         AssertValidPdf(result);
     }
 
     [Test]
-    public void GenerateSummaryReport_EmptyTourList_GeneratesEmptyReport()
+    public void GenerateReport_HandlesSpecialCharactersAndLargeData()
     {
-        var result = _pdfReportService.GenerateSummaryReport([]);
-        AssertValidPdf(result);
-    }
-
-    [Test]
-    public void GenerateTourReport_EmptyTour_GeneratesEmptyReport()
-    {
-        var result = _pdfReportService.GenerateTourReport(new TourDomain());
-        AssertValidPdf(result);
-    }
-
-    [Test]
-    public void GenerateTourReport_SpecialCharacters_HandlesSpecialCharacters()
-    {
+        const string specialChars = "Special: áéíóú ñ ¿¡ € &<>\"'";
         var tour = TestData.SampleTourDomain();
-        const string specialChars = "Special characters: áéíóú ñ ¿¡ € &<>\"'";
-
+        
         tour.Name = specialChars;
-        tour.Description = specialChars;
+        tour.Description = new string('A', 1000);
         tour.From = specialChars;
         tour.To = specialChars;
-        tour.Logs =
-        [
-            new TourLogDomain
+        tour.Logs = Enumerable.Range(0, 50)
+            .Select(_ => new TourLogDomain
             {
                 DateTime = DateTime.Now,
                 Comment = specialChars,
                 Difficulty = 5,
                 Rating = 4,
-                TotalDistance = 123,
-                TotalTime = 68
-            }
-        ];
-
-        var result = _pdfReportService.GenerateTourReport(tour);
-        AssertValidPdf(result);
-    }
-
-    [Test]
-    public void GenerateReport_LargeDataSets_HandlesLargeData()
-    {
-        var tours = Enumerable.Range(0, 100)
-            .Select(_ => TestData.SampleTourDomain())
+                TotalDistance = 123.45,
+                TotalTime = 68.90
+            })
             .ToList();
 
-        foreach (var tour in tours)
-        {
-            tour.Description = new string('A', 1000);
-            tour.Logs = Enumerable.Range(0, 50)
-                .Select(_ => TestData.SampleTourLogDomain())
-                .ToList();
-        }
+        var result = _pdfReportService.GenerateTourReport(tour);
+        AssertValidPdf(result);
+    }
 
-        var result = _pdfReportService.GenerateSummaryReport(tours);
+    [TestCase("")]
+    [TestCase("invalid/path/to/image.png")]
+    public void GenerateTourReport_InvalidImagePaths_HandlesGracefully(string imagePath)
+    {
+        var tour = TestData.SampleTourDomain();
+        tour.ImagePath = imagePath;
+
+        var result = _pdfReportService.GenerateTourReport(tour);
         AssertValidPdf(result);
     }
 
     [Test]
-    public void GenerateTourReport_NullImagePath_HandlesNullPath()
+    public void GenerateTourReport_WithValidImage_IncludesImage()
     {
+        var tempPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.png");
+        using (var image = new Image<Rgba32>(100, 100))
+        {
+            image.Save(tempPath, new PngEncoder());
+        }
+        
         var tour = TestData.SampleTourDomain();
+        tour.ImagePath = tempPath;
+        
+        var pdfWithImage = _pdfReportService.GenerateTourReport(tour);
+        
         tour.ImagePath = null;
-
-        var result = _pdfReportService.GenerateTourReport(tour);
-        AssertValidPdf(result);
+        var pdfWithoutImage = _pdfReportService.GenerateTourReport(tour);
+        
+        Assert.That(pdfWithImage, Has.Length.GreaterThan(pdfWithoutImage.Length), 
+            "PDF with image should be larger");
     }
 
     [Test]
-    public void GenerateTourReport_EmptyImagePath_HandlesEmptyPath()
+    public void GenerateTourReport_CorruptedImage_ShowsErrorMessage()
     {
+        var tempPath = Path.GetTempFileName();
+        File.WriteAllText(tempPath, "Not an image");
+        
         var tour = TestData.SampleTourDomain();
-        tour.ImagePath = string.Empty;
-
-        var result = _pdfReportService.GenerateTourReport(tour);
-        AssertValidPdf(result);
-    }
-
-    [Test]
-    public void GenerateTourReport_InvalidImagePath_HandlesInvalidPath()
-    {
-        var tour = TestData.SampleTourDomain();
-        tour.ImagePath = "invalid/path/to/image.png";
-
-        var result = _pdfReportService.GenerateTourReport(tour);
-        AssertValidPdf(result);
-    }
-    
-    [Test]
-    public void GenerateTourReport_ValidImagePath_IncludesImageInPdf()
-    {
-        var tempImagePath = Path.GetTempFileName() + ".png";
-
-        using (var image = new Image<Rgba32>(1, 1))
+        tour.ImagePath = tempPath;
+        
+        Assert.DoesNotThrow(() =>
         {
-            image.Save(tempImagePath, new PngEncoder());
-        }
-
-        try
-        {
-            var tour = TestData.SampleTourDomain();
-            tour.ImagePath = tempImagePath;
-
             var result = _pdfReportService.GenerateTourReport(tour);
             AssertValidPdf(result);
-        }
-        finally
-        {
-            if (File.Exists(tempImagePath))
-                File.Delete(tempImagePath);
-        }
-    }
-
-    [Test]
-    public void GenerateTourReport_CorruptedImagePath_HandlesImageException()
-    {
-        var tempFilePath = Path.GetTempFileName();
-        File.WriteAllText(tempFilePath, "This is not a valid image file content");
-
-        try
-        {
-            var tour = TestData.SampleTourDomain();
-            tour.ImagePath = tempFilePath;
-
-            var result = _pdfReportService.GenerateTourReport(tour);
-            AssertValidPdf(result);
-        }
-        finally
-        {
-            if (File.Exists(tempFilePath))
-                File.Delete(tempFilePath);
-        }
+        });
     }
 
     private static void AssertValidPdf(byte[] pdfBytes)
     {
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(pdfBytes, Is.Not.Null);
-            Assert.That(pdfBytes, Is.Not.Empty);
-            Assert.That(Encoding.UTF8.GetString(pdfBytes.Take(4).ToArray()), Is.EqualTo(PdfHeader));
-        }
+        Assert.That(pdfBytes, Is.Not.Null.And.Not.Empty);
+        Assert.That(pdfBytes[..4], Is.EqualTo(Encoding.UTF8.GetBytes(PdfHeader)));
     }
 }

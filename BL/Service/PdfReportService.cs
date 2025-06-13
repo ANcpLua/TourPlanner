@@ -25,7 +25,7 @@ public class PdfReportService : IPdfReportService
         return GenerateReport("Summary Report", tours);
     }
 
-    private static byte[] GenerateReport(string title, IEnumerable<TourDomain> tours)
+    public static byte[] GenerateReport(string title, IEnumerable<TourDomain> tours)
     {
         return Document.Create(container =>
         {
@@ -100,7 +100,7 @@ public class PdfReportService : IPdfReportService
             : "N/A";
     }
 
-    private static void AddTourImage(ColumnDescriptor column, string? imagePath)
+    public static void AddTourImage(ColumnDescriptor column, string? imagePath)
     {
         if (string.IsNullOrEmpty(imagePath) || !File.Exists(imagePath)) return;
 
