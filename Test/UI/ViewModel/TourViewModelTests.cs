@@ -49,7 +49,7 @@ public class TourViewModelTests
     [Test]
     public void Constructor_ShouldInitializePropertiesCorrectly()
     {
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_viewModel.Tours, Is.Not.Null);
             Assert.That(_viewModel.Tours, Is.Empty);
@@ -57,7 +57,7 @@ public class TourViewModelTests
             Assert.That(_viewModel.IsMapVisible, Is.False);
             Assert.That(_viewModel.SelectedTour, Is.Not.Null);
             Assert.That(_viewModel.ModalTour, Is.Not.Null);
-        });
+        }
     }
 
     [Test]
@@ -78,15 +78,13 @@ public class TourViewModelTests
 
 
         _viewModel.SelectedTour = tour;
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_viewModel.SelectedTour, Is.EqualTo(tour));
 
             Assert.That(_mockMapViewModel.Object.FromCity, Is.EqualTo("Vienna"));
             Assert.That(_mockMapViewModel.Object.ToCity, Is.EqualTo("Berlin"));
-        });
+        }
     }
 
     [Test]
@@ -127,9 +125,7 @@ public class TourViewModelTests
 
 
         var filteredCities = _viewModel.FilteredToCities.ToList();
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(filteredCities, Does.Not.Contain("Vienna"));
             Assert.That(filteredCities, Contains.Item("Berlin"));
@@ -137,7 +133,7 @@ public class TourViewModelTests
             Assert.That(filteredCities, Contains.Item("Budapest"));
             Assert.That(filteredCities, Contains.Item("Warsaw"));
             Assert.That(filteredCities.Count, Is.EqualTo(4));
-        });
+        }
     }
 
     [Test]
@@ -159,9 +155,7 @@ public class TourViewModelTests
 
 
         _viewModel.ShowAddTourForm();
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             _mockViewModelHelperService.Verify(
                 v => v.ShowForm(ref It.Ref<bool>.IsAny),
@@ -170,7 +164,7 @@ public class TourViewModelTests
 
             Assert.That(_mockMapViewModel.Object.FromCity, Is.Empty);
             Assert.That(_mockMapViewModel.Object.ToCity, Is.Empty);
-        });
+        }
     }
 
     [Test]
@@ -206,28 +200,24 @@ public class TourViewModelTests
 
 
         _viewModel.ShowAddTourForm();
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_viewModel.IsFormVisible, Is.False);
 
             Assert.That(_mockMapViewModel.Object.FromCity, Is.Empty);
             Assert.That(_mockMapViewModel.Object.ToCity, Is.Empty);
-        });
+        }
     }
 
     [Test]
     public async Task LoadToursAsync_ShouldLoadToursSuccessfully()
     {
         await _viewModel.LoadToursAsync();
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_viewModel.Tours, Is.Not.Empty);
             Assert.That(_viewModel.Tours, Has.Count.EqualTo(5));
-        });
+        }
     }
 
     [Test]
@@ -254,16 +244,14 @@ public class TourViewModelTests
 
 
         var result = await _viewModel.SaveTourAsync();
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.False);
             _mockToastService.Verify(
                 t => t.ShowError("Please fill in all required fields correctly."),
                 Times.Once
             );
-        });
+        }
     }
 
     [Test]
@@ -281,9 +269,7 @@ public class TourViewModelTests
 
 
         var result = await _viewModel.SaveTourAsync();
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.True);
 
@@ -306,7 +292,7 @@ public class TourViewModelTests
                 t => t.ShowSuccess(It.Is<string>(msg => msg.Contains("Tour saved successfully"))),
                 Times.Once
             );
-        });
+        }
     }
 
     [Test]
@@ -324,9 +310,7 @@ public class TourViewModelTests
 
 
         var result = await _viewModel.SaveTourAsync();
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.True);
             _mockHttpService.Verify(
@@ -337,7 +321,7 @@ public class TourViewModelTests
                 t => t.ShowSuccess(It.Is<string>(msg => msg.Contains("Tour updated successfully"))),
                 Times.Once
             );
-        });
+        }
     }
 
     [Test]
@@ -353,16 +337,14 @@ public class TourViewModelTests
 
 
         var result = await _viewModel.SaveTourAsync();
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.False);
             _mockToastService.Verify(
                 t => t.ShowError(It.Is<string>(msg => msg.Contains("Error saving tour"))),
                 Times.Once
             );
-        });
+        }
     }
 
     [Test]
@@ -373,15 +355,13 @@ public class TourViewModelTests
 
 
         await _viewModel.ShowTourDetailsAsync(testTour.Id);
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_viewModel.ModalTour.Id, Is.EqualTo(testTour.Id));
             Assert.That(_viewModel.ModalTour.Name, Is.EqualTo(testTour.Name));
             Assert.That(_viewModel.ModalTour.Description, Is.EqualTo(testTour.Description));
             _mockHttpService.Verify(s => s.GetAsync<Tour>($"api/tour/{testTour.Id}"), Times.Once);
-        });
+        }
     }
 
     [Test]
@@ -409,16 +389,14 @@ public class TourViewModelTests
 
 
         await _viewModel.EditTourAsync(testTour.Id);
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_viewModel.SelectedTour.Id, Is.EqualTo(testTour.Id));
             Assert.That(_viewModel.SelectedTour.Name, Is.EqualTo(testTour.Name));
             Assert.That(_viewModel.SelectedTour.Description, Is.EqualTo(testTour.Description));
             Assert.That(_viewModel.IsFormVisible, Is.True);
             _mockHttpService.Verify(s => s.GetAsync<Tour>($"api/tour/{testTour.Id}"), Times.Once);
-        });
+        }
     }
 
     [Test]
@@ -476,11 +454,11 @@ public class TourViewModelTests
 
 
         if (userConfirms)
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 _mockHttpService.Verify(s => s.DeleteAsync($"api/tour/{testTour.Id}"), Times.Once);
                 _mockToastService.Verify(t => t.ShowSuccess("Tour deleted successfully."), Times.Once);
-            });
+            }
         else
             _mockHttpService.Verify(s => s.DeleteAsync(It.IsAny<string>()), Times.Never);
     }
@@ -502,9 +480,7 @@ public class TourViewModelTests
 
 
         decorator.OnException(exception);
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             mockLogger.Verify(
                 l => l.Error(
@@ -521,6 +497,6 @@ public class TourViewModelTests
                 t => t.ShowError(It.Is<string>(s => s.Contains("Outer exception with inner"))),
                 Times.Once
             );
-        });
+        }
     }
 }

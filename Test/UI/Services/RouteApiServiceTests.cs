@@ -57,12 +57,11 @@ public class RouteApiServiceTests
         SetupSuccessfulHttpResponse(responseJson);
 
         var result = await _routeApiService.FetchRouteDataAsync(from, to, transportType);
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result.Distance, Is.EqualTo(1000.5));
             Assert.That(result.Duration, Is.EqualTo(3600.0));
-        });
+        }
 
         VerifyHttpPostRequest($"v2/directions/{expectedEndpoint}");
     }
@@ -86,12 +85,11 @@ public class RouteApiServiceTests
         SetupSuccessfulHttpResponse(responseJson);
 
         var result = await _routeApiService.FetchRouteDataAsync(from, to, "Car");
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result.Distance, Is.EqualTo(523400.0));
             Assert.That(result.Duration, Is.EqualTo(18000.0));
-        });
+        }
     }
 
     [Test]

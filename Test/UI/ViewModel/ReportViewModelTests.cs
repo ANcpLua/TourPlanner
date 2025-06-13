@@ -14,6 +14,14 @@ namespace Test.UI.ViewModel;
 [TestFixture]
 public sealed class ReportViewModelTests
 {
+    private Mock<IHttpService> _http = null!;
+    private Mock<IToastServiceWrapper> _toast = null!;
+    private Mock<IBlazorDownloadFileService> _file = null!;
+    private IViewModelHelperService _helper = null!;
+    private Mock<TourViewModel> _tourVm = null!;
+    private Mock<ILogger> _log = null!;
+    private ReportViewModel _vm = null!;
+    
     [SetUp]
     public void Setup()
     {
@@ -44,15 +52,6 @@ public sealed class ReportViewModelTests
             _helper);
     }
 
-    private Mock<IHttpService> _http = null!;
-    private Mock<IToastServiceWrapper> _toast = null!;
-    private Mock<IBlazorDownloadFileService> _file = null!;
-    private IViewModelHelperService _helper = null!;
-    private Mock<TourViewModel> _tourVm = null!;
-    private Mock<ILogger> _log = null!;
-    private ReportViewModel _vm = null!;
-
-
     [Test]
     public void CurrentReportUrl_Change_RaisesPropertyChanged()
     {
@@ -60,8 +59,11 @@ public sealed class ReportViewModelTests
         _vm.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
 
         _vm.CurrentReportUrl = "url";
-        Assert.That(_vm.CurrentReportUrl, Is.EqualTo("url"));
-        Assert.That(raised, Contains.Item(nameof(ReportViewModel.CurrentReportUrl)));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_vm.CurrentReportUrl, Is.EqualTo("url"));
+            Assert.That(raised, Contains.Item(nameof(ReportViewModel.CurrentReportUrl)));
+        }
     }
 
     [Test]
@@ -72,8 +74,11 @@ public sealed class ReportViewModelTests
 
         var id = Guid.NewGuid();
         _vm.SelectedDetailedTourId = id;
-        Assert.That(_vm.SelectedDetailedTourId, Is.EqualTo(id));
-        Assert.That(raised, Contains.Item(nameof(ReportViewModel.SelectedDetailedTourId)));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_vm.SelectedDetailedTourId, Is.EqualTo(id));
+            Assert.That(raised, Contains.Item(nameof(ReportViewModel.SelectedDetailedTourId)));
+        }
     }
 
 
@@ -93,8 +98,11 @@ public sealed class ReportViewModelTests
 
         _vm.ResetCurrentReportUrl();
 
-        Assert.That(_vm.CurrentReportUrl, Is.Empty);
-        Assert.That(raised, Contains.Item(nameof(ReportViewModel.CurrentReportUrl)));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_vm.CurrentReportUrl, Is.Empty);
+            Assert.That(raised, Contains.Item(nameof(ReportViewModel.CurrentReportUrl)));
+        }
     }
 
     [Test]
@@ -106,8 +114,11 @@ public sealed class ReportViewModelTests
 
         _vm.ClearCurrentReport();
 
-        Assert.That(_vm.CurrentReportUrl, Is.Empty);
-        Assert.That(raised, Contains.Item(nameof(ReportViewModel.CurrentReportUrl)));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_vm.CurrentReportUrl, Is.Empty);
+            Assert.That(raised, Contains.Item(nameof(ReportViewModel.CurrentReportUrl)));
+        }
     }
 
 

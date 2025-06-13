@@ -38,12 +38,12 @@ public class TourServiceTests
 
 
         Assert.That(result, Is.Not.Null);
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result.Id, Is.EqualTo(tourDomain.Id));
             Assert.That(result.Name, Is.EqualTo(tourDomain.Name));
             Assert.That(result.Description, Is.EqualTo(tourDomain.Description));
-        });
+        }
         _mockTourRepository.Verify(r => r.CreateTourAsync(tourPersistence), Times.Once);
     }
 

@@ -12,6 +12,12 @@ namespace Test.UI.ViewModel;
 [TestFixture]
 public class SearchViewModelTests
 {
+    private Mock<IHttpService> _mockHttpService = null!;
+    private Mock<IToastServiceWrapper> _mockToastService = null!;
+    private Mock<ILogger> _mockLogger = null!;
+    private TestNavigationManager _mockNavigationManager = null!;
+    private SearchViewModel _viewModel = null!;
+    
     [SetUp]
     public void Setup()
     {
@@ -37,12 +43,6 @@ public class SearchViewModelTests
             LastUri = uri;
         }
     }
-
-    private Mock<IHttpService> _mockHttpService = null!;
-    private Mock<IToastServiceWrapper> _mockToastService = null!;
-    private Mock<ILogger> _mockLogger = null!;
-    private TestNavigationManager _mockNavigationManager = null!;
-    private SearchViewModel _viewModel = null!;
 
     [Test]
     public void Constructor_DefaultValues()
@@ -91,12 +91,11 @@ public class SearchViewModelTests
         _viewModel.SearchResults = new ObservableCollection<Tour>(TestData.SampleTourList());
 
         _viewModel.ClearSearch();
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_viewModel.SearchText, Is.Empty);
             Assert.That(_viewModel.SearchResults, Is.Empty);
-        });
+        }
     }
 
     [Test]

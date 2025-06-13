@@ -37,13 +37,13 @@ public class MapViewModelTests
     [Test]
     public void Constructor_ShouldInitializePropertiesCorrectly()
     {
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_viewModel.CityNames, Is.Not.Null);
             Assert.That(_viewModel.CityNames, Has.Count.EqualTo(MapViewModel.Coordinates.Count));
             Assert.That(_viewModel.FromCity, Is.Empty);
             Assert.That(_viewModel.ToCity, Is.Empty);
-        });
+        }
     }
 
     [TestCase("Vienna")]
@@ -52,14 +52,12 @@ public class MapViewModelTests
     public void FromCity_WhenSet_ShouldUpdateFilteredToCities(string selectedCity)
     {
         _viewModel.FromCity = selectedCity;
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_viewModel.FromCity, Is.EqualTo(selectedCity));
             Assert.That(_viewModel.FilteredToCities, Does.Not.Contain(selectedCity));
             Assert.That(_viewModel.FilteredToCities.Count(), Is.EqualTo(_viewModel.CityNames.Count - 1));
-        });
+        }
     }
 
     [Test]
@@ -70,13 +68,11 @@ public class MapViewModelTests
 
 
         _viewModel.FromCity = city;
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_viewModel.FromCity, Is.EqualTo(city));
             Assert.That(_viewModel.ToCity, Is.Empty);
-        });
+        }
     }
 
     [Test]
@@ -98,14 +94,12 @@ public class MapViewModelTests
 
 
         var filteredCities = _viewModel.FilteredToCities.ToList();
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(filteredCities, Does.Not.Contain("Vienna"));
             Assert.That(filteredCities, Contains.Item("Berlin"));
             Assert.That(filteredCities, Contains.Item("Paris"));
-        });
+        }
     }
 
     [TestCase("Vienna", 48.2082, 16.3738)]
@@ -115,14 +109,12 @@ public class MapViewModelTests
         double expectedLng)
     {
         var result = _viewModel.GetCoordinates(city);
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.Not.Null);
             Assert.That(result!.Value.Latitude, Is.EqualTo(expectedLat));
             Assert.That(result.Value.Longitude, Is.EqualTo(expectedLng));
-        });
+        }
     }
 
     [TestCase("InvalidCity")]
@@ -230,15 +222,13 @@ public class MapViewModelTests
 
 
         await _viewModel.ClearMapAsync();
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(invokedMethod, Is.EqualTo("TourPlannerMap.clearMap"));
             Assert.That(_viewModel.FromCity, Is.Empty);
             Assert.That(_viewModel.ToCity, Is.Empty);
             Assert.That(fromCityChanged, Is.True);
             Assert.That(toCityChanged, Is.True);
-        });
+        }
     }
 }

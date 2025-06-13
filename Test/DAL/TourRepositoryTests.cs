@@ -38,12 +38,12 @@ public class TourRepositoryTests
 
 
         Assert.That(result, Is.Not.Null);
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result.Id, Is.EqualTo(tour.Id));
             Assert.That(result.Name, Is.EqualTo(tour.Name));
             Assert.That(tourCount, Is.EqualTo(1));
-        });
+        }
     }
 
     [Test]
@@ -93,11 +93,11 @@ public class TourRepositoryTests
 
 
         Assert.That(result, Is.Not.Null);
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result.Id, Is.EqualTo(tour.Id));
             Assert.That(result.Name, Is.EqualTo(tour.Name));
-        });
+        }
     }
 
     [Test]
@@ -127,11 +127,11 @@ public class TourRepositoryTests
 
 
         Assert.That(result, Is.Not.Null);
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result.Name, Is.EqualTo("Updated Tour Name"));
             Assert.That(dbTour.Name, Is.EqualTo("Updated Tour Name"));
-        });
+        }
     }
 
     [Test]
@@ -185,11 +185,11 @@ public class TourRepositoryTests
 
 
         Assert.That(result, Is.Not.Null);
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result.Count(), Is.EqualTo(1));
             Assert.That(result.First().Name, Is.EqualTo("Sample Tour"));
-        });
+        }
     }
 
     [Test]

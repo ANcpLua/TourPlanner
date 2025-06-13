@@ -38,12 +38,12 @@ public class BaseViewModelTests
     [Test]
     public void Constructor_InitializesProperties()
     {
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_viewModel.HttpService, Is.EqualTo(_httpService.Object));
             Assert.That(_viewModel.ToastServiceWrapper, Is.EqualTo(_toastService.Object));
             Assert.That(_viewModel.IsProcessing, Is.False);
-        });
+        }
     }
 
     [Test]

@@ -49,8 +49,7 @@ public class MappingConfigurationTests
         };
 
         var tourDomain = _mapper.Map<TourDomain>(tourPersistence);
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(tourDomain.Id, Is.EqualTo(tourPersistence.Id));
             Assert.That(tourDomain.Name, Is.EqualTo(tourPersistence.Name));
@@ -63,7 +62,7 @@ public class MappingConfigurationTests
             Assert.That(tourDomain.ImagePath, Is.EqualTo(tourPersistence.ImagePath));
             Assert.That(tourDomain.RouteInformation, Is.EqualTo(tourPersistence.RouteInformation));
             Assert.That(tourDomain.Logs, Has.Count.EqualTo(tourPersistence.TourLogPersistence.Count));
-        });
+        }
     }
 
     [Test]
@@ -98,8 +97,7 @@ public class MappingConfigurationTests
         };
 
         var tourPersistence = _mapper.Map<TourPersistence>(tourDomain);
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(tourPersistence.Id, Is.EqualTo(tourDomain.Id));
             Assert.That(tourPersistence.Name, Is.EqualTo(tourDomain.Name));
@@ -112,7 +110,7 @@ public class MappingConfigurationTests
             Assert.That(tourPersistence.ImagePath, Is.EqualTo(tourDomain.ImagePath));
             Assert.That(tourPersistence.RouteInformation, Is.EqualTo(tourDomain.RouteInformation));
             Assert.That(tourPersistence.TourLogPersistence, Has.Count.EqualTo(tourDomain.Logs.Count));
-        });
+        }
     }
 
     [Test]
@@ -122,13 +120,12 @@ public class MappingConfigurationTests
         tourDomain.Logs = [TestData.SampleTourLogDomain()];
 
         var tour = _mapper.Map<Tour>(tourDomain);
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(tour.Id, Is.EqualTo(tourDomain.Id));
             Assert.That(tour.Name, Is.EqualTo(tourDomain.Name));
             Assert.That(tour.TourLogs, Has.Count.EqualTo(tourDomain.Logs.Count));
-        });
+        }
     }
 
     [Test]
@@ -138,13 +135,12 @@ public class MappingConfigurationTests
         tour.TourLogs = [TestData.SampleTourLogDto()];
 
         var tourDomain = _mapper.Map<TourDomain>(tour);
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(tourDomain.Id, Is.EqualTo(tour.Id));
             Assert.That(tourDomain.Name, Is.EqualTo(tour.Name));
             Assert.That(tourDomain.Logs, Has.Count.EqualTo(tour.TourLogs.Count));
-        });
+        }
     }
 
     [Test]
@@ -163,8 +159,7 @@ public class MappingConfigurationTests
         };
 
         var tourLogPersistence = _mapper.Map<TourLogPersistence>(tourLogDomain);
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(tourLogPersistence.Id, Is.EqualTo(tourLogDomain.Id));
             Assert.That(tourLogPersistence.DateTime, Is.EqualTo(tourLogDomain.DateTime));
@@ -174,7 +169,7 @@ public class MappingConfigurationTests
             Assert.That(tourLogPersistence.TotalTime, Is.EqualTo(tourLogDomain.TotalTime));
             Assert.That(tourLogPersistence.Rating, Is.EqualTo(tourLogDomain.Rating));
             Assert.That(tourLogPersistence.TourPersistenceId, Is.EqualTo(tourLogDomain.TourDomainId));
-        });
+        }
     }
 
     [Test]
@@ -193,8 +188,7 @@ public class MappingConfigurationTests
         };
 
         var tourLogDomain = _mapper.Map<TourLogDomain>(tourLogPersistence);
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(tourLogDomain.Id, Is.EqualTo(tourLogPersistence.Id));
             Assert.That(tourLogDomain.DateTime, Is.EqualTo(tourLogPersistence.DateTime));
@@ -204,7 +198,7 @@ public class MappingConfigurationTests
             Assert.That(tourLogDomain.TotalTime, Is.EqualTo(tourLogPersistence.TotalTime));
             Assert.That(tourLogDomain.Rating, Is.EqualTo(tourLogPersistence.Rating));
             Assert.That(tourLogDomain.TourDomainId, Is.EqualTo(tourLogPersistence.TourPersistenceId));
-        });
+        }
     }
 
     [Test]
@@ -213,8 +207,7 @@ public class MappingConfigurationTests
         var tourLogDomain = TestData.SampleTourLogDomain();
 
         var tourLog = _mapper.Map<TourLog>(tourLogDomain);
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(tourLog.TourId, Is.EqualTo(tourLogDomain.TourDomainId));
             Assert.That(tourLog.Id, Is.EqualTo(tourLogDomain.Id));
@@ -224,7 +217,7 @@ public class MappingConfigurationTests
             Assert.That(tourLog.TotalDistance, Is.EqualTo(tourLogDomain.TotalDistance));
             Assert.That(tourLog.TotalTime, Is.EqualTo(tourLogDomain.TotalTime));
             Assert.That(tourLog.Rating, Is.EqualTo(tourLogDomain.Rating));
-        });
+        }
     }
 
     [Test]
@@ -233,8 +226,7 @@ public class MappingConfigurationTests
         var tourLog = TestData.SampleTourLogDto();
 
         var tourLogDomain = _mapper.Map<TourLogDomain>(tourLog);
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(tourLogDomain.TourDomainId, Is.EqualTo(tourLog.TourId));
             Assert.That(tourLogDomain.Id, Is.EqualTo(tourLog.Id));
@@ -244,7 +236,7 @@ public class MappingConfigurationTests
             Assert.That(tourLogDomain.TotalDistance, Is.EqualTo(tourLog.TotalDistance));
             Assert.That(tourLogDomain.TotalTime, Is.EqualTo(tourLog.TotalTime));
             Assert.That(tourLogDomain.Rating, Is.EqualTo(tourLog.Rating));
-        });
+        }
     }
 
     [Test]
@@ -267,11 +259,10 @@ public class MappingConfigurationTests
             TourPersistence = tour,
             Comment = "Navigation test"
         };
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(tourLog.TourPersistence, Is.Not.Null);
             Assert.That(tourLog.TourPersistence.Name, Is.EqualTo("Navigation Test Tour"));
-        });
+        }
     }
 }

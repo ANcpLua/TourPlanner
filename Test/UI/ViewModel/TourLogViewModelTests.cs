@@ -10,6 +10,13 @@ namespace Test.UI.ViewModel;
 [TestFixture]
 public class TourLogViewModelTests
 {
+    private Mock<IHttpService> _mockHttpService = null!;
+    private Mock<IToastServiceWrapper> _mockToastService = null!;
+    private Mock<IJSRuntime> _mockJsRuntime = null!;
+    private Mock<IViewModelHelperService> _mockViewModelHelperService = null!;
+    private Mock<ILogger> _mockLogger = null!;
+    private TourLogViewModel _viewModel = null!;
+    
     [SetUp]
     public void Setup()
     {
@@ -28,17 +35,10 @@ public class TourLogViewModelTests
         );
     }
 
-    private Mock<IHttpService> _mockHttpService = null!;
-    private Mock<IToastServiceWrapper> _mockToastService = null!;
-    private Mock<IJSRuntime> _mockJsRuntime = null!;
-    private Mock<IViewModelHelperService> _mockViewModelHelperService = null!;
-    private Mock<ILogger> _mockLogger = null!;
-    private TourLogViewModel _viewModel = null!;
-
     [Test]
     public void Constructor_ShouldInitializePropertiesCorrectly()
     {
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_viewModel.TourLogs, Is.Not.Null);
             Assert.That(_viewModel.TourLogs, Is.Empty);
@@ -46,7 +46,7 @@ public class TourLogViewModelTests
             Assert.That(_viewModel.IsLogFormVisible, Is.False);
             Assert.That(_viewModel.IsEditing, Is.False);
             Assert.That(_viewModel.SelectedTourId, Is.Null);
-        });
+        }
     }
 
     [Test]
@@ -58,13 +58,11 @@ public class TourLogViewModelTests
 
 
         _viewModel.SelectedTourLog = newTourLog;
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_viewModel.SelectedTourLog, Is.EqualTo(newTourLog));
             Assert.That(eventRaised, Is.True);
-        });
+        }
     }
 
     [Test]
@@ -186,13 +184,11 @@ public class TourLogViewModelTests
 
 
         _viewModel.ToggleLogForm();
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_viewModel.IsLogFormVisible, Is.False);
             Assert.That(_viewModel.IsEditing, Is.False);
-        });
+        }
     }
 
     [Test]
@@ -271,9 +267,7 @@ public class TourLogViewModelTests
 
 
         var result = await _viewModel.SaveTourLogAsync();
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.True);
             _mockHttpService.Verify(
@@ -281,7 +275,7 @@ public class TourLogViewModelTests
                 Times.Once
             );
             _mockToastService.Verify(t => t.ShowSuccess("Tour log created successfully."), Times.Once);
-        });
+        }
     }
 
     [Test]
@@ -297,9 +291,7 @@ public class TourLogViewModelTests
 
 
         var result = await _viewModel.SaveTourLogAsync();
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.True);
             _mockHttpService.Verify(
@@ -307,7 +299,7 @@ public class TourLogViewModelTests
                 Times.Once
             );
             _mockToastService.Verify(t => t.ShowSuccess("Tour log updated successfully."), Times.Once);
-        });
+        }
     }
 
     [Test]
@@ -318,13 +310,11 @@ public class TourLogViewModelTests
 
 
         var result = await _viewModel.SaveTourLogAsync();
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.False);
             _mockToastService.Verify(t => t.ShowError("Not Valid."), Times.Once);
-        });
+        }
     }
 
     [Test]
@@ -335,13 +325,11 @@ public class TourLogViewModelTests
 
 
         var result = await _viewModel.SaveTourLogAsync();
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.False);
             _mockToastService.Verify(t => t.ShowError("Not Valid."), Times.Once);
-        });
+        }
     }
 
     [Test]
@@ -354,15 +342,13 @@ public class TourLogViewModelTests
 
 
         await _viewModel.EditHandleTourLogAction(existingLog.Id);
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_viewModel.SelectedTourLog, Is.EqualTo(existingLog));
             Assert.That(_viewModel.SelectedTourId, Is.EqualTo(existingLog.TourId));
             Assert.That(_viewModel.IsLogFormVisible, Is.True);
             Assert.That(_viewModel.IsEditing, Is.True);
-        });
+        }
     }
 
     [Test]
@@ -432,17 +418,17 @@ public class TourLogViewModelTests
 
 
         if (userConfirms)
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 _mockHttpService.Verify(s => s.DeleteAsync($"api/tourlog/{logId}"), Times.Once);
                 _mockToastService.Verify(t => t.ShowSuccess("Tour log deleted successfully."), Times.Once);
-            });
+            }
         else
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 _mockHttpService.Verify(s => s.DeleteAsync(It.IsAny<string>()), Times.Never);
                 _mockToastService.Verify(t => t.ShowSuccess(It.IsAny<string>()), Times.Never);
-            });
+            }
     }
 
     [Test]
@@ -470,7 +456,7 @@ public class TourLogViewModelTests
 
         _mockViewModelHelperService
             .Setup(v => v.ResetForm(ref It.Ref<TourLog>.IsAny, It.IsAny<Func<TourLog>>()))
-            .Callback(new ResetFormCallback((ref TourLog tourLog, Func<TourLog> factory) =>
+            .Callback(new ResetFormCallback((ref tourLog, factory) =>
             {
                 capturedTourLog = factory();
                 tourLog = capturedTourLog;
@@ -478,14 +464,12 @@ public class TourLogViewModelTests
 
 
         _viewModel.ShowAddLogForm();
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(capturedTourLog, Is.Not.Null);
             Assert.That(capturedTourLog!.TourId, Is.EqualTo(tourId));
             Assert.That(_viewModel.IsEditing, Is.False);
-        });
+        }
     }
 
     [Test]
@@ -512,7 +496,7 @@ public class TourLogViewModelTests
 
         _mockViewModelHelperService
             .Setup(v => v.ResetForm(ref It.Ref<TourLog>.IsAny, It.IsAny<Func<TourLog>>()))
-            .Callback(new ResetFormCallback((ref TourLog tourLog, Func<TourLog> factory) =>
+            .Callback(new ResetFormCallback((ref tourLog, factory) =>
             {
                 capturedTourLog = factory();
                 tourLog = capturedTourLog;
@@ -520,15 +504,13 @@ public class TourLogViewModelTests
 
 
         _viewModel.ResetForm();
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(capturedTourLog, Is.Not.Null);
             Assert.That(capturedTourLog!.TourId, Is.EqualTo(tourId));
             Assert.That(_viewModel.IsLogFormVisible, Is.False);
             Assert.That(_viewModel.IsEditing, Is.False);
-        });
+        }
     }
 
     [Test]
@@ -540,7 +522,7 @@ public class TourLogViewModelTests
 
         _mockViewModelHelperService
             .Setup(v => v.ResetForm(ref It.Ref<TourLog>.IsAny, It.IsAny<Func<TourLog>>()))
-            .Callback(new ResetFormCallback((ref TourLog tourLog, Func<TourLog> factory) =>
+            .Callback(new ResetFormCallback((ref tourLog, factory) =>
             {
                 capturedTourLog = factory();
                 tourLog = capturedTourLog;
@@ -548,13 +530,11 @@ public class TourLogViewModelTests
 
 
         _viewModel.ResetForm();
-
-
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(capturedTourLog, Is.Not.Null);
             Assert.That(capturedTourLog!.TourId, Is.EqualTo(Guid.Empty));
-        });
+        }
     }
 
 
