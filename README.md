@@ -1,4 +1,4 @@
-[![codecov](https://codecov.io/gh/ANcpLua/TourPlanner/graph/badge.svg?token=ZU2X7DSLBQ)](https://codecov.io/gh/ANcpLua/TourPlanner)
+[![codecov](https://codecov.io/gh/ANcpLua/TourPlanner/branch/main/graph/badge.svg?token=ZU2X7DSLBQ)](https://codecov.io/gh/ANcpLua/TourPlanner?branch=main)
 <h1 align="center">TourPlanner</h1>
 <h2 align="center">Alexander Nachtmann & Stephanie Rauscher
 
