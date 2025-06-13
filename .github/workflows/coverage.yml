@@ -24,6 +24,12 @@ jobs:
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
+      - name: Install libgdiplus for System.Drawing on Linux
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgdiplus
+          sudo ln -s /usr/lib/libgdiplus.so /usr/lib/libgdiplus.dll
+
       - name: Test with coverage
         run: |
           dotnet test --no-build --configuration Release /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura

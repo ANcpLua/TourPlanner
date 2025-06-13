@@ -174,11 +174,11 @@ public class PdfReportServiceTests
 
     private static void AssertValidPdf(byte[] pdfBytes)
     {
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(pdfBytes, Is.Not.Null);
             Assert.That(pdfBytes, Is.Not.Empty);
             Assert.That(Encoding.UTF8.GetString(pdfBytes.Take(4).ToArray()), Is.EqualTo(PdfHeader));
-        });
+        }
     }
 }
