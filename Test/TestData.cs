@@ -18,22 +18,200 @@ public static class TestData
 {
     public const string ValidSearchText = "Sample Tour";
     public const string InvalidSearchText = "NonexistentTour";
-    private const double TestTimeSpan = 60.0;
     public static readonly Guid TestGuid = new("11111111-1111-1111-1111-111111111111");
-    private static readonly DateTime TestDateTime = new(2023, 1, 1, 12, 0, 0, DateTimeKind.Utc);
+    private static readonly DateTime TestDateTime = new(2024, 1, 1, 12, 0, 0, DateTimeKind.Utc);
+    public static readonly (double Latitude, double Longitude) TestCoordinates = (48.2082, 16.3738);
     public static readonly Guid NonexistentGuid = new("99999999-9999-9999-9999-999999999999");
 
-    public static TourPersistence CreateSampleTourPersistence()
+    public static Mock<ILogger> MockLogger()
+    {
+        return new Mock<ILogger>();
+    }
+
+    public static Mock<IJSRuntime> MockJsRuntime()
+    {
+        return new Mock<IJSRuntime>();
+    }
+
+    public static Mock<IBlazorDownloadFileService> MockBlazorDownloadFileService()
+    {
+        return new Mock<IBlazorDownloadFileService>();
+    }
+
+    public static Mock<IViewModelHelperService> MockViewModelHelperService()
+    {
+        return new Mock<IViewModelHelperService>();
+    }
+
+    public static Mock<IToastServiceWrapper> MockToastService()
+    {
+        var mock = new Mock<IToastServiceWrapper>();
+        mock.Setup(t => t.ShowSuccess(It.IsAny<string>()));
+        mock.Setup(t => t.ShowError(It.IsAny<string>()));
+        return mock;
+    }
+
+    public static Mock<IConfiguration> MockConfiguration()
+    {
+        var mock = new Mock<IConfiguration>();
+        mock.Setup(c => c["AppSettings:OpenRouteServiceApiKey"]).Returns("dummy-api-key");
+        mock.Setup(c => c["AppSettings:OpenRouteServiceApiBaseUrl"]).Returns("https://api.openrouteservice.org");
+        mock.Setup(c => c["AppSettings:ImageBasePath"]).Returns("/images/");
+        return mock;
+    }
+
+    public static Mock<IHttpService> MockHttpService()
+    {
+        var mock = new Mock<IHttpService>();
+        mock.Setup(s => s.GetAsync<Tour>(It.IsAny<string>())).ReturnsAsync(SampleTour());
+        mock.Setup(s => s.GetListAsync<Tour>(It.IsAny<string>())).ReturnsAsync(SampleTourList());
+        mock.Setup(s => s.PostAsync<Tour>(It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync(SampleTour());
+        mock.Setup(s => s.PutAsync<Tour>(It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync(SampleTour());
+        mock.Setup(s => s.DeleteAsync(It.IsAny<string>())).Returns(Task.CompletedTask);
+        mock.Setup(s => s.GetStringAsync(It.IsAny<string>())).ReturnsAsync("Sample string response");
+        mock.Setup(s => s.GetByteArrayAsync(It.IsAny<string>())).ReturnsAsync([1, 2, 3, 4, 5]);
+        return mock;
+    }
+
+    public static Mock<IRouteApiService> MockRouteApiService()
+    {
+        var mock = new Mock<IRouteApiService>();
+        mock.Setup(r =>
+                r.FetchRouteDataAsync(It.IsAny<(double, double)>(), It.IsAny<(double, double)>(), It.IsAny<string>()))
+            .ReturnsAsync((100.5, 60.0));
+        return mock;
+    }
+
+    public static Mock<IBrowserFile> MockBrowserFile(string content)
+    {
+        var mock = new Mock<IBrowserFile>();
+        mock.Setup(f => f.OpenReadStream(It.IsAny<long>(), It.IsAny<CancellationToken>()))
+            .Returns(new MemoryStream(Encoding.UTF8.GetBytes(content)));
+        return mock;
+    }
+
+    public static Mock<MapViewModel> MockMapViewModel()
+    {
+        return new Mock<MapViewModel>(Mock.Of<IJSRuntime>(), Mock.Of<IHttpService>(), Mock.Of<IToastServiceWrapper>(),
+            Mock.Of<ILogger>())
+        {
+            CallBase = true
+        };
+    }
+
+    public static void SetupMapViewModel(Mock<MapViewModel> mockMapViewModel,
+        (double Latitude, double Longitude) fromCoords,
+        (double Latitude, double Longitude) toCoords)
+    {
+        mockMapViewModel.Setup(m => m.GetCoordinates("Vienna")).Returns(fromCoords);
+        mockMapViewModel.Setup(m => m.GetCoordinates("Berlin")).Returns(toCoords);
+    }
+
+    public static void SetupRouteApiService(Mock<IRouteApiService> mockRouteApi,
+        (double Latitude, double Longitude) fromCoords,
+        (double Latitude, double Longitude) toCoords)
+    {
+        mockRouteApi.Setup(r => r.FetchRouteDataAsync(fromCoords, toCoords, It.IsAny<string>()))
+            .ReturnsAsync((523.4, 480.0));
+    }
+
+    public static void SetupHttpServicePut(Mock<IHttpService> mockHttpService, Tour tour)
+    {
+        mockHttpService.Setup(s => s.PutAsync<Tour>($"api/tour/{tour.Id}", It.IsAny<Tour>()))
+            .ReturnsAsync(tour);
+    }
+
+    public static Tour SampleTour(string name = "Sample Tour")
+    {
+        return new Tour
+        {
+            Id = TestGuid,
+            Name = name,
+            Description = "Sample tour for testing",
+            From = "City1",
+            To = "City2",
+            Distance = 100.5,
+            EstimatedTime = 60.0,
+            TransportType = "Car",
+            ImagePath = "/images/sample.png",
+            RouteInformation = "Sample route information"
+        };
+    }
+
+    public static Tour SampleTourWithVariousProperties()
+    {
+        return new Tour
+        {
+            Id = TestGuid,
+            Name = "Complex Tour",
+            Description = "Complex tour for testing",
+            From = "Vienna",
+            To = "Berlin",
+            Distance = 523.4,
+            EstimatedTime = 480.0,
+            TransportType = "Car",
+            ImagePath = "/images/complex.png",
+            RouteInformation = "Complex route information"
+        };
+    }
+
+    public static TourLog SampleTourLogDto(int? rating = 4, int difficulty = 3)
+    {
+        return new TourLog
+        {
+            Id = Guid.NewGuid(),
+            TourId = TestGuid,
+            DateTime = TestDateTime,
+            Comment = "Sample tour log comment",
+            Difficulty = difficulty,
+            TotalDistance = 50.25,
+            TotalTime = 60,
+            Rating = rating
+        };
+    }
+
+    public static List<Tour> SampleTourList(int count = 5)
+    {
+        return Enumerable.Range(0, count).Select(i =>
+        {
+            var tour = SampleTour($"Tour {i + 1}");
+            tour.Id = Guid.NewGuid();
+            return tour;
+        }).ToList();
+    }
+
+    public static List<TourLog> SampleTourLogDtoList(int count = 2)
+    {
+        return Enumerable.Range(0, count).Select(i => SampleTourLogDto(3 + i)).ToList();
+    }
+
+    public static (double Latitude, double Longitude) SampleCoordinates()
+    {
+        return TestCoordinates;
+    }
+
+    public static string SampleTourJson()
+    {
+        return JsonSerializer.Serialize(SampleTour());
+    }
+
+    public static string SampleTourDomainJson()
+    {
+        return JsonSerializer.Serialize(SampleTourDomain());
+    }
+
+
+    public static TourPersistence SampleTourPersistence(string name = "Sample Tour")
     {
         return new TourPersistence
         {
             Id = TestGuid,
-            Name = "Sample Tour",
+            Name = name,
             Description = "This is a sample tour for testing",
             From = "Start City",
             To = "End City",
             Distance = 100.5,
-            EstimatedTime = TestTimeSpan,
+            EstimatedTime = 60.0,
             TransportType = "Car",
             ImagePath = "/images/sample.png",
             RouteInformation = "Sample route information",
@@ -41,37 +219,11 @@ public static class TestData
         };
     }
 
-    public static Tour CreateSampleTour()
-    {
-        return new Tour
-        {
-            Id = TestGuid,
-            Name = "Sample Tour",
-            Description = "Sample tour for testing",
-            From = "City1",
-            To = "City2",
-            Distance = 100.5,
-            EstimatedTime = TestTimeSpan,
-            TransportType = "Car",
-            ImagePath = "/images/sample.png",
-            RouteInformation = "Sample route information",
-            TourLogs = []
-        };
-    }
-
-    public static List<Tour> CreateSampleTourList(int count = 5)
-    {
-        List<Tour> tours = [];
-        for (var i = 0; i < count; i++) tours.Add(CreateSampleTour());
-
-        return tours;
-    }
-
-    public static TourLogPersistence CreateSampleTourLogPersistence()
+    public static TourLogPersistence SampleTourLogPersistence()
     {
         return new TourLogPersistence
         {
-            Id = new Guid("00000000-0000-0000-0000-000000000001"),
+            Id = Guid.NewGuid(),
             TourPersistenceId = TestGuid,
             DateTime = TestDateTime,
             Comment = "Sample tour log comment",
@@ -82,58 +234,35 @@ public static class TestData
         };
     }
 
-    public static List<TourPersistence> CreateSampleTourPersistenceList()
+    public static List<TourPersistence> SampleTourPersistenceList(int count = 1)
     {
-        return
-        [
-            CreateSampleTourPersistence(),
-            new()
+        return count == 1
+            ? [SampleTourPersistence()]
+            : Enumerable.Range(0, count).Select(i =>
             {
-                Id = new Guid("00000000-0000-0000-0000-000000000002"),
-                Name = "Another Tour",
-                Description = "This is another sample tour",
-                From = "Another Start",
-                To = "Another End",
-                Distance = 75.3,
-                EstimatedTime = TestTimeSpan,
-                TransportType = "Bicycle",
-                ImagePath = "/images/another.png",
-                RouteInformation = "Another route information",
-                TourLogPersistence = []
-            }
-        ];
+                var tour = SampleTourPersistence($"Tour {i + 1}");
+                tour.Id = Guid.NewGuid();
+                return tour;
+            }).ToList();
     }
 
-    public static List<TourLogPersistence> CreateSampleTourLogPersistenceList()
+    public static List<TourLogPersistence> SampleTourLogPersistenceList(int count = 2)
     {
-        return
-        [
-            CreateSampleTourLogPersistence(),
-            new()
-            {
-                Id = new Guid("00000000-0000-0000-0000-000000000003"),
-                TourPersistenceId = TestGuid,
-                DateTime = TestDateTime.AddDays(1),
-                Comment = "Another sample tour log comment",
-                Difficulty = 2,
-                TotalDistance = 30.5,
-                TotalTime = 60,
-                Rating = 5
-            }
-        ];
+        return Enumerable.Range(0, count).Select(_ => SampleTourLogPersistence()).ToList();
     }
 
-    public static TourDomain CreateSampleTourDomain()
+
+    public static TourDomain SampleTourDomain(string name = "Sample Tour Domain")
     {
         return new TourDomain
         {
             Id = TestGuid,
-            Name = "Sample Tour Domain",
+            Name = name,
             Description = "This is a sample tour domain for testing",
             From = "Start City Domain",
             To = "End City Domain",
             Distance = 100.5,
-            EstimatedTime = TestTimeSpan,
+            EstimatedTime = 60.0,
             TransportType = "Car Domain",
             ImagePath = "/images/sample_domain.png",
             RouteInformation = "Sample route information domain",
@@ -141,11 +270,11 @@ public static class TestData
         };
     }
 
-    public static TourLogDomain CreateSampleTourLogDomain()
+    public static TourLogDomain SampleTourLogDomain()
     {
         return new TourLogDomain
         {
-            Id = new Guid("00000000-0000-0000-0000-000000000001"),
+            Id = Guid.NewGuid(),
             TourDomainId = TestGuid,
             DateTime = TestDateTime,
             Comment = "Sample tour log domain comment",
@@ -156,292 +285,18 @@ public static class TestData
         };
     }
 
-    public static List<TourDomain> CreateSampleTourDomainList()
+    public static List<TourDomain> SampleTourDomainList(int count = 5)
     {
-        return
-        [
-            CreateSampleTourDomain(),
-            new()
-            {
-                Id = new Guid("00000000-0000-0000-0000-000000000002"),
-                Name = "Another Tour Domain",
-                Description = "This is another sample tour domain",
-                From = "Another Start Domain",
-                To = "Another End Domain",
-                Distance = 75.3,
-                EstimatedTime = TimeSpan.FromHours(1.5).TotalMinutes,
-                TransportType = "Bicycle Domain",
-                ImagePath = "/images/another_domain.png",
-                RouteInformation = "Another route information domain",
-                Logs = []
-            }
-        ];
-    }
-
-    public static List<TourLogDomain> CreateSampleTourLogDomainList()
-    {
-        return
-        [
-            CreateSampleTourLogDomain(),
-            new()
-            {
-                Id = new Guid("00000000-0000-0000-0000-000000000003"),
-                TourDomainId = TestGuid,
-                DateTime = TestDateTime.AddDays(1),
-                Comment = "Another sample tour log domain comment",
-                Difficulty = 2,
-                TotalDistance = 30.5,
-                TotalTime = 45,
-                Rating = 5
-            }
-        ];
-    }
-
-    private static Tour CreateSampleTourDto()
-    {
-        return new Tour
+        return Enumerable.Range(0, count).Select(i =>
         {
-            Id = TestGuid,
-            Name = "Sample Tour DTO",
-            Description = "This is a sample tour DTO for testing",
-            From = "Start City DTO",
-            To = "End City DTO",
-            Distance = 100.5,
-            EstimatedTime = TestTimeSpan,
-            TransportType = "Car DTO",
-            ImagePath = "/images/sample_dto.png",
-            RouteInformation = "Sample route information DTO",
-            TourLogs = []
-        };
+            var tour = SampleTourDomain($"Tour Domain {i + 1}");
+            tour.Id = Guid.NewGuid();
+            return tour;
+        }).ToList();
     }
 
-    public static TourLog CreateSampleTourLogDto()
+    public static List<TourLogDomain> SampleTourLogDomainList(int count = 2)
     {
-        return new TourLog
-        {
-            Id = new Guid("00000000-0000-0000-0000-000000000001"),
-            TourId = TestGuid,
-            DateTime = TestDateTime,
-            Comment = "Sample tour log DTO comment",
-            Difficulty = 3,
-            TotalDistance = 50.25,
-            TotalTime = 60,
-            Rating = 4
-        };
-    }
-
-    public static List<TourLog> CreateSampleTourLogDtoList()
-    {
-        return
-        [
-            CreateSampleTourLogDto(),
-            new()
-            {
-                Id = new Guid("00000000-0000-0000-0000-000000000003"),
-                TourId = TestGuid,
-                DateTime = TestDateTime.AddDays(1),
-                Comment = "Another sample tour log DTO comment",
-                Difficulty = 2,
-                TotalDistance = 30.5,
-                TotalTime = 45,
-                Rating = 5
-            }
-        ];
-    }
-
-    public static string CreateSampleTourDomainJson()
-    {
-        var tour = CreateSampleTourDomain();
-        return JsonSerializer.Serialize(tour);
-    }
-
-    public static string CreateSampleTourJson()
-    {
-        var tour = CreateSampleTourDto();
-        return JsonSerializer.Serialize(tour);
-    }
-
-    public static Mock<IToastServiceWrapper> CreateMockToastService()
-    {
-        Mock<IToastServiceWrapper> mockToastService = new();
-
-        mockToastService.Setup(t => t.ShowSuccess(It.IsAny<string>()));
-        mockToastService.Setup(t => t.ShowError(It.IsAny<string>()));
-
-        return mockToastService;
-    }
-
-    public static Mock<IViewModelHelperService> CreateMockViewModelHelperService()
-    {
-        Mock<IViewModelHelperService> mockViewModelHelperService = new();
-
-        mockViewModelHelperService
-            .Setup(v => v.ToggleVisibility(ref It.Ref<bool>.IsAny))
-            .Returns(true);
-        mockViewModelHelperService
-            .Setup(v => v.ToggleVisibility(ref It.Ref<bool>.IsAny))
-            .Returns(false);
-        mockViewModelHelperService.Setup(v => v.ShowForm(ref It.Ref<bool>.IsAny));
-        mockViewModelHelperService.Setup(v =>
-            v.ResetForm(ref It.Ref<Tour>.IsAny, It.IsAny<Func<Tour>>())
-        );
-
-        return mockViewModelHelperService;
-    }
-
-    public static Mock<MapViewModel> CreateMockMapViewModel()
-    {
-        return new Mock<MapViewModel>(
-            Mock.Of<IJSRuntime>(),
-            Mock.Of<IHttpService>(),
-            Mock.Of<IToastServiceWrapper>(),
-            Mock.Of<ILogger>()
-        )
-        {
-            CallBase = true
-        };
-    }
-
-    public static Tour CreateSampleTourWithVariousProperties()
-    {
-        return new Tour
-        {
-            Id = TestGuid,
-            Name = "Sample Tour",
-            Description = "Sample tour for testing",
-            From = "City1",
-            To = "City2",
-            Distance = Random.Shared.Next(50, 200),
-            EstimatedTime = Random.Shared.Next(60, 480),
-            TransportType = "Car",
-            ImagePath = "/images/sample.png",
-            RouteInformation = "Sample route information",
-            TourLogs = []
-        };
-    }
-
-    public static Mock<IConfiguration> CreateMockConfiguration()
-    {
-        Mock<IConfiguration> mockConfiguration = new();
-        mockConfiguration
-            .Setup(c => c[It.Is<string>(s => s == "AppSettings:OpenRouteServiceApiKey")])
-            .Returns("dummy-api-key");
-        mockConfiguration
-            .Setup(c => c[It.Is<string>(s => s == "AppSettings:OpenRouteServiceApiBaseUrl")])
-            .Returns("https://api.openrouteservice.org");
-        mockConfiguration
-            .Setup(c => c[It.Is<string>(s => s == "AppSettings:ImageBasePath")])
-            .Returns("/images/");
-        return mockConfiguration;
-    }
-
-    public static Mock<IHttpService> CreateMockHttpService()
-    {
-        Mock<IHttpService> mockHttpService = new();
-
-        mockHttpService
-            .Setup(s => s.GetAsync<Tour>(It.IsAny<string>()))
-            .ReturnsAsync(CreateSampleTour());
-        mockHttpService
-            .Setup(s => s.GetListAsync<Tour>(It.IsAny<string>()))
-            .ReturnsAsync(CreateSampleTourList());
-        mockHttpService
-            .Setup(s => s.PostAsync<Tour>(It.IsAny<string>(), It.IsAny<object>()))
-            .ReturnsAsync(CreateSampleTour());
-        mockHttpService
-            .Setup(s => s.PutAsync<Tour>(It.IsAny<string>(), It.IsAny<object>()))
-            .ReturnsAsync(CreateSampleTour());
-        mockHttpService.Setup(s => s.DeleteAsync(It.IsAny<string>())).Returns(Task.CompletedTask);
-        mockHttpService
-            .Setup(s => s.GetStringAsync(It.IsAny<string>()))
-            .ReturnsAsync("Sample string response");
-        mockHttpService
-            .Setup(s => s.GetByteArrayAsync(It.IsAny<string>()))
-            .ReturnsAsync([
-                1, 2, 3, 4, 5
-            ]);
-
-        return mockHttpService;
-    }
-
-    public static Mock<IRouteApiService> CreateMockRouteApiService()
-    {
-        Mock<IRouteApiService> mockRouteApiService = new();
-
-        mockRouteApiService
-            .Setup(r =>
-                r.FetchRouteDataAsync(
-                    It.IsAny<(double, double)>(),
-                    It.IsAny<(double, double)>(),
-                    It.IsAny<string>()
-                )
-            )
-            .ReturnsAsync((100.5, 60.0));
-
-        return mockRouteApiService;
-    }
-
-    public static Mock<IJSRuntime> CreateMockJsRuntime()
-    {
-        Mock<IJSRuntime> mockJsRuntime = new();
-        return mockJsRuntime;
-    }
-
-    public static Mock<IBlazorDownloadFileService> CreateMockBlazorDownloadFileService()
-    {
-        Mock<IBlazorDownloadFileService> mockBlazorDownloadFile = new();
-        mockBlazorDownloadFile.Setup(b =>
-            b.DownloadFile(It.IsAny<string>(), It.IsAny<byte[]>(), It.IsAny<string>())
-        );
-        return mockBlazorDownloadFile;
-    }
-
-    public static Mock<IBrowserFile> CreateMockBrowserFile(string content)
-    {
-        Mock<IBrowserFile> mockFile = new();
-        MemoryStream memoryStream = new(Encoding.UTF8.GetBytes(content));
-        mockFile
-            .Setup(f => f.OpenReadStream(It.IsAny<long>(), It.IsAny<CancellationToken>()))
-            .Returns(memoryStream);
-        return mockFile;
-    }
-
-    public static Mock<ILogger> CreateMockLogger()
-    {
-        return new Mock<ILogger>();
-    }
-
-    public static (double Latitude, double Longitude) CreateSampleCoordinates()
-    {
-        return (48.2082, 16.3738);
-    }
-
-    public static void SetupMapViewModel(
-        Mock<MapViewModel> mockMapViewModel,
-        (double Latitude, double Longitude) fromCoords,
-        (double Latitude, double Longitude) toCoords
-    )
-    {
-        mockMapViewModel
-            .Setup(m => m.GetCoordinates(It.IsAny<string>()))
-            .Returns((string city) => city == "From" ? fromCoords : toCoords);
-    }
-
-    public static void SetupRouteApiService(
-        Mock<IRouteApiService> mockRouteApiService,
-        (double Latitude, double Longitude) fromCoords,
-        (double Latitude, double Longitude) toCoords
-    )
-    {
-        mockRouteApiService
-            .Setup(r => r.FetchRouteDataAsync(fromCoords, toCoords, It.IsAny<string>()))
-            .ReturnsAsync((100.5, 60.0));
-    }
-
-    public static void SetupHttpServicePut(Mock<IHttpService> mockHttpService, Tour tour)
-    {
-        mockHttpService
-            .Setup(s => s.PutAsync<Tour>($"api/tour/{tour.Id}", tour))
-            .ReturnsAsync(tour);
+        return Enumerable.Range(0, count).Select(_ => SampleTourLogDomain()).ToList();
     }
 }

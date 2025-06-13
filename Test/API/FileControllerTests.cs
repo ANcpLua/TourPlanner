@@ -32,8 +32,7 @@ public class FileControllerTests
     [Test]
     public void GetSummaryReport_HappyPath_ReturnsPdfFile()
     {
-        // Arrange
-        var tours = TestData.CreateSampleTourDomainList();
+        var tours = TestData.SampleTourDomainList();
         byte[] pdfBytes =
         [
             1, 2, 3
@@ -41,10 +40,10 @@ public class FileControllerTests
         _mockTourService.Setup(s => s.GetAllTours()).Returns(tours);
         _mockFileService.Setup(s => s.GenerateSummaryReport(tours)).Returns(pdfBytes);
 
-        // Act
+
         var result = _controller.GetSummaryReport();
 
-        // Assert
+
         Assert.That(result, Is.TypeOf<FileContentResult>());
         var fileResult = (FileContentResult)result;
         Assert.Multiple(() =>
@@ -58,19 +57,17 @@ public class FileControllerTests
     [Test]
     public void GetSummaryReport_UnhappyPath_ThrowsException()
     {
-        // Arrange
         _mockTourService
             .Setup(s => s.GetAllTours())
             .Throws(new Exception("Database connection error"));
 
-        // Act & Assert
+
         Assert.Throws<Exception>(() => _controller.GetSummaryReport());
     }
 
     [Test]
     public void GetTourReport_HappyPath_ReturnsPdfFile()
     {
-        // Arrange
         var tourId = TestData.TestGuid;
         byte[] pdfBytes =
         [
@@ -78,10 +75,10 @@ public class FileControllerTests
         ];
         _mockFileService.Setup(s => s.GenerateTourReport(tourId)).Returns(pdfBytes);
 
-        // Act
+
         var result = _controller.GetTourReport(tourId);
 
-        // Assert
+
         Assert.That(result, Is.TypeOf<FileContentResult>());
         var fileResult = (FileContentResult)result;
         Assert.Multiple(() =>
@@ -95,30 +92,28 @@ public class FileControllerTests
     [Test]
     public void GetTourReport_UnhappyPath_ReportGenerationFails()
     {
-        // Arrange
         var tourId = TestData.NonexistentGuid;
         _mockFileService
             .Setup(s => s.GenerateTourReport(tourId))
             .Throws(new InvalidOperationException("Report generation failed"));
 
-        // Act & Assert
+
         Assert.Throws<InvalidOperationException>(() => _controller.GetTourReport(tourId));
     }
 
     [Test]
     public void ExportTourToJson_HappyPath_ReturnsJsonResult()
     {
-        // Arrange
         var tourId = Guid.NewGuid();
-        var tourDomain = TestData.CreateSampleTourDomain();
-        var tourDto = TestData.CreateSampleTour();
+        var tourDomain = TestData.SampleTourDomain();
+        var tourDto = TestData.SampleTour();
         _mockFileService.Setup(s => s.ExportTourToJson(tourId)).Returns(tourDomain);
         _mockMapper.Setup(m => m.Map<Tour>(tourDomain)).Returns(tourDto);
 
-        // Act
+
         var result = _controller.ExportTourToJson(tourId);
 
-        // Assert
+
         Assert.That(result, Is.TypeOf<JsonResult>());
         var jsonResult = (JsonResult)result;
         Assert.Multiple(() =>
@@ -132,26 +127,24 @@ public class FileControllerTests
     [Test]
     public void ExportTourToJson_UnhappyPath_TourNotFound()
     {
-        // Arrange
         var tourId = TestData.NonexistentGuid;
         _mockFileService
             .Setup(s => s.ExportTourToJson(tourId))
             .Throws(new KeyNotFoundException("Tour not found"));
 
-        // Act & Assert
+
         Assert.Throws<KeyNotFoundException>(() => _controller.ExportTourToJson(tourId));
     }
 
     [Test]
     public async Task ImportTourFromJsonAsync_HappyPath_ReturnsOkResult()
     {
-        // Arrange
-        var json = TestData.CreateSampleTourJson();
+        var json = TestData.SampleTourJson();
 
-        // Act
+
         var result = await _controller.ImportTourFromJsonAsync(json);
 
-        // Assert
+
         Assert.That(result, Is.TypeOf<OkObjectResult>());
         var okResult = (OkObjectResult)result;
         Assert.That(okResult.Value, Is.EqualTo("Tour imported successfully"));
@@ -160,13 +153,12 @@ public class FileControllerTests
     [Test]
     public Task ImportTourFromJsonAsync_UnhappyPath_InvalidJsonFormat()
     {
-        // Arrange
         const string invalidJson = "{invalid_json}";
         _mockFileService
             .Setup(s => s.ImportTourFromJsonAsync(invalidJson))
             .ThrowsAsync(new JsonException("Invalid JSON format"));
 
-        // Act & Assert
+
         Assert.ThrowsAsync<JsonException>(() => _controller.ImportTourFromJsonAsync(invalidJson));
         return Task.CompletedTask;
     }
@@ -174,13 +166,12 @@ public class FileControllerTests
     [Test]
     public Task ImportTourFromJsonAsync_UnhappyPath_DuplicateTourData()
     {
-        // Arrange
-        var json = TestData.CreateSampleTourJson();
+        var json = TestData.SampleTourJson();
         _mockFileService
             .Setup(s => s.ImportTourFromJsonAsync(json))
             .ThrowsAsync(new InvalidOperationException("Tour with the same ID already exists"));
 
-        // Act & Assert
+
         Assert.ThrowsAsync<InvalidOperationException>(() => _controller.ImportTourFromJsonAsync(json));
         return Task.CompletedTask;
     }
@@ -188,14 +179,13 @@ public class FileControllerTests
     [Test]
     public void GetSummaryReport_UnhappyPath_PdfGenerationFails()
     {
-        // Arrange
-        var tours = TestData.CreateSampleTourDomainList();
+        var tours = TestData.SampleTourDomainList();
         _mockTourService.Setup(s => s.GetAllTours()).Returns(tours);
         _mockFileService
             .Setup(s => s.GenerateSummaryReport(tours))
             .Throws(new InvalidOperationException("PDF generation failed"));
 
-        // Act & Assert
+
         Assert.Throws<InvalidOperationException>(() => _controller.GetSummaryReport());
     }
 }

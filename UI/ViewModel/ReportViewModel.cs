@@ -53,7 +53,7 @@ public class ReportViewModel : BaseViewModel
         return _tourViewModel.LoadToursAsync();
     }
 
-    private void ResetCurrentReportUrl()
+    public void ResetCurrentReportUrl()
     {
         _viewModelHelper.ResetForm(ref _currentReportUrl, () => string.Empty);
         OnPropertyChanged(nameof(CurrentReportUrl));
@@ -67,7 +67,7 @@ public class ReportViewModel : BaseViewModel
     [UiMethodDecorator]
     public Task GenerateDetailedReportAsync()
     {
-        return ProcessAsync(async () =>
+        return Process(async () =>
         {
             await HandleApiRequestAsync(
                 async () =>
@@ -92,7 +92,7 @@ public class ReportViewModel : BaseViewModel
     [UiMethodDecorator]
     public Task GenerateSummaryReportAsync()
     {
-        return ProcessAsync(async () =>
+        return Process(async () =>
         {
             await HandleApiRequestAsync(
                 async () => await GenerateAndDownloadReport("api/reports/summary", "SummaryReport"),
@@ -102,7 +102,7 @@ public class ReportViewModel : BaseViewModel
     }
 
     [UiMethodDecorator]
-    private async Task GenerateAndDownloadReport(string uri, string reportType)
+    public async Task GenerateAndDownloadReport(string uri, string reportType)
     {
         var reportBytes = await HttpService.GetByteArrayAsync(uri);
         var fileName = $"{reportType}_{DateTime.UtcNow:yyyyMMdd_HHmmss}.pdf";
@@ -123,7 +123,7 @@ public class ReportViewModel : BaseViewModel
     [UiMethodDecorator]
     public Task ExportTourToJsonAsync(Guid tourId)
     {
-        return ProcessAsync(async () =>
+        return Process(async () =>
         {
             await HandleApiRequestAsync(
                 async () =>

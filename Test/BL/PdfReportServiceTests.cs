@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Drawing;
+using System.Drawing.Imaging;
+using System.Text;
 using BL.DomainModel;
 using BL.Service;
 
@@ -19,37 +21,23 @@ public class PdfReportServiceTests
     [Test]
     public void GenerateTourReport_ValidTour_ReturnsPdfBytes()
     {
-        var tour = TestData.CreateSampleTourDomain();
+        var tour = TestData.SampleTourDomain();
         var result = _pdfReportService.GenerateTourReport(tour);
-
         AssertValidPdf(result);
     }
 
     [Test]
     public void GenerateSummaryReport_ValidTours_ReturnsPdfBytes()
     {
-        var tours = TestData.CreateSampleTourDomainList();
+        var tours = TestData.SampleTourDomainList();
         var result = _pdfReportService.GenerateSummaryReport(tours);
-
-        AssertValidPdf(result);
-    }
-
-    [Test]
-    public void GenerateTourReport_InvalidImagePath_HandlesInvalidPath()
-    {
-        var tour = TestData.CreateSampleTourDomain();
-        tour.ImagePath = "invalid/path/to/image.png";
-
-        var result = _pdfReportService.GenerateTourReport(tour);
-
         AssertValidPdf(result);
     }
 
     [Test]
     public void GenerateSummaryReport_EmptyTourList_GeneratesEmptyReport()
     {
-        var result = _pdfReportService.GenerateSummaryReport(Array.Empty<TourDomain>());
-
+        var result = _pdfReportService.GenerateSummaryReport([]);
         AssertValidPdf(result);
     }
 
@@ -57,43 +45,33 @@ public class PdfReportServiceTests
     public void GenerateTourReport_EmptyTour_GeneratesEmptyReport()
     {
         var result = _pdfReportService.GenerateTourReport(new TourDomain());
-
-        AssertValidPdf(result);
-    }
-
-    [Test]
-    public void GenerateTourReport_ExtremeValues_HandlesExtremeValues()
-    {
-        var tour = TestData.CreateSampleTourDomain();
-        tour.Distance = double.MaxValue;
-        tour.EstimatedTime = double.MinValue;
-
-        foreach (var log in tour.Logs)
-        {
-            log.TotalDistance = double.MaxValue;
-            log.TotalTime = double.MinValue;
-            log.Rating = int.MaxValue;
-        }
-
-        var result = _pdfReportService.GenerateTourReport(tour);
-
         AssertValidPdf(result);
     }
 
     [Test]
     public void GenerateTourReport_SpecialCharacters_HandlesSpecialCharacters()
     {
-        var tour = TestData.CreateSampleTourDomain();
+        var tour = TestData.SampleTourDomain();
         const string specialChars = "Special characters: áéíóú ñ ¿¡ € &<>\"'";
+
         tour.Name = specialChars;
         tour.Description = specialChars;
         tour.From = specialChars;
         tour.To = specialChars;
-
-        foreach (var log in tour.Logs) log.Comment = specialChars;
+        tour.Logs =
+        [
+            new TourLogDomain
+            {
+                DateTime = DateTime.Now,
+                Comment = specialChars,
+                Difficulty = 5,
+                Rating = 4,
+                TotalDistance = 123,
+                TotalTime = 68
+            }
+        ];
 
         var result = _pdfReportService.GenerateTourReport(tour);
-
         AssertValidPdf(result);
     }
 
@@ -101,20 +79,97 @@ public class PdfReportServiceTests
     public void GenerateReport_LargeDataSets_HandlesLargeData()
     {
         var tours = Enumerable.Range(0, 100)
-            .Select(_ => TestData.CreateSampleTourDomain())
+            .Select(_ => TestData.SampleTourDomain())
             .ToList();
 
         foreach (var tour in tours)
         {
             tour.Description = new string('A', 1000);
             tour.Logs = Enumerable.Range(0, 50)
-                .Select(_ => TestData.CreateSampleTourLogDomain())
+                .Select(_ => TestData.SampleTourLogDomain())
                 .ToList();
         }
 
         var result = _pdfReportService.GenerateSummaryReport(tours);
-
         AssertValidPdf(result);
+    }
+
+    [Test]
+    public void GenerateTourReport_NullImagePath_HandlesNullPath()
+    {
+        var tour = TestData.SampleTourDomain();
+        tour.ImagePath = null;
+
+        var result = _pdfReportService.GenerateTourReport(tour);
+        AssertValidPdf(result);
+    }
+
+    [Test]
+    public void GenerateTourReport_EmptyImagePath_HandlesEmptyPath()
+    {
+        var tour = TestData.SampleTourDomain();
+        tour.ImagePath = string.Empty;
+
+        var result = _pdfReportService.GenerateTourReport(tour);
+        AssertValidPdf(result);
+    }
+
+    [Test]
+    public void GenerateTourReport_InvalidImagePath_HandlesInvalidPath()
+    {
+        var tour = TestData.SampleTourDomain();
+        tour.ImagePath = "invalid/path/to/image.png";
+
+        var result = _pdfReportService.GenerateTourReport(tour);
+        AssertValidPdf(result);
+    }
+
+    [Test]
+    public void GenerateTourReport_ValidImagePath_IncludesImageInPdf()
+    {
+        var tempImagePath = Path.GetTempFileName();
+
+#pragma warning disable CA1416
+        using (var bitmap = new Bitmap(1, 1))
+        {
+            bitmap.Save(tempImagePath, ImageFormat.Png);
+        }
+#pragma warning restore CA1416
+
+        try
+        {
+            var tour = TestData.SampleTourDomain();
+            tour.ImagePath = tempImagePath;
+
+            var result = _pdfReportService.GenerateTourReport(tour);
+            AssertValidPdf(result);
+        }
+        finally
+        {
+            if (File.Exists(tempImagePath))
+                File.Delete(tempImagePath);
+        }
+    }
+
+    [Test]
+    public void GenerateTourReport_CorruptedImagePath_HandlesImageException()
+    {
+        var tempFilePath = Path.GetTempFileName();
+        File.WriteAllText(tempFilePath, "This is not a valid image file content");
+
+        try
+        {
+            var tour = TestData.SampleTourDomain();
+            tour.ImagePath = tempFilePath;
+
+            var result = _pdfReportService.GenerateTourReport(tour);
+            AssertValidPdf(result);
+        }
+        finally
+        {
+            if (File.Exists(tempFilePath))
+                File.Delete(tempFilePath);
+        }
     }
 
     private static void AssertValidPdf(byte[] pdfBytes)

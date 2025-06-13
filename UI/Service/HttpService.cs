@@ -1,5 +1,4 @@
-﻿using System.Net;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using UI.Decorator;
 using UI.Service.Interface;
 using ILogger = Serilog.ILogger;
@@ -67,14 +66,7 @@ public class HttpService : IHttpService
         return SendRequestAsync(
             HttpMethod.Get,
             uri,
-            responseHandler: response => response.Content.ReadAsByteArrayAsync(),
-            errorHandler: ex =>
-            {
-                if (ex is HttpRequestException { StatusCode: HttpStatusCode.NotFound })
-                    throw new Exception($"The requested resource was not found: {uri}");
-
-                throw new HttpRequestException($"Error fetching data from {uri}", ex);
-            }
+            responseHandler: response => response.Content.ReadAsByteArrayAsync()
         );
     }
 

@@ -106,7 +106,7 @@ public class TourViewModel : BaseViewModel
         }
     }
 
-    private void ResetForm()
+    public void ResetForm()
     {
         _viewModelHelperService.ResetForm(ref _selectedTour, () => new Tour());
         _mapViewModel.FromCity = string.Empty;
@@ -123,7 +123,7 @@ public class TourViewModel : BaseViewModel
             async () =>
             {
                 var tours = await HttpService.GetListAsync<Tour>("api/tour");
-                Tours = new ObservableCollection<Tour>(tours ?? Array.Empty<Tour>());
+                Tours = new ObservableCollection<Tour>(tours ?? []);
                 OnPropertyChanged(nameof(Tours));
             },
             "Error loading tours"
@@ -133,7 +133,7 @@ public class TourViewModel : BaseViewModel
     [UiMethodDecorator]
     public Task<bool> SaveTourAsync()
     {
-        return ProcessAsync(async () =>
+        return Process(async () =>
         {
             return await HandleApiRequestAsync(
                 async () =>
@@ -217,7 +217,7 @@ public class TourViewModel : BaseViewModel
     [UiMethodDecorator]
     public Task ShowTourDetailsAsync(Guid id)
     {
-        return ProcessAsync(async () =>
+        return Process(async () =>
         {
             await HandleApiRequestAsync(
                 async () =>
@@ -233,7 +233,7 @@ public class TourViewModel : BaseViewModel
     [UiMethodDecorator]
     public Task EditTourAsync(Guid id)
     {
-        return ProcessAsync(async () =>
+        return Process(async () =>
         {
             await HandleApiRequestAsync(
                 async () =>
@@ -256,7 +256,7 @@ public class TourViewModel : BaseViewModel
     [UiMethodDecorator]
     public Task DeleteTourAsync(Guid id)
     {
-        return ProcessAsync(async () =>
+        return Process(async () =>
         {
             var confirmed = await _jsRuntime.InvokeAsync<bool>(
                 "confirm",
