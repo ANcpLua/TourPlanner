@@ -5,11 +5,9 @@ namespace UI.Model;
 
 public class TourLog
 {
-    [JsonPropertyName("id")]
-    public Guid Id { get; set; }
+    [JsonPropertyName("id")] public Guid Id { get; set; }
 
-    [JsonPropertyName("dateTime")]
-    public DateTime DateTime { get; set; } = DateTime.Now;
+    [JsonPropertyName("dateTime")] public DateTime DateTime { get; set; } = DateTime.Now;
 
     [Required(ErrorMessage = "Comment is required")]
     [JsonPropertyName("comment")]

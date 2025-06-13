@@ -9,12 +9,6 @@ namespace Test.UI;
 [TestFixture]
 public class MapViewModelTests
 {
-    private Mock<IJSRuntime> _mockJsRuntime;
-    private Mock<IHttpService> _mockHttpService;
-    private Mock<IToastServiceWrapper> _mockToastService;
-    private Mock<ILogger> _mockLogger;
-    private MapViewModel _viewModel;
-
     [SetUp]
     public void Setup()
     {
@@ -30,6 +24,12 @@ public class MapViewModelTests
             _mockLogger.Object
         );
     }
+
+    private Mock<IJSRuntime> _mockJsRuntime;
+    private Mock<IHttpService> _mockHttpService;
+    private Mock<IToastServiceWrapper> _mockToastService;
+    private Mock<ILogger> _mockLogger;
+    private MapViewModel _viewModel;
 
     [Test]
     public void Constructor_InitializesPropertiesCorrectly()

@@ -21,7 +21,10 @@ public class FileService : IFileService
         return _pdfReportService.GenerateTourReport(tour);
     }
 
-    public byte[] GenerateSummaryReport(IEnumerable<TourDomain> tours) => _pdfReportService.GenerateSummaryReport(tours);
+    public byte[] GenerateSummaryReport(IEnumerable<TourDomain> tours)
+    {
+        return _pdfReportService.GenerateSummaryReport(tours);
+    }
 
     public TourDomain ExportTourToJson(Guid tourId)
     {
@@ -32,9 +35,6 @@ public class FileService : IFileService
     public async Task ImportTourFromJsonAsync(string json)
     {
         var tour = JsonSerializer.Deserialize<TourDomain>(json);
-        if (tour != null)
-        {
-            await _tourService.CreateTourAsync(tour);
-        }
+        if (tour != null) await _tourService.CreateTourAsync(tour);
     }
 }

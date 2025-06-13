@@ -12,10 +12,6 @@ namespace Test.API;
 [TestFixture]
 public class TourLogControllerTests
 {
-    private Mock<ITourLogService> _mockTourLogService;
-    private Mock<IMapper> _mockMapper;
-    private TourLogController _controller;
-
     [SetUp]
     public void Setup()
     {
@@ -23,6 +19,10 @@ public class TourLogControllerTests
         _mockMapper = new Mock<IMapper>();
         _controller = new TourLogController(_mockTourLogService.Object, _mockMapper.Object);
     }
+
+    private Mock<ITourLogService> _mockTourLogService;
+    private Mock<IMapper> _mockMapper;
+    private TourLogController _controller;
 
     [Test]
     public async Task CreateTourLogAsync_HappyPath_ReturnsCreatedTourLog()
@@ -60,7 +60,7 @@ public class TourLogControllerTests
         Assert.ThrowsAsync<ArgumentException>(() => _controller.CreateTourLog(tourLogDto));
         return Task.CompletedTask;
     }
-    
+
     [Test]
     public Task CreateTourLogAsync_UnhappyPath_DuplicateTourLog()
     {
@@ -127,7 +127,7 @@ public class TourLogControllerTests
         _mockMapper.Setup(m => m.Map<IEnumerable<TourLog>>(tourLogsDomain)).Returns(tourLogsDto);
 
         // Act
-        var result =  _controller.GetTourLogsByTourId(tourId);
+        var result = _controller.GetTourLogsByTourId(tourId);
 
         // Assert
         Assert.That(result, Is.TypeOf<OkObjectResult>());
@@ -147,7 +147,7 @@ public class TourLogControllerTests
         // Act & Assert
         Assert.Throws<KeyNotFoundException>(() => _controller.GetTourLogsByTourId(tourId));
     }
-    
+
     [Test]
     public void GetTourLogsByTourId_UnhappyPath_DatabaseError()
     {
@@ -196,8 +196,7 @@ public class TourLogControllerTests
             .ThrowsAsync(new DbUpdateConcurrencyException("Concurrency conflict occurred"));
 
         // Act & Assert
-        Assert.ThrowsAsync<DbUpdateConcurrencyException>(
-            () => _controller.UpdateTourLog(tourLogId, tourLogDto)
+        Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => _controller.UpdateTourLog(tourLogId, tourLogDto)
         );
         return Task.CompletedTask;
     }

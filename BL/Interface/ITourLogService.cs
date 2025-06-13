@@ -8,13 +8,17 @@ public interface ITourLogService
         TourLogDomain tourLog,
         CancellationToken cancellationToken = default
     );
+
     IEnumerable<TourLogDomain> GetTourLogsByTourId(
         Guid tourId
     );
+
     TourLogDomain? GetTourLogById(Guid id);
+
     Task<TourLogDomain> UpdateTourLogAsync(
         TourLogDomain tourLog,
         CancellationToken cancellationToken = default
     );
+
     Task DeleteTourLogAsync(Guid id, CancellationToken cancellationToken = default);
 }

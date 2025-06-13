@@ -11,11 +11,6 @@ namespace Test.API;
 [TestFixture]
 public class FileControllerTests
 {
-    private Mock<IFileService> _mockFileService;
-    private Mock<ITourService> _mockTourService;
-    private Mock<IMapper> _mockMapper;
-    private FileController _controller;
-
     [SetUp]
     public void Setup()
     {
@@ -28,6 +23,11 @@ public class FileControllerTests
             _mockMapper.Object
         );
     }
+
+    private Mock<IFileService> _mockFileService;
+    private Mock<ITourService> _mockTourService;
+    private Mock<IMapper> _mockMapper;
+    private FileController _controller;
 
     [Test]
     public void GetSummaryReport_HappyPath_ReturnsPdfFile()
@@ -116,7 +116,7 @@ public class FileControllerTests
         _mockMapper.Setup(m => m.Map<Tour>(tourDomain)).Returns(tourDto);
 
         // Act
-        var result =  _controller.ExportTourToJson(tourId);
+        var result = _controller.ExportTourToJson(tourId);
 
         // Assert
         Assert.That(result, Is.TypeOf<JsonResult>());
@@ -128,7 +128,7 @@ public class FileControllerTests
             Assert.That(jsonResult.StatusCode, Is.EqualTo(200));
         });
     }
-    
+
     [Test]
     public void ExportTourToJson_UnhappyPath_TourNotFound()
     {

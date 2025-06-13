@@ -7,18 +7,21 @@ namespace Test.BL;
 [TestFixture]
 public class PdfReportServiceTests
 {
+    [SetUp]
+    public void Setup()
+    {
+        _pdfReportService = new PdfReportService();
+    }
+
     private PdfReportService _pdfReportService = null!;
     private const string PdfHeader = "%PDF";
-
-    [SetUp]
-    public void Setup() => _pdfReportService = new PdfReportService();
 
     [Test]
     public void GenerateTourReport_ValidTour_ReturnsPdfBytes()
     {
         var tour = TestData.CreateSampleTourDomain();
         var result = _pdfReportService.GenerateTourReport(tour);
-        
+
         AssertValidPdf(result);
     }
 
@@ -27,7 +30,7 @@ public class PdfReportServiceTests
     {
         var tours = TestData.CreateSampleTourDomainList();
         var result = _pdfReportService.GenerateSummaryReport(tours);
-        
+
         AssertValidPdf(result);
     }
 
@@ -38,7 +41,7 @@ public class PdfReportServiceTests
         tour.ImagePath = "invalid/path/to/image.png";
 
         var result = _pdfReportService.GenerateTourReport(tour);
-        
+
         AssertValidPdf(result);
     }
 
@@ -46,15 +49,15 @@ public class PdfReportServiceTests
     public void GenerateSummaryReport_EmptyTourList_GeneratesEmptyReport()
     {
         var result = _pdfReportService.GenerateSummaryReport(Array.Empty<TourDomain>());
-        
+
         AssertValidPdf(result);
     }
-    
+
     [Test]
     public void GenerateTourReport_EmptyTour_GeneratesEmptyReport()
     {
         var result = _pdfReportService.GenerateTourReport(new TourDomain());
-        
+
         AssertValidPdf(result);
     }
 
@@ -64,7 +67,7 @@ public class PdfReportServiceTests
         var tour = TestData.CreateSampleTourDomain();
         tour.Distance = double.MaxValue;
         tour.EstimatedTime = double.MinValue;
-        
+
         foreach (var log in tour.Logs)
         {
             log.TotalDistance = double.MaxValue;
@@ -73,7 +76,7 @@ public class PdfReportServiceTests
         }
 
         var result = _pdfReportService.GenerateTourReport(tour);
-        
+
         AssertValidPdf(result);
     }
 
@@ -86,14 +89,11 @@ public class PdfReportServiceTests
         tour.Description = specialChars;
         tour.From = specialChars;
         tour.To = specialChars;
-        
-        foreach (var log in tour.Logs)
-        {
-            log.Comment = specialChars;
-        }
+
+        foreach (var log in tour.Logs) log.Comment = specialChars;
 
         var result = _pdfReportService.GenerateTourReport(tour);
-        
+
         AssertValidPdf(result);
     }
 
@@ -113,7 +113,7 @@ public class PdfReportServiceTests
         }
 
         var result = _pdfReportService.GenerateSummaryReport(tours);
-        
+
         AssertValidPdf(result);
     }
 

@@ -9,10 +9,6 @@ namespace Test.BL;
 [TestFixture]
 public class FileServiceTests
 {
-    private Mock<ITourService> _mockTourService;
-    private Mock<IPdfReportService> _mockPdfReportService;
-    private FileService _fileService;
-
     [SetUp]
     public void Setup()
     {
@@ -20,6 +16,10 @@ public class FileServiceTests
         _mockPdfReportService = new Mock<IPdfReportService>();
         _fileService = new FileService(_mockTourService.Object, _mockPdfReportService.Object);
     }
+
+    private Mock<ITourService> _mockTourService;
+    private Mock<IPdfReportService> _mockPdfReportService;
+    private FileService _fileService;
 
     [Test]
     public void GenerateTourReport_ValidTourId_ReturnsPdfBytes()
@@ -57,7 +57,7 @@ public class FileServiceTests
         _mockPdfReportService.Setup(s => s.GenerateSummaryReport(tours)).Returns(expectedPdfBytes);
 
         // Act
-        var result =  _fileService.GenerateSummaryReport(tours);
+        var result = _fileService.GenerateSummaryReport(tours);
 
         // Assert
         Assert.That(result, Is.EqualTo(expectedPdfBytes));
@@ -74,7 +74,7 @@ public class FileServiceTests
         _mockTourService.Setup(s => s.GetTourById(tourId)).Returns(expectedTour);
 
         // Act
-        var result =  _fileService.ExportTourToJson(tourId);
+        var result = _fileService.ExportTourToJson(tourId);
 
         // Assert
         Assert.That(result, Is.EqualTo(expectedTour));
@@ -96,7 +96,7 @@ public class FileServiceTests
             .Returns(expectedPdfBytes);
 
         // Act
-        var result =  _fileService.GenerateSummaryReport(largeTourList);
+        var result = _fileService.GenerateSummaryReport(largeTourList);
 
         // Assert
         Assert.That(result, Is.EqualTo(expectedPdfBytes));
@@ -117,7 +117,7 @@ public class FileServiceTests
         _mockTourService.Setup(s => s.GetTourById(tourId)).Returns(tourWithLargeLogs);
 
         // Act
-        var result =  _fileService.ExportTourToJson(tourId);
+        var result = _fileService.ExportTourToJson(tourId);
 
         // Assert
         Assert.That(result, Is.EqualTo(tourWithLargeLogs));
@@ -133,7 +133,7 @@ public class FileServiceTests
         _mockTourService.Setup(s => s.GetTourById(invalidTourId)).Returns((TourDomain)null!);
 
         // Act
-        var result =  _fileService.ExportTourToJson(invalidTourId);
+        var result = _fileService.ExportTourToJson(invalidTourId);
 
         // Assert
         Assert.That(result, Is.Null);
@@ -149,14 +149,14 @@ public class FileServiceTests
         _mockPdfReportService.Setup(s => s.GenerateTourReport(null!)).Returns([]);
 
         // Act
-        var result =  _fileService.GenerateTourReport(invalidTourId);
+        var result = _fileService.GenerateTourReport(invalidTourId);
 
         // Assert
         Assert.That(result, Is.Empty);
         _mockTourService.Verify(s => s.GetTourById(invalidTourId), Times.Once);
         _mockPdfReportService.Verify(s => s.GenerateTourReport(null!), Times.Once);
     }
-    
+
     [Test]
     public async Task ImportTourFromJsonAsync_ValidJson_CreatesTour()
     {

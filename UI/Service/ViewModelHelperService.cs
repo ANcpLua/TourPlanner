@@ -10,8 +10,14 @@ public class ViewModelHelperService : IViewModelHelperService
         return visibilityFlag;
     }
 
-    public void ShowForm(ref bool formVisibilityFlag) => formVisibilityFlag = true;
+    public void ShowForm(ref bool formVisibilityFlag)
+    {
+        formVisibilityFlag = true;
+    }
 
     public void ResetForm<T>(ref T formModel, Func<T> defaultValueFactory)
-        where T : class => formModel = defaultValueFactory();
+        where T : class
+    {
+        formModel = defaultValueFactory();
+    }
 }

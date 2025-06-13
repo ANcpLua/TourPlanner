@@ -43,7 +43,10 @@ public class TourService : ITourService
         return _mapper.Map<TourDomain>(updatedTour);
     }
 
-    public Task DeleteTourAsync(Guid id) => _tourRepository.DeleteTourAsync(id);
+    public Task DeleteTourAsync(Guid id)
+    {
+        return _tourRepository.DeleteTourAsync(id);
+    }
 
     public IQueryable<TourDomain> SearchTours(string searchText)
     {

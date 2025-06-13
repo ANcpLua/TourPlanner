@@ -7,14 +7,11 @@ namespace Test.DAL;
 [TestFixture]
 public class TourLogRepositoryTests
 {
-    private TourPlannerContext _context;
-    private TourLogRepository _repository;
-
     [SetUp]
     public void Setup()
     {
         var options = new DbContextOptionsBuilder<TourPlannerContext>()
-            .UseInMemoryDatabase(databaseName: $"TourPlannerTestDb_{Guid.NewGuid()}")
+            .UseInMemoryDatabase($"TourPlannerTestDb_{Guid.NewGuid()}")
             .Options;
         _context = new TourPlannerContext(options);
         _repository = new TourLogRepository(_context);
@@ -26,6 +23,9 @@ public class TourLogRepositoryTests
         _context.Database.EnsureDeleted();
         _context.Dispose();
     }
+
+    private TourPlannerContext _context;
+    private TourLogRepository _repository;
 
     [Test]
     public async Task CreateTourLogAsync_WithValidTourLog_ReturnsSavedTourLog()
@@ -51,11 +51,11 @@ public class TourLogRepositoryTests
     {
         // Arrange
         var tourLogs = TestData.CreateSampleTourLogPersistenceList();
-         _context.TourLogsPersistence.AddRange(tourLogs);
-         _context.SaveChanges();
+        _context.TourLogsPersistence.AddRange(tourLogs);
+        _context.SaveChanges();
 
         // Act
-        var result =  _repository.GetTourLogsByTourId(TestData.TestGuid).ToList();
+        var result = _repository.GetTourLogsByTourId(TestData.TestGuid).ToList();
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -120,7 +120,7 @@ public class TourLogRepositoryTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        
+
         Assert.Multiple(() =>
         {
             Assert.That(result.Comment, Is.EqualTo("Updated comment"));

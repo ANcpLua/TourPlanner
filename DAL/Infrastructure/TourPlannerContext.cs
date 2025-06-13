@@ -15,7 +15,8 @@ public class TourPlannerContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<TourPersistence>(entity => {
+        modelBuilder.Entity<TourPersistence>(entity =>
+        {
             entity.ToTable("Tours");
             entity.HasKey(t => t.Id);
             entity.Property(t => t.Name).IsRequired().HasMaxLength(200);
@@ -34,14 +35,15 @@ public class TourPlannerContext : DbContext
                 .HasForeignKey(tl => tl.TourPersistenceId);
         });
 
-        modelBuilder.Entity<TourLogPersistence>(entity => {
+        modelBuilder.Entity<TourLogPersistence>(entity =>
+        {
             entity.ToTable("TourLogs");
             entity.HasKey(tl => tl.Id);
             entity
                 .Property(tl => tl.DateTime)
                 .HasConversion(
-                v => DateTime.SpecifyKind(v, DateTimeKind.Utc),
-                v => v.ToUniversalTime()
+                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc),
+                    v => v.ToUniversalTime()
                 );
             entity.Property(tl => tl.Comment).IsRequired().HasMaxLength(500);
             entity.Property(tl => tl.Difficulty);
@@ -54,7 +56,7 @@ public class TourPlannerContext : DbContext
                 .WithMany(t => t.TourLogPersistence)
                 .HasForeignKey(tl => tl.TourPersistenceId);
         });
-        
+
         modelBuilder.Entity<TourPersistence>().HasData(
             new TourPersistence
             {

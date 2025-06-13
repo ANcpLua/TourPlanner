@@ -1,5 +1,5 @@
 using UI.Service.Interface;
-using ILogger=Serilog.ILogger;
+using ILogger = Serilog.ILogger;
 
 namespace UI.Decorator;
 

@@ -12,12 +12,6 @@ namespace Test.UI;
 [TestFixture]
 public class SearchViewModelTests
 {
-    private Mock<IHttpService> _mockHttpService;
-    private Mock<IToastServiceWrapper> _mockToastService;
-    private Mock<ILogger> _mockLogger;
-    private Mock<NavigationManager> _mockNavigationManager;
-    private SearchViewModel _viewModel;
-
     [SetUp]
     public void Setup()
     {
@@ -33,6 +27,12 @@ public class SearchViewModelTests
             _mockNavigationManager.Object
         );
     }
+
+    private Mock<IHttpService> _mockHttpService;
+    private Mock<IToastServiceWrapper> _mockToastService;
+    private Mock<ILogger> _mockLogger;
+    private Mock<NavigationManager> _mockNavigationManager;
+    private SearchViewModel _viewModel;
 
     [Test]
     public void Constructor_InitializesPropertiesCorrectly()

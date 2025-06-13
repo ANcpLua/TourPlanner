@@ -19,9 +19,10 @@ public class PostgreContextModule : Autofac.Module
     protected override void Load(ContainerBuilder builder)
     {
         builder
-            .Register(_ => {
+            .Register(_ =>
+            {
                 var connectionString = _configuration.GetConnectionString(
-                "TourPlannerDatabase"
+                    "TourPlannerDatabase"
                 );
                 var dbOptions = new DbContextOptionsBuilder<TourPlannerContext>()
                     .UseNpgsql(connectionString)

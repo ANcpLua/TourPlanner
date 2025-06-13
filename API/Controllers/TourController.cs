@@ -54,10 +54,7 @@ public class TourController : ControllerBase
     [ProducesResponseType(typeof(Tour), (int)HttpStatusCode.OK)]
     public async Task<ActionResult<Tour>> UpdateTour(Guid id, [FromBody] Tour tourDto)
     {
-        if (id != tourDto.Id)
-        {
-            return BadRequest("ID mismatch");
-        }
+        if (id != tourDto.Id) return BadRequest("ID mismatch");
         var tourDomain = _mapper.Map<TourDomain>(tourDto);
         var updatedTour = await _tourService.UpdateTourAsync(tourDomain);
         return Ok(_mapper.Map<Tour>(updatedTour));

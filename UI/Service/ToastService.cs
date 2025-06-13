@@ -12,7 +12,13 @@ public class ToastService : IToastServiceWrapper
         _toastService = toastService;
     }
 
-    public void ShowSuccess(string message) => _toastService.ShowSuccess(message);
+    public void ShowSuccess(string message)
+    {
+        _toastService.ShowSuccess(message);
+    }
 
-    public void ShowError(string message) => _toastService.ShowError(message);
+    public void ShowError(string message)
+    {
+        _toastService.ShowError(message);
+    }
 }

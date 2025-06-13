@@ -2,8 +2,8 @@
 @page "/log/list/{TourId:guid?}"
 @inject TourLogViewModel TourLogViewModel
 @inject TourViewModel TourViewModel
-@using UI.ViewModel
 @using UI.View.TourLogComponents
+@using UI.ViewModel
 @implements IDisposable
 
 <div class="tour-planner-app">
@@ -20,7 +20,8 @@
                             <option value="@tour.Id">@tour.Name</option>
                         }
                     </select>
-                    <button class="btn btn-primary add-log-btn" @onclick="TourLogViewModel.ToggleLogForm" disabled="@(TourLogViewModel.SelectedTourId == null)">
+                    <button class="btn btn-primary add-log-btn" @onclick="TourLogViewModel.ToggleLogForm"
+                            disabled="@(TourLogViewModel.SelectedTourId == null)">
                         @(TourLogViewModel.IsLogFormVisible ? "Hide Form" : "Add New Log")
                     </button>
                 </div>
@@ -83,4 +84,5 @@
         TourLogViewModel.PropertyChanged -= OnTourLogViewModelPropertyChanged;
         TourViewModel.PropertyChanged -= OnTourViewModelPropertyChanged;
     }
+
 }

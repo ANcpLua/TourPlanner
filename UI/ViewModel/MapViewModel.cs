@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using UI.Service.Interface;
 using UI.ViewModel.Base;
-using ILogger=Serilog.ILogger;
+using ILogger = Serilog.ILogger;
 
 namespace UI.ViewModel;
 
@@ -54,15 +54,9 @@ public class MapViewModel : BaseViewModel
         get => _fromCity;
         set
         {
-            if (!SetProperty(ref _fromCity, value))
-            {
-                return;
-            }
+            if (!SetProperty(ref _fromCity, value)) return;
             OnPropertyChanged(nameof(FilteredToCities));
-            if (_toCity == _fromCity)
-            {
-                ToCity = string.Empty;
-            }
+            if (_toCity == _fromCity) ToCity = string.Empty;
         }
     }
 
@@ -80,36 +74,39 @@ public class MapViewModel : BaseViewModel
         _isMapInitialized = true;
     }
 
-    public Task ShowMapAsync() => ProcessAsync(async () =>
+    public Task ShowMapAsync()
     {
-        if (!_isMapInitialized)
+        return ProcessAsync(async () =>
         {
-            ToastServiceWrapper.ShowError("Map is not initialized yet.");
-            return;
-        }
+            if (!_isMapInitialized)
+            {
+                ToastServiceWrapper.ShowError("Map is not initialized yet.");
+                return;
+            }
 
-        if (string.IsNullOrWhiteSpace(FromCity) || string.IsNullOrWhiteSpace(ToCity))
-        {
-            ToastServiceWrapper.ShowError("Please select both cities.");
-            return;
-        }
+            if (string.IsNullOrWhiteSpace(FromCity) || string.IsNullOrWhiteSpace(ToCity))
+            {
+                ToastServiceWrapper.ShowError("Please select both cities.");
+                return;
+            }
 
-        var fromCoords = GetCoordinates(FromCity);
-        var toCoords = GetCoordinates(ToCity);
+            var fromCoords = GetCoordinates(FromCity);
+            var toCoords = GetCoordinates(ToCity);
 
-        if (fromCoords.HasValue && toCoords.HasValue)
-        {
-            await Task.Delay(500);
-            await _jsRuntime.InvokeVoidAsync(
-                "TourPlannerMap.setRoute",
-                fromCoords.Value.Latitude,
-                fromCoords.Value.Longitude,
-                toCoords.Value.Latitude,
-                toCoords.Value.Longitude
-            );
-        }
-    });
-    
+            if (fromCoords.HasValue && toCoords.HasValue)
+            {
+                await Task.Delay(500);
+                await _jsRuntime.InvokeVoidAsync(
+                    "TourPlannerMap.setRoute",
+                    fromCoords.Value.Latitude,
+                    fromCoords.Value.Longitude,
+                    toCoords.Value.Latitude,
+                    toCoords.Value.Longitude
+                );
+            }
+        });
+    }
+
     public async Task ClearMapAsync()
     {
         await _jsRuntime.InvokeVoidAsync("TourPlannerMap.clearMap");
@@ -119,7 +116,13 @@ public class MapViewModel : BaseViewModel
         OnPropertyChanged(nameof(ToCity));
     }
 
-    public virtual (double Latitude, double Longitude)? GetCoordinates(string city) => Coordinates.TryGetValue(city, out var coords) ? coords : null;
+    public virtual (double Latitude, double Longitude)? GetCoordinates(string city)
+    {
+        return Coordinates.TryGetValue(city, out var coords) ? coords : null;
+    }
 
-    private static List<string> GetCityNames() => Coordinates.Keys.ToList();
+    private static List<string> GetCityNames()
+    {
+        return Coordinates.Keys.ToList();
+    }
 }
