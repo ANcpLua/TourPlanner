@@ -1,19 +1,29 @@
-﻿using BL.DomainModel;
+﻿using System.Globalization;
+using BL.DomainModel;
 using BL.Interface;
+using QuestPDF;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
-using System.Globalization;
 
 namespace BL.Service;
 
 public class PdfReportService : IPdfReportService
 {
-    public PdfReportService() => QuestPDF.Settings.License = LicenseType.Community;
+    public PdfReportService()
+    {
+        Settings.License = LicenseType.Community;
+    }
 
-    public byte[] GenerateTourReport(TourDomain tour) => GenerateReport("Tour Report", [tour]);
+    public byte[] GenerateTourReport(TourDomain tour)
+    {
+        return GenerateReport("Tour Report", [tour]);
+    }
 
-    public byte[] GenerateSummaryReport(IEnumerable<TourDomain> tours) => GenerateReport("Summary Report", tours);
+    public byte[] GenerateSummaryReport(IEnumerable<TourDomain> tours)
+    {
+        return GenerateReport("Summary Report", tours);
+    }
 
     private static byte[] GenerateReport(string title, IEnumerable<TourDomain> tours)
     {
@@ -30,7 +40,6 @@ public class PdfReportService : IPdfReportService
                 page.Content().PaddingVertical(1, Unit.Centimetre).Column(column =>
                 {
                     foreach (var tour in tours)
-                    {
                         column.Item().Column(tourColumn =>
                         {
                             AddTourDetails(tourColumn, tour);
@@ -38,7 +47,6 @@ public class PdfReportService : IPdfReportService
                             if (tour.Logs.Count > 0) AddTourLogs(tourColumn, tour.Logs);
                             tourColumn.Item().PaddingVertical(10).LineHorizontal(1);
                         });
-                    }
                 });
 
                 page.Footer().AlignCenter().Text(x =>
@@ -78,15 +86,19 @@ public class PdfReportService : IPdfReportService
         table.Cell().Text(value);
     }
 
-    private static string FormatDistance(double? distance) => 
-        distance?.ToString("N2", CultureInfo.CurrentCulture) is { } value 
-            ? $"{value} meters" 
+    private static string FormatDistance(double? distance)
+    {
+        return distance?.ToString("N2", CultureInfo.CurrentCulture) is { } value
+            ? $"{value} meters"
             : "N/A";
+    }
 
-    private static string FormatTime(double? time) => 
-        time?.ToString("N2", CultureInfo.CurrentCulture) is { } value 
-            ? $"{value} minutes" 
+    private static string FormatTime(double? time)
+    {
+        return time?.ToString("N2", CultureInfo.CurrentCulture) is { } value
+            ? $"{value} minutes"
             : "N/A";
+    }
 
     private static void AddTourImage(ColumnDescriptor column, string? imagePath)
     {
@@ -110,7 +122,6 @@ public class PdfReportService : IPdfReportService
         column.Item().PaddingTop(10).Text("Tour Logs:").SemiBold();
 
         foreach (var log in tourLogs)
-        {
             column.Item().Table(table =>
             {
                 table.ColumnsDefinition(columns =>
@@ -123,9 +134,9 @@ public class PdfReportService : IPdfReportService
                 AddTableRow(table, "Comment:", log.Comment ?? "N/A");
                 AddTableRow(table, "Difficulty:", log.Difficulty.ToString(CultureInfo.InvariantCulture));
                 AddTableRow(table, "Rating:", log.Rating.ToString(CultureInfo.CurrentCulture));
-                AddTableRow(table, "Distance:", $"{log.TotalDistance.ToString("N2", CultureInfo.CurrentCulture)} meters");
+                AddTableRow(table, "Distance:",
+                    $"{log.TotalDistance.ToString("N2", CultureInfo.CurrentCulture)} meters");
                 AddTableRow(table, "Time:", $"{log.TotalTime.ToString("N2", CultureInfo.CurrentCulture)} minutes");
             });
-        }
     }
 }

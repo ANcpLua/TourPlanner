@@ -56,10 +56,7 @@ public class TourViewModel : BaseViewModel
         get => _selectedTour;
         set
         {
-            if (!SetProperty(ref _selectedTour, value))
-            {
-                return;
-            }
+            if (!SetProperty(ref _selectedTour, value)) return;
             _mapViewModel.FromCity = value.From;
             _mapViewModel.ToCity = value.To;
             OnPropertyChanged(nameof(FilteredToCities));
@@ -120,148 +117,161 @@ public class TourViewModel : BaseViewModel
     }
 
     [UiMethodDecorator]
-    public Task LoadToursAsync() => HandleApiRequestAsync(
-        async () =>
-        {
-            var tours = await HttpService.GetListAsync<Tour>("api/tour");
-            Tours = new ObservableCollection<Tour>(tours ?? Array.Empty<Tour>());
-            OnPropertyChanged(nameof(Tours));
-        },
-        "Error loading tours"
-    );
-
-    [UiMethodDecorator]
-    public Task<bool> SaveTourAsync() => ProcessAsync(async () =>
+    public Task LoadToursAsync()
     {
-        return await HandleApiRequestAsync(
+        return HandleApiRequestAsync(
             async () =>
             {
-                if (!IsFormValid)
+                var tours = await HttpService.GetListAsync<Tour>("api/tour");
+                Tours = new ObservableCollection<Tour>(tours ?? Array.Empty<Tour>());
+                OnPropertyChanged(nameof(Tours));
+            },
+            "Error loading tours"
+        );
+    }
+
+    [UiMethodDecorator]
+    public Task<bool> SaveTourAsync()
+    {
+        return ProcessAsync(async () =>
+        {
+            return await HandleApiRequestAsync(
+                async () =>
                 {
-                    ToastServiceWrapper.ShowError("Please fill in all required fields correctly.");
-                    return false;
-                }
-
-                var fromCoords = _mapViewModel.GetCoordinates(SelectedTour.From);
-                var toCoords = _mapViewModel.GetCoordinates(SelectedTour.To);
-
-                var routeData = await _routeApiService.FetchRouteDataAsync(
-                    fromCoords!.Value,
-                    toCoords!.Value,
-                    SelectedTour.TransportType
-                );
-
-                SelectedTour.Distance = routeData.Distance;
-                SelectedTour.EstimatedTime = routeData.Duration;
-                SelectedTour.ImagePath =
-                    $"{_configuration["AppSettings:ImageBasePath"]}{SelectedTour.From}{SelectedTour.To}.png";
-
-                var routeInformation = new
-                {
-                    FromCoordinates = new
+                    if (!IsFormValid)
                     {
+                        ToastServiceWrapper.ShowError("Please fill in all required fields correctly.");
+                        return false;
+                    }
+
+                    var fromCoords = _mapViewModel.GetCoordinates(SelectedTour.From);
+                    var toCoords = _mapViewModel.GetCoordinates(SelectedTour.To);
+
+                    var routeData = await _routeApiService.FetchRouteDataAsync(
+                        fromCoords!.Value,
+                        toCoords!.Value,
+                        SelectedTour.TransportType
+                    );
+
+                    SelectedTour.Distance = routeData.Distance;
+                    SelectedTour.EstimatedTime = routeData.Duration;
+                    SelectedTour.ImagePath =
+                        $"{_configuration["AppSettings:ImageBasePath"]}{SelectedTour.From}{SelectedTour.To}.png";
+
+                    var routeInformation = new
+                    {
+                        FromCoordinates = new
+                        {
+                            fromCoords.Value.Latitude,
+                            fromCoords.Value.Longitude
+                        },
+                        ToCoordinates = new
+                        {
+                            toCoords.Value.Latitude,
+                            toCoords.Value.Longitude
+                        },
+                        routeData.Distance,
+                        routeData.Duration
+                    };
+
+                    SelectedTour.RouteInformation = JsonSerializer.Serialize(routeInformation);
+
+                    if (SelectedTour.Id == Guid.Empty)
+                    {
+                        await HttpService.PostAsync<Tour>("api/tour", SelectedTour);
+                        ToastServiceWrapper.ShowSuccess("Tour saved successfully.");
+                    }
+                    else
+                    {
+                        await HttpService.PutAsync<Tour>(
+                            $"api/tour/{SelectedTour.Id}",
+                            SelectedTour
+                        );
+                        ToastServiceWrapper.ShowSuccess("Tour updated successfully.");
+                    }
+
+                    await LoadToursAsync();
+                    await Task.Delay(500);
+
+                    IsMapVisible = true;
+                    OnPropertyChanged(nameof(IsMapVisible));
+
+                    await Task.Delay(100);
+
+                    await _jsRuntime.InvokeVoidAsync(
+                        "TourPlannerMap.setRoute",
                         fromCoords.Value.Latitude,
-                        fromCoords.Value.Longitude
-                    },
-                    ToCoordinates = new
-                    {
+                        fromCoords.Value.Longitude,
                         toCoords.Value.Latitude,
                         toCoords.Value.Longitude
-                    },
-                    routeData.Distance,
-                    routeData.Duration
-                };
-
-                SelectedTour.RouteInformation = JsonSerializer.Serialize(routeInformation);
-
-                if (SelectedTour.Id == Guid.Empty)
-                {
-                    await HttpService.PostAsync<Tour>("api/tour", SelectedTour);
-                    ToastServiceWrapper.ShowSuccess("Tour saved successfully.");
-                }
-                else
-                {
-                    await HttpService.PutAsync<Tour>(
-                        $"api/tour/{SelectedTour.Id}",
-                        SelectedTour
                     );
-                    ToastServiceWrapper.ShowSuccess("Tour updated successfully.");
-                }
 
-                await LoadToursAsync();
-                await Task.Delay(500);
-
-                IsMapVisible = true;
-                OnPropertyChanged(nameof(IsMapVisible));
-
-                await Task.Delay(100);
-
-                await _jsRuntime.InvokeVoidAsync(
-                    "TourPlannerMap.setRoute",
-                    fromCoords.Value.Latitude,
-                    fromCoords.Value.Longitude,
-                    toCoords.Value.Latitude,
-                    toCoords.Value.Longitude
-                );
-
-                ResetForm();
-                return true;
-            },
-            "Error saving tour"
-        );
-    });
-
-    [UiMethodDecorator]
-    public Task ShowTourDetailsAsync(Guid id) => ProcessAsync(async () =>
-    {
-        await HandleApiRequestAsync(
-            async () =>
-            {
-                ModalTour = await HttpService.GetAsync<Tour>($"api/tour/{id}") ?? new Tour();
-                await _jsRuntime.InvokeVoidAsync("showModal", "tourDetailsModal");
-            },
-            "Error loading tour details"
-        );
-    });
-
-    [UiMethodDecorator]
-    public Task EditTourAsync(Guid id) => ProcessAsync(async () =>
-    {
-        await HandleApiRequestAsync(
-            async () =>
-            {
-                if (IsFormVisible && SelectedTour.Id == id)
-                {
                     ResetForm();
-                }
-                else
-                {
-                    SelectedTour = await HttpService.GetAsync<Tour>($"api/tour/{id}") ?? new Tour();
-                    IsFormVisible = true;
-                }
-            },
-            "Error handling tour edit action"
-        );
-    });
+                    return true;
+                },
+                "Error saving tour"
+            );
+        });
+    }
 
     [UiMethodDecorator]
-    public Task DeleteTourAsync(Guid id) => ProcessAsync(async () =>
+    public Task ShowTourDetailsAsync(Guid id)
     {
-        var confirmed = await _jsRuntime.InvokeAsync<bool>(
-            "confirm",
-            "Are you sure you want to delete this tour?"
-        );
-        if (confirmed)
+        return ProcessAsync(async () =>
         {
             await HandleApiRequestAsync(
                 async () =>
                 {
-                    await HttpService.DeleteAsync($"api/tour/{id}");
-                    await LoadToursAsync();
-                    ToastServiceWrapper.ShowSuccess("Tour deleted successfully.");
+                    ModalTour = await HttpService.GetAsync<Tour>($"api/tour/{id}") ?? new Tour();
+                    await _jsRuntime.InvokeVoidAsync("showModal", "tourDetailsModal");
                 },
-                "Error deleting tour"
+                "Error loading tour details"
             );
-        }
-    });
+        });
+    }
+
+    [UiMethodDecorator]
+    public Task EditTourAsync(Guid id)
+    {
+        return ProcessAsync(async () =>
+        {
+            await HandleApiRequestAsync(
+                async () =>
+                {
+                    if (IsFormVisible && SelectedTour.Id == id)
+                    {
+                        ResetForm();
+                    }
+                    else
+                    {
+                        SelectedTour = await HttpService.GetAsync<Tour>($"api/tour/{id}") ?? new Tour();
+                        IsFormVisible = true;
+                    }
+                },
+                "Error handling tour edit action"
+            );
+        });
+    }
+
+    [UiMethodDecorator]
+    public Task DeleteTourAsync(Guid id)
+    {
+        return ProcessAsync(async () =>
+        {
+            var confirmed = await _jsRuntime.InvokeAsync<bool>(
+                "confirm",
+                "Are you sure you want to delete this tour?"
+            );
+            if (confirmed)
+                await HandleApiRequestAsync(
+                    async () =>
+                    {
+                        await HttpService.DeleteAsync($"api/tour/{id}");
+                        await LoadToursAsync();
+                        ToastServiceWrapper.ShowSuccess("Tour deleted successfully.");
+                    },
+                    "Error deleting tour"
+                );
+        });
+    }
 }

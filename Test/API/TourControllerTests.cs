@@ -11,10 +11,6 @@ namespace Test.API;
 [TestFixture]
 public class TourControllerTests
 {
-    private Mock<ITourService> _mockTourService;
-    private Mock<IMapper> _mockMapper;
-    private TourController _controller;
-
     [SetUp]
     public void Setup()
     {
@@ -22,6 +18,10 @@ public class TourControllerTests
         _mockMapper = new Mock<IMapper>();
         _controller = new TourController(_mockTourService.Object, _mockMapper.Object);
     }
+
+    private Mock<ITourService> _mockTourService;
+    private Mock<IMapper> _mockMapper;
+    private TourController _controller;
 
     [Test]
     public async Task CreateTourAsync_HappyPath_ReturnsCreatedTour()
@@ -68,7 +68,7 @@ public class TourControllerTests
         _mockMapper.Setup(m => m.Map<IEnumerable<Tour>>(toursDomain)).Returns(toursDto);
 
         // Act
-        var result =  _controller.GetAllTours();
+        var result = _controller.GetAllTours();
 
         // Assert
         Assert.That(result.Result, Is.TypeOf<OkObjectResult>());

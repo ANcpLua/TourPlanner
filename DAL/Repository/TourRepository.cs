@@ -21,15 +21,21 @@ public class TourRepository : ITourRepository
         return tour;
     }
 
-    public IEnumerable<TourPersistence> GetAllTours() =>  _dbContext
-        .Set<TourPersistence>()
-        .Include(t => t.TourLogPersistence)
-        .ToList();
+    public IEnumerable<TourPersistence> GetAllTours()
+    {
+        return _dbContext
+            .Set<TourPersistence>()
+            .Include(t => t.TourLogPersistence)
+            .ToList();
+    }
 
-    public TourPersistence? GetTourById(Guid id) => _dbContext
-        .Set<TourPersistence>()
-        .Include(t => t.TourLogPersistence)
-        .FirstOrDefault(t => t.Id == id);
+    public TourPersistence? GetTourById(Guid id)
+    {
+        return _dbContext
+            .Set<TourPersistence>()
+            .Include(t => t.TourLogPersistence)
+            .FirstOrDefault(t => t.Id == id);
+    }
 
     public async Task<TourPersistence> UpdateTourAsync(TourPersistence tour)
     {
@@ -50,10 +56,7 @@ public class TourRepository : ITourRepository
 
     public IQueryable<TourPersistence> SearchToursAsync(string searchText)
     {
-        if (string.IsNullOrWhiteSpace(searchText))
-        {
-            return _dbContext.ToursPersistence;
-        }
+        if (string.IsNullOrWhiteSpace(searchText)) return _dbContext.ToursPersistence;
 
         return _dbContext
             .ToursPersistence.Include(t => t.TourLogPersistence)

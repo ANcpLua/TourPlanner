@@ -41,10 +41,7 @@ public class TourLogController : ControllerBase
     public ActionResult GetTourLogById(Guid id)
     {
         var tourLog = _tourLogService.GetTourLogById(id);
-        if (tourLog == null)
-        {
-            return NotFound();
-        }
+        if (tourLog == null) return NotFound();
         var tourLogDto = _mapper.Map<TourLog>(tourLog);
         return Ok(tourLogDto);
     }
@@ -56,7 +53,7 @@ public class TourLogController : ControllerBase
         Guid tourId
     )
     {
-        var tourLogs =  _tourLogService.GetTourLogsByTourId(tourId);
+        var tourLogs = _tourLogService.GetTourLogsByTourId(tourId);
         var tourLogDtos = _mapper.Map<IEnumerable<TourLog>>(tourLogs);
         return Ok(tourLogDtos);
     }

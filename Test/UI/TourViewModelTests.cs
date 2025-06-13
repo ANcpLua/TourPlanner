@@ -11,16 +11,6 @@ namespace Test.UI;
 [TestFixture]
 public class TourViewModelTests
 {
-    private Mock<IHttpService> _mockHttpService;
-    private Mock<IToastServiceWrapper> _mockToastService;
-    private Mock<IConfiguration> _mockConfiguration;
-    private Mock<IJSRuntime> _mockJsRuntime;
-    private Mock<IRouteApiService> _mockRouteApiService;
-    private Mock<ILogger> _mockLogger;
-    private Mock<IViewModelHelperService> _mockViewModelHelperService;
-    private Mock<MapViewModel> _mockMapViewModel;
-    private TourViewModel _viewModel;
-
     [SetUp]
     public void Setup()
     {
@@ -44,6 +34,16 @@ public class TourViewModelTests
             _mockViewModelHelperService.Object
         );
     }
+
+    private Mock<IHttpService> _mockHttpService;
+    private Mock<IToastServiceWrapper> _mockToastService;
+    private Mock<IConfiguration> _mockConfiguration;
+    private Mock<IJSRuntime> _mockJsRuntime;
+    private Mock<IRouteApiService> _mockRouteApiService;
+    private Mock<ILogger> _mockLogger;
+    private Mock<IViewModelHelperService> _mockViewModelHelperService;
+    private Mock<MapViewModel> _mockMapViewModel;
+    private TourViewModel _viewModel;
 
     [Test]
     public async Task LoadToursAsync_LoadsToursSuccessfully()

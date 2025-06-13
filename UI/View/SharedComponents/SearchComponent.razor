@@ -3,7 +3,8 @@
     <div class="container-fluid">
         <div class="tour-form">
             <div class="search-container">
-                <input class="search-input" @bind="SearchViewModel.SearchText" @bind:event="oninput" @onkeyup="SearchViewModel.HandleKeyPress" placeholder="Search tours"/>
+                <input class="search-input" @bind="SearchViewModel.SearchText" @bind:event="oninput"
+                       @onkeyup="SearchViewModel.HandleKeyPress" placeholder="Search tours"/>
                 <div class="search-icon" @onclick="SearchViewModel.SearchToursAsync"></div>
                 <div class="particle"></div>
                 <div class="particle"></div>
@@ -35,7 +36,8 @@
                                 <span class="attribute-label">Popularity:</span> @tour.Popularity
                             </p>
                             <p>
-                                <span class="attribute-label">Child Friendly:</span> @(tour.IsChildFriendly ? "Yes" : "No")
+                                <span
+                                    class="attribute-label">Child Friendly:</span> @(tour.IsChildFriendly ? "Yes" : "No")
                             </p>
                             <p>
                                 <span class="attribute-label">Transport:</span> @tour.TransportType
@@ -53,10 +55,12 @@
                                 <span class="attribute-label">Tour Logs:</span> @tour.TourLogs.Count
                             </p>
                             <p>
-                                <span class="attribute-label">Description:</span> @(string.IsNullOrEmpty(tour.Description) ? "N/A" : tour.Description)
+                                <span
+                                    class="attribute-label">Description:</span> @(string.IsNullOrEmpty(tour.Description) ? "N/A" : tour.Description)
                             </p>
                             <p>
-                                <span class="attribute-label">Image:</span> @(string.IsNullOrEmpty(tour.ImagePath) ? "N/A" : "Available")
+                                <span
+                                    class="attribute-label">Image:</span> @(string.IsNullOrEmpty(tour.ImagePath) ? "N/A" : "Available")
                             </p>
                             <p>
                                 <span class="attribute-label">ID:</span> @tour.Id
@@ -65,7 +69,8 @@
                             {
                                 var latestLog = tour.TourLogs.OrderByDescending(log => log.DateTime).First();
                                 <p>
-                                    <span class="attribute-label">Latest Log:</span> @latestLog.DateTime.ToShortDateString()
+                                    <span
+                                        class="attribute-label">Latest Log:</span> @latestLog.DateTime.ToShortDateString()
                                 </p>
                                 <p>
                                     <span class="attribute-label">Log Rating:</span> @latestLog.Rating

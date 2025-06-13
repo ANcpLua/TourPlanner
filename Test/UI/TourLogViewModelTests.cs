@@ -10,13 +10,6 @@ namespace Test.UI;
 [TestFixture]
 public class TourLogViewModelTests
 {
-    private Mock<IHttpService> _mockHttpService;
-    private Mock<IToastServiceWrapper> _mockToastService;
-    private Mock<IJSRuntime> _mockJsRuntime;
-    private Mock<IViewModelHelperService> _mockViewModelHelperService;
-    private Mock<ILogger> _mockLogger;
-    private TourLogViewModel _viewModel;
-
     [SetUp]
     public void Setup()
     {
@@ -34,6 +27,13 @@ public class TourLogViewModelTests
             _mockViewModelHelperService.Object
         );
     }
+
+    private Mock<IHttpService> _mockHttpService;
+    private Mock<IToastServiceWrapper> _mockToastService;
+    private Mock<IJSRuntime> _mockJsRuntime;
+    private Mock<IViewModelHelperService> _mockViewModelHelperService;
+    private Mock<ILogger> _mockLogger;
+    private TourLogViewModel _viewModel;
 
 
     [Test]

@@ -17,17 +17,13 @@ public class TourLogService : ITourLogService
         _mapper = mapper;
     }
 
-    public async Task<TourLogDomain> CreateTourLogAsync(CancellationToken cancellationToken = default)
+    public async Task<TourLogDomain> CreateTourLogAsync(TourLogDomain tourLog,
+        CancellationToken cancellationToken = default)
     {
         var tourLogPersistence = _mapper.Map<TourLogPersistence>(tourLog);
-        var createdTourLogPersistence = await _tourLogRepository.CreateTourLogAsync(tourLogPersistence, cancellationToken);
+        var createdTourLogPersistence =
+            await _tourLogRepository.CreateTourLogAsync(tourLogPersistence, cancellationToken);
         return _mapper.Map<TourLogDomain>(createdTourLogPersistence);
-    }
-
-    public TourLogDomain? GetTourLogById(Guid id)
-    {
-        var tourLogPersistence = _tourLogRepository.GetTourLogById(id);
-        return tourLogPersistence == null ? null : _mapper.Map<TourLogDomain>(tourLogPersistence);
     }
 
     public IEnumerable<TourLogDomain> GetTourLogsByTourId(Guid tourId)
@@ -36,12 +32,23 @@ public class TourLogService : ITourLogService
         return _mapper.Map<IEnumerable<TourLogDomain>>(tourLogPersistence);
     }
 
-    public async Task<TourLogDomain> UpdateTourLogAsync(TourLogDomain tourLog, CancellationToken cancellationToken = default)
+    public TourLogDomain? GetTourLogById(Guid id)
+    {
+        var tourLogPersistence = _tourLogRepository.GetTourLogById(id);
+        return tourLogPersistence == null ? null : _mapper.Map<TourLogDomain>(tourLogPersistence);
+    }
+
+    public async Task<TourLogDomain> UpdateTourLogAsync(TourLogDomain tourLog,
+        CancellationToken cancellationToken = default)
     {
         var tourLogPersistence = _mapper.Map<TourLogPersistence>(tourLog);
-        var updatedTourLogPersistence = await _tourLogRepository.UpdateTourLogAsync(tourLogPersistence, cancellationToken;
+        var updatedTourLogPersistence =
+            await _tourLogRepository.UpdateTourLogAsync(tourLogPersistence, cancellationToken);
         return _mapper.Map<TourLogDomain>(updatedTourLogPersistence);
     }
 
-    public Task DeleteTourLogAsync(Guid id, CancellationToken cancellationToken = default) => _tourLogRepository.DeleteTourLogAsync(id, cancellationToken);
+    public Task DeleteTourLogAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return _tourLogRepository.DeleteTourLogAsync(id, cancellationToken);
+    }
 }

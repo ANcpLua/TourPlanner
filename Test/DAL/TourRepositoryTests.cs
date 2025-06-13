@@ -7,14 +7,11 @@ namespace Test.DAL;
 [TestFixture]
 public class TourRepositoryTests
 {
-    private TourPlannerContext _context;
-    private TourRepository _repository;
-
     [SetUp]
     public void Setup()
     {
         var options = new DbContextOptionsBuilder<TourPlannerContext>()
-            .UseInMemoryDatabase(databaseName: $"TourPlannerTestDb_{Guid.NewGuid()}")
+            .UseInMemoryDatabase($"TourPlannerTestDb_{Guid.NewGuid()}")
             .Options;
         _context = new TourPlannerContext(options);
         _repository = new TourRepository(_context);
@@ -26,6 +23,9 @@ public class TourRepositoryTests
         _context.Database.EnsureDeleted();
         _context.Dispose();
     }
+
+    private TourPlannerContext _context;
+    private TourRepository _repository;
 
     [Test]
     public async Task CreateTourAsync_WithValidTour_ReturnsSavedTour()
@@ -55,7 +55,7 @@ public class TourRepositoryTests
         tour.Name = null!;
 
         // Act & Assert
-        Assert.That (async () => await _repository.CreateTourAsync(tour), Throws.InstanceOf<DbUpdateException>());
+        Assert.That(async () => await _repository.CreateTourAsync(tour), Throws.InstanceOf<DbUpdateException>());
     }
 
     [Test]
@@ -63,8 +63,8 @@ public class TourRepositoryTests
     {
         // Arrange
         var tours = TestData.CreateSampleTourPersistenceList();
-         _context.ToursPersistence.AddRange(tours);
-         _context.SaveChanges();
+        _context.ToursPersistence.AddRange(tours);
+        _context.SaveChanges();
 
         // Act
         var result = _repository.GetAllTours().ToList();
@@ -148,7 +148,8 @@ public class TourRepositoryTests
         var tour = TestData.CreateSampleTourPersistence();
 
         // Act & Assert
-        Assert.That(async () => await _repository.UpdateTourAsync(tour), Throws.InstanceOf<DbUpdateConcurrencyException>());
+        Assert.That(async () => await _repository.UpdateTourAsync(tour),
+            Throws.InstanceOf<DbUpdateConcurrencyException>());
         return Task.CompletedTask;
     }
 

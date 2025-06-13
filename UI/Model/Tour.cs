@@ -65,10 +65,7 @@ public class Tour
                 .Where(x => x.Rating.HasValue)
                 .Average(x =>
                 {
-                    if (x.Rating != null)
-                    {
-                        return x.Rating.Value;
-                    }
+                    if (x.Rating != null) return x.Rating.Value;
 
                     return 0;
                 })

@@ -13,14 +13,6 @@ namespace Test.UI;
 [TestFixture]
 public class ReportViewModelTests
 {
-    private Mock<IHttpService> _mockHttpService;
-    private Mock<IToastServiceWrapper> _mockToastService;
-    private Mock<IBlazorDownloadFileService> _mockBlazorDownloadFile;
-    private Mock<IViewModelHelperService> _mockViewModelHelper;
-    private Mock<TourViewModel> _mockTourViewModel;
-    private Mock<ILogger> _mockLogger;
-    private ReportViewModel _viewModel;
-
     [SetUp]
     public void Setup()
     {
@@ -52,6 +44,14 @@ public class ReportViewModelTests
             _mockViewModelHelper.Object
         );
     }
+
+    private Mock<IHttpService> _mockHttpService;
+    private Mock<IToastServiceWrapper> _mockToastService;
+    private Mock<IBlazorDownloadFileService> _mockBlazorDownloadFile;
+    private Mock<IViewModelHelperService> _mockViewModelHelper;
+    private Mock<TourViewModel> _mockTourViewModel;
+    private Mock<ILogger> _mockLogger;
+    private ReportViewModel _viewModel;
 
     [Test]
     public async Task GenerateSummaryReportAsync_GeneratesAndDownloadsReport()

@@ -9,15 +9,14 @@ namespace Test.BL;
 [TestFixture]
 public class MappingConfigurationTests
 {
-
-    private IMapper _mapper;
-
     [SetUp]
     public void Setup()
     {
         var config = MappingConfiguration.RegisterMapping();
         _mapper = new Mapper(config);
     }
+
+    private IMapper _mapper;
 
     [Test]
     public void TourPersistence_To_TourDomain_MapsTourLogsCorrectly()
@@ -66,8 +65,8 @@ public class MappingConfigurationTests
 
         var tourLogPersistence = _mapper.Map<TourLogPersistence>(tourLogDomain);
 
-        Assert.Multiple(() => {
-
+        Assert.Multiple(() =>
+        {
             Assert.That(tourLogPersistence.TourPersistenceId, Is.EqualTo(tourLogDomain.TourDomainId));
             Assert.That(tourLogPersistence.Id, Is.EqualTo(tourLogDomain.Id));
             Assert.That(tourLogPersistence.DateTime, Is.EqualTo(tourLogDomain.DateTime));
@@ -86,7 +85,8 @@ public class MappingConfigurationTests
 
         var tourLogDomain = _mapper.Map<TourLogDomain>(tourLogPersistence);
 
-        Assert.Multiple(() => {
+        Assert.Multiple(() =>
+        {
             Assert.That(tourLogDomain.TourDomainId, Is.EqualTo(tourLogPersistence.TourPersistenceId));
             Assert.That(tourLogDomain.Id, Is.EqualTo(tourLogPersistence.Id));
             Assert.That(tourLogDomain.DateTime, Is.EqualTo(tourLogPersistence.DateTime));
@@ -105,7 +105,8 @@ public class MappingConfigurationTests
 
         var tourLog = _mapper.Map<TourLog>(tourLogDomain);
 
-        Assert.Multiple(() => {
+        Assert.Multiple(() =>
+        {
             Assert.That(tourLog.TourId, Is.EqualTo(tourLogDomain.TourDomainId));
             Assert.That(tourLog.Id, Is.EqualTo(tourLogDomain.Id));
             Assert.That(tourLog.DateTime, Is.EqualTo(tourLogDomain.DateTime));
@@ -124,7 +125,8 @@ public class MappingConfigurationTests
 
         var tourLogDomain = _mapper.Map<TourLogDomain>(tourLog);
 
-        Assert.Multiple(() => {
+        Assert.Multiple(() =>
+        {
             Assert.That(tourLogDomain.TourDomainId, Is.EqualTo(tourLog.TourId));
             Assert.That(tourLogDomain.Id, Is.EqualTo(tourLog.Id));
             Assert.That(tourLogDomain.DateTime, Is.EqualTo(tourLog.DateTime));

@@ -30,11 +30,11 @@ public class RouteApiService : IRouteApiService
 
         _httpClient.DefaultRequestHeaders.Clear();
         _httpClient.DefaultRequestHeaders.Accept.Add(
-        new MediaTypeWithQualityHeaderValue("application/json")
+            new MediaTypeWithQualityHeaderValue("application/json")
         );
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
-        "Bearer",
-        apiKey
+            "Bearer",
+            apiKey
         );
 
         var payload = new
@@ -53,9 +53,9 @@ public class RouteApiService : IRouteApiService
         };
 
         StringContent content = new(
-        JsonSerializer.Serialize(payload),
-        Encoding.UTF8,
-        "application/json"
+            JsonSerializer.Serialize(payload),
+            Encoding.UTF8,
+            "application/json"
         );
 
         var response = await _httpClient.PostAsync($"{baseUrl}/v2/directions/{endpoint}", content);
@@ -64,7 +64,7 @@ public class RouteApiService : IRouteApiService
         {
             var errorContent = await response.Content.ReadAsStringAsync();
             throw new HttpRequestException(
-            $"Error fetching route data. Status code: {response.StatusCode}, Content: {errorContent}"
+                $"Error fetching route data. Status code: {response.StatusCode}, Content: {errorContent}"
             );
         }
 
@@ -72,13 +72,16 @@ public class RouteApiService : IRouteApiService
         return ParseRouteData(jsonString);
     }
 
-    private static string GetEndpointForTransportType(string transportType) => transportType switch
+    private static string GetEndpointForTransportType(string transportType)
     {
-        "Car" => "driving-car",
-        "Bike" => "cycling-regular",
-        "Foot" => "foot-walking",
-        _ => "driving-car"
-    };
+        return transportType switch
+        {
+            "Car" => "driving-car",
+            "Bike" => "cycling-regular",
+            "Foot" => "foot-walking",
+            _ => "driving-car"
+        };
+    }
 
     private static (double Distance, double Duration) ParseRouteData(string jsonString)
     {
