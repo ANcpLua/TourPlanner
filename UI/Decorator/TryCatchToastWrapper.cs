@@ -27,7 +27,7 @@ public class TryCatchToastWrapper
         catch (Exception ex)
         {
             errorHandler?.Invoke(ex);
-            _logger.Error(ex, errorMessage);
+            _logger.Error(ex, "Operation failed: {ErrorContext}", errorMessage);
             _toastServiceWrapper.ShowError($"{errorMessage}: {ex.Message}");
             return default;
         }
@@ -46,7 +46,7 @@ public class TryCatchToastWrapper
         catch (Exception ex)
         {
             errorHandler?.Invoke(ex);
-            _logger.Error(ex, errorMessage);
+            _logger.Error(ex, "Operation failed: {ErrorContext}", errorMessage);
             _toastServiceWrapper.ShowError($"{errorMessage}: {ex.Message}");
         }
     }

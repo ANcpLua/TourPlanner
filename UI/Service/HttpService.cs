@@ -103,7 +103,7 @@ public class HttpService : IHttpService
         );
     }
 
-    private Task SendRequestAsync(HttpMethod method, string uri, object? data = null)
+    public Task SendRequestAsync(HttpMethod method, string uri, object? data = null)
     {
         return _tryCatchToastWrapper.ExecuteAsync(
             async () =>
