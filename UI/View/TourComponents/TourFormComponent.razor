@@ -1,5 +1,5 @@
 ﻿@using UI.ViewModel
-<EditForm Model="@ViewModel.SelectedTour" OnSubmit="@ViewModel.SaveTourAsync">
+<EditForm Model="@ViewModel.SelectedTour" OnValidSubmit="@ViewModel.SaveTourAsync">
     <DataAnnotationsValidator/>
 
     <div class="row">
@@ -49,15 +49,13 @@
     </div>
 
     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-        <button class="btn btn-primary"
-                @onclick="ViewModel.SaveTourAsync"
+        <button type="submit" class="btn btn-primary"
                 disabled="@(ViewModel.IsProcessing || !ViewModel.IsFormValid)">
             @(ViewModel.IsProcessing ? "Saving..." : "Save Tour")
         </button>
         <button type="button" class="btn btn-secondary" @onclick="ViewModel.ShowAddTourForm">Cancel</button>
     </div>
 </EditForm>
-
 
 @code {
     [Parameter] public required TourViewModel ViewModel { get; set; }

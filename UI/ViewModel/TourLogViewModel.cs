@@ -11,44 +11,38 @@ namespace UI.ViewModel;
 public class TourLogViewModel : BaseViewModel
 {
     private readonly IJSRuntime _jsRuntime;
-    private readonly IViewModelHelperService _viewModelHelperService;
-    private bool _isEditing;
-    private bool _isLogFormVisible;
     private Guid? _selectedTourId;
-    private TourLog _selectedTourLog = new();
 
     public TourLogViewModel(
         IHttpService httpService,
         IToastServiceWrapper toastServiceWrapper,
         IJSRuntime jsRuntime,
-        ILogger logger,
-        IViewModelHelperService viewModelHelperService
+        ILogger logger
     )
         : base(httpService, toastServiceWrapper, logger)
     {
-        _viewModelHelperService = viewModelHelperService;
         TourLogs = [];
         _jsRuntime = jsRuntime;
     }
 
-    public ObservableCollection<TourLog> TourLogs { get; }
+    public ObservableCollection<TourLog> TourLogs { get; set; }
 
     public TourLog SelectedTourLog
     {
-        get => _selectedTourLog;
-        set => SetProperty(ref _selectedTourLog, value);
-    }
+        get;
+        set => SetProperty(ref field, value);
+    } = new();
 
     public bool IsLogFormVisible
     {
-        get => _isLogFormVisible;
-        set => SetProperty(ref _isLogFormVisible, value);
+        get;
+        set => SetProperty(ref field, value);
     }
 
     public bool IsEditing
     {
-        get => _isEditing;
-        set => SetProperty(ref _isEditing, value);
+        get;
+        set => SetProperty(ref field, value);
     }
 
     public Guid? SelectedTourId
@@ -89,34 +83,28 @@ public class TourLogViewModel : BaseViewModel
     {
         if (!SelectedTourId.HasValue) return;
 
-        _viewModelHelperService.ResetForm(
-            ref _selectedTourLog,
-            () => new TourLog
-            {
-                TourId = SelectedTourId.Value
-            }
-        );
-        _viewModelHelperService.ShowForm(ref _isLogFormVisible);
+        SelectedTourLog = new TourLog
+        {
+            TourId = SelectedTourId.Value,
+            DateTime = DateTime.Now,
+            Difficulty = 1,
+            Rating = 1
+        };
+        IsLogFormVisible = true;
         IsEditing = false;
-        OnPropertyChanged(nameof(SelectedTourLog));
-        OnPropertyChanged(nameof(IsLogFormVisible));
-        OnPropertyChanged(nameof(IsEditing));
     }
 
     public void ResetForm()
     {
-        _viewModelHelperService.ResetForm(
-            ref _selectedTourLog,
-            () => new TourLog
-            {
-                TourId = SelectedTourId ?? Guid.Empty
-            }
-        );
+        SelectedTourLog = new TourLog
+        {
+            TourId = SelectedTourId ?? Guid.Empty,
+            DateTime = DateTime.Now,
+            Difficulty = 1,
+            Rating = 1
+        };
         IsLogFormVisible = false;
         IsEditing = false;
-        OnPropertyChanged(nameof(SelectedTourLog));
-        OnPropertyChanged(nameof(IsLogFormVisible));
-        OnPropertyChanged(nameof(IsEditing));
     }
 
     public void ToggleLogForm()

@@ -1,10 +1,4 @@
-﻿using System.ComponentModel;
-using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
-using Microsoft.JSInterop.Infrastructure;
-using Moq;
-using Serilog;
-using UI.Service.Interface;
+﻿using UI.Service.Interface;
 using UI.ViewModel;
 
 namespace Test.UI.ViewModel;
@@ -12,6 +6,12 @@ namespace Test.UI.ViewModel;
 [TestFixture]
 public class MapViewModelTests
 {
+    private Mock<IJSRuntime> _mockJsRuntime = null!;
+    private Mock<IHttpService> _mockHttpService = null!;
+    private Mock<IToastServiceWrapper> _mockToastService = null!;
+    private Mock<ILogger> _mockLogger = null!;
+    private MapViewModel _viewModel = null!;
+
     [SetUp]
     public void Setup()
     {
@@ -27,12 +27,6 @@ public class MapViewModelTests
             _mockLogger.Object
         );
     }
-
-    private Mock<IJSRuntime> _mockJsRuntime = null!;
-    private Mock<IHttpService> _mockHttpService = null!;
-    private Mock<IToastServiceWrapper> _mockToastService = null!;
-    private Mock<ILogger> _mockLogger = null!;
-    private MapViewModel _viewModel = null!;
 
     [Test]
     public void Constructor_ShouldInitializePropertiesCorrectly()
@@ -66,7 +60,6 @@ public class MapViewModelTests
         const string city = "Vienna";
         _viewModel.ToCity = city;
 
-
         _viewModel.FromCity = city;
         using (Assert.EnterMultipleScope())
         {
@@ -80,9 +73,7 @@ public class MapViewModelTests
     {
         const string city = "Berlin";
 
-
         _viewModel.ToCity = city;
-
 
         Assert.That(_viewModel.ToCity, Is.EqualTo(city));
     }
@@ -91,7 +82,6 @@ public class MapViewModelTests
     public void FilteredToCities_ShouldExcludeFromCity()
     {
         _viewModel.FromCity = "Vienna";
-
 
         var filteredCities = _viewModel.FilteredToCities.ToList();
         using (Assert.EnterMultipleScope())
@@ -123,7 +113,6 @@ public class MapViewModelTests
     {
         var result = _viewModel.GetCoordinates(city!);
 
-
         Assert.That(result, Is.Null);
     }
 
@@ -133,9 +122,7 @@ public class MapViewModelTests
         _viewModel.FromCity = "Vienna";
         _viewModel.ToCity = "Berlin";
 
-
         await _viewModel.ShowMapAsync();
-
 
         _mockToastService.Verify(
             t => t.ShowError("Map is not initialized yet."),
@@ -154,9 +141,7 @@ public class MapViewModelTests
         _viewModel.FromCity = fromCity;
         _viewModel.ToCity = toCity;
 
-
         await _viewModel.ShowMapAsync();
-
 
         _mockToastService.Verify(
             t => t.ShowError(expectedError),
@@ -177,9 +162,7 @@ public class MapViewModelTests
         _viewModel.FromCity = "Vienna";
         _viewModel.ToCity = "Berlin";
 
-
         await _viewModel.ShowMapAsync();
-
 
         _mockJsRuntime.Verify(
             js => js.InvokeAsync<IJSVoidResult>(
@@ -202,10 +185,8 @@ public class MapViewModelTests
             .Callback<string, object[]>((method, _) => invokedMethod = method)
             .ReturnsAsync(Mock.Of<IJSVoidResult>());
 
-
         _viewModel.FromCity = "Vienna";
         _viewModel.ToCity = "Berlin";
-
 
         ((INotifyPropertyChanged)_viewModel).PropertyChanged += (_, e) =>
         {
@@ -219,7 +200,6 @@ public class MapViewModelTests
                     break;
             }
         };
-
 
         await _viewModel.ClearMapAsync();
         using (Assert.EnterMultipleScope())

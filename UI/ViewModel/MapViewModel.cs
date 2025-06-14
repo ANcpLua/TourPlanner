@@ -30,7 +30,6 @@ public class MapViewModel : BaseViewModel
         };
 
     private readonly IJSRuntime _jsRuntime;
-    private string _fromCity = string.Empty;
 
     private bool _isMapInitialized;
     private string _toCity = string.Empty;
@@ -51,14 +50,14 @@ public class MapViewModel : BaseViewModel
 
     public string FromCity
     {
-        get => _fromCity;
+        get;
         set
         {
-            if (!SetProperty(ref _fromCity, value)) return;
+            if (!SetProperty(ref field, value)) return;
             OnPropertyChanged(nameof(FilteredToCities));
-            if (_toCity == _fromCity) ToCity = string.Empty;
+            if (_toCity == field) ToCity = string.Empty;
         }
-    }
+    } = string.Empty;
 
     public string ToCity
     {

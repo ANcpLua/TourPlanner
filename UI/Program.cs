@@ -1,4 +1,3 @@
-using BlazorDownloadFile;
 using Blazored.Toast;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -28,7 +27,6 @@ builder.Services.AddSingleton<IConfiguration>(_ => configuration);
 builder.Services.AddScoped<IHttpService, HttpService>();
 builder.Services.AddScoped<IToastServiceWrapper, ToastService>();
 builder.Services.AddScoped<IRouteApiService, RouteApiService>();
-builder.Services.AddScoped<IViewModelHelperService, ViewModelHelperService>();
 builder.Services.AddScoped<TryCatchToastWrapper>();
 
 builder.Services.AddScoped<TourViewModel>();
