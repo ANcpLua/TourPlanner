@@ -4,13 +4,16 @@ using DAL.Interface;
 using DAL.PersistenceModel;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using Moq;
 
 namespace Test.BL;
 
 [TestFixture]
 public class TourLogServiceTests
 {
+    private Mock<ITourLogRepository> _mockTourLogRepository = null!;
+    private Mock<IMapper> _mockMapper = null!;
+    private TourLogService _tourLogService = null!;
+
     [SetUp]
     public void Setup()
     {
@@ -18,10 +21,6 @@ public class TourLogServiceTests
         _mockMapper = new Mock<IMapper>();
         _tourLogService = new TourLogService(_mockTourLogRepository.Object, _mockMapper.Object);
     }
-
-    private Mock<ITourLogRepository> _mockTourLogRepository;
-    private Mock<IMapper> _mockMapper;
-    private TourLogService _tourLogService;
 
     [Test]
     public async Task CreateTourLogAsync_ValidTourLog_ReturnsMappedTourLogDomain()
@@ -36,9 +35,7 @@ public class TourLogServiceTests
             .Setup(r => r.CreateTourLogAsync(tourLogPersistence, CancellationToken.None))
             .ReturnsAsync(tourLogPersistence);
 
-
         var result = await _tourLogService.CreateTourLogAsync(tourLogDomain);
-
 
         Assert.That(result, Is.Not.Null);
         using (Assert.EnterMultipleScope())
@@ -47,6 +44,7 @@ public class TourLogServiceTests
             Assert.That(result.Comment, Is.EqualTo(tourLogDomain.Comment));
             Assert.That(result.DateTime, Is.EqualTo(tourLogDomain.DateTime));
         }
+
         _mockTourLogRepository.Verify(
             r => r.CreateTourLogAsync(tourLogPersistence, CancellationToken.None),
             Times.Once
@@ -65,9 +63,7 @@ public class TourLogServiceTests
             .Setup(r => r.CreateTourLogAsync(tourLogPersistence, CancellationToken.None))
             .ThrowsAsync(new Exception("Database error"));
 
-
-        var ex = Assert.ThrowsAsync<Exception>(async () => await _tourLogService.CreateTourLogAsync(tourLogDomain)
-        );
+        var ex = Assert.ThrowsAsync<Exception>(async () => await _tourLogService.CreateTourLogAsync(tourLogDomain));
         Assert.That(ex.Message, Is.EqualTo("Database error"));
         return Task.CompletedTask;
     }
@@ -81,7 +77,6 @@ public class TourLogServiceTests
             .Setup(r => r.GetTourLogById(tourLogPersistence.Id))
             .Returns(tourLogPersistence);
 
-
         _mockMapper.Setup(m => m.Map<TourLogDomain>(It.IsAny<TourLogPersistence>()))
             .Returns((TourLogPersistence source) =>
             {
@@ -90,9 +85,7 @@ public class TourLogServiceTests
                 return domain;
             });
 
-
         var result = _tourLogService.GetTourLogById(tourLogPersistence.Id);
-
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Id, Is.EqualTo(tourLogPersistence.Id));
@@ -106,9 +99,7 @@ public class TourLogServiceTests
             .Setup(r => r.GetTourLogById(TestData.NonexistentGuid))
             .Returns((TourLogPersistence)null!);
 
-
         var result = _tourLogService.GetTourLogById(TestData.NonexistentGuid);
-
 
         Assert.That(result, Is.Null);
     }
@@ -125,9 +116,7 @@ public class TourLogServiceTests
             .Setup(m => m.Map<IEnumerable<TourLogDomain>>(tourLogsPersistence))
             .Returns(tourLogsDomain);
 
-
         var result = _tourLogService.GetTourLogsByTourId(TestData.TestGuid).ToList();
-
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Has.Count.EqualTo(tourLogsDomain.Count));
@@ -148,9 +137,7 @@ public class TourLogServiceTests
             )
             .Returns(new List<TourLogDomain>());
 
-
         var result = _tourLogService.GetTourLogsByTourId(TestData.NonexistentGuid);
-
 
         Assert.That(result, Is.Empty);
     }
@@ -168,9 +155,7 @@ public class TourLogServiceTests
             .Setup(r => r.UpdateTourLogAsync(tourLogPersistence, CancellationToken.None))
             .ReturnsAsync(tourLogPersistence);
 
-
         var result = await _tourLogService.UpdateTourLogAsync(tourLogDomain);
-
 
         Assert.That(result, Is.Not.Null);
         using (Assert.EnterMultipleScope())
@@ -179,6 +164,7 @@ public class TourLogServiceTests
             Assert.That(result.Comment, Is.EqualTo(tourLogDomain.Comment));
             Assert.That(result.DateTime, Is.EqualTo(tourLogDomain.DateTime));
         }
+
         _mockTourLogRepository.Verify(
             r => r.UpdateTourLogAsync(tourLogPersistence, CancellationToken.None),
             Times.Once
@@ -197,7 +183,6 @@ public class TourLogServiceTests
             .Setup(r => r.UpdateTourLogAsync(tourLogPersistence, CancellationToken.None))
             .ThrowsAsync(new InvalidOperationException("Tour log not found"));
 
-
         var ex = Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await _tourLogService.UpdateTourLogAsync(tourLogDomain)
         );
@@ -213,9 +198,7 @@ public class TourLogServiceTests
             .Setup(r => r.DeleteTourLogAsync(tourLogId, CancellationToken.None))
             .Returns(Task.CompletedTask);
 
-
         await _tourLogService.DeleteTourLogAsync(tourLogId);
-
 
         _mockTourLogRepository.Verify(r => r.DeleteTourLogAsync(tourLogId, CancellationToken.None), Times.Once);
     }
@@ -226,7 +209,6 @@ public class TourLogServiceTests
         _mockTourLogRepository
             .Setup(r => r.DeleteTourLogAsync(TestData.NonexistentGuid, CancellationToken.None))
             .Returns(Task.CompletedTask);
-
 
         Assert.DoesNotThrowAsync(async () => await _tourLogService.DeleteTourLogAsync(TestData.NonexistentGuid)
         );
@@ -247,7 +229,6 @@ public class TourLogServiceTests
 
         using var cts = new CancellationTokenSource();
         cts.Cancel();
-
 
         Assert.ThrowsAsync<OperationCanceledException>(async () =>
             await _tourLogService.CreateTourLogAsync(tourLogDomain, cts.Token)
@@ -275,9 +256,7 @@ public class TourLogServiceTests
             .Setup(m => m.Map<IEnumerable<TourLogDomain>>(largeTourLogList))
             .Returns(largeTourLogDomainList);
 
-
         var result = _tourLogService.GetTourLogsByTourId(TestData.TestGuid).ToList();
-
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Has.Count.EqualTo(largeTourLogDomainList.Count));
@@ -301,7 +280,6 @@ public class TourLogServiceTests
             .SetupSequence(r => r.UpdateTourLogAsync(tourLogPersistence, CancellationToken.None))
             .ThrowsAsync(new DbUpdateConcurrencyException("Update conflict"))
             .ReturnsAsync(tourLogPersistence);
-
 
         Assert.ThrowsAsync<DbUpdateConcurrencyException>(async () =>
             await _tourLogService.UpdateTourLogAsync(tourLogDomain)

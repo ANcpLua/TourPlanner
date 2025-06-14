@@ -1,9 +1,7 @@
-﻿using System.Text.Json;
-using API.Controllers;
+﻿using API.Controllers;
 using BL.Interface;
 using MapsterMapper;
 using Microsoft.AspNetCore.Mvc;
-using Moq;
 using UI.Model;
 
 namespace Test.API;
@@ -11,6 +9,11 @@ namespace Test.API;
 [TestFixture]
 public class FileControllerTests
 {
+    private Mock<IFileService> _mockFileService = null!;
+    private Mock<ITourService> _mockTourService = null!;
+    private Mock<IMapper> _mockMapper = null!;
+    private FileController _controller = null!;
+
     [SetUp]
     public void Setup()
     {
@@ -24,11 +27,6 @@ public class FileControllerTests
         );
     }
 
-    private Mock<IFileService> _mockFileService;
-    private Mock<ITourService> _mockTourService;
-    private Mock<IMapper> _mockMapper;
-    private FileController _controller;
-
     [Test]
     public void GetSummaryReport_HappyPath_ReturnsPdfFile()
     {
@@ -40,9 +38,7 @@ public class FileControllerTests
         _mockTourService.Setup(s => s.GetAllTours()).Returns(tours);
         _mockFileService.Setup(s => s.GenerateSummaryReport(tours)).Returns(pdfBytes);
 
-
         var result = _controller.GetSummaryReport();
-
 
         Assert.That(result, Is.TypeOf<FileContentResult>());
         var fileResult = (FileContentResult)result;
@@ -61,7 +57,6 @@ public class FileControllerTests
             .Setup(s => s.GetAllTours())
             .Throws(new Exception("Database connection error"));
 
-
         Assert.Throws<Exception>(() => _controller.GetSummaryReport());
     }
 
@@ -75,9 +70,7 @@ public class FileControllerTests
         ];
         _mockFileService.Setup(s => s.GenerateTourReport(tourId)).Returns(pdfBytes);
 
-
         var result = _controller.GetTourReport(tourId);
-
 
         Assert.That(result, Is.TypeOf<FileContentResult>());
         var fileResult = (FileContentResult)result;
@@ -97,7 +90,6 @@ public class FileControllerTests
             .Setup(s => s.GenerateTourReport(tourId))
             .Throws(new InvalidOperationException("Report generation failed"));
 
-
         Assert.Throws<InvalidOperationException>(() => _controller.GetTourReport(tourId));
     }
 
@@ -110,9 +102,7 @@ public class FileControllerTests
         _mockFileService.Setup(s => s.ExportTourToJson(tourId)).Returns(tourDomain);
         _mockMapper.Setup(m => m.Map<Tour>(tourDomain)).Returns(tourDto);
 
-
         var result = _controller.ExportTourToJson(tourId);
-
 
         Assert.That(result, Is.TypeOf<JsonResult>());
         var jsonResult = (JsonResult)result;
@@ -132,7 +122,6 @@ public class FileControllerTests
             .Setup(s => s.ExportTourToJson(tourId))
             .Throws(new KeyNotFoundException("Tour not found"));
 
-
         Assert.Throws<KeyNotFoundException>(() => _controller.ExportTourToJson(tourId));
     }
 
@@ -141,9 +130,7 @@ public class FileControllerTests
     {
         var json = TestData.SampleTourJson();
 
-
         var result = await _controller.ImportTourFromJsonAsync(json);
-
 
         Assert.That(result, Is.TypeOf<OkObjectResult>());
         var okResult = (OkObjectResult)result;
@@ -158,7 +145,6 @@ public class FileControllerTests
             .Setup(s => s.ImportTourFromJsonAsync(invalidJson))
             .ThrowsAsync(new JsonException("Invalid JSON format"));
 
-
         Assert.ThrowsAsync<JsonException>(() => _controller.ImportTourFromJsonAsync(invalidJson));
         return Task.CompletedTask;
     }
@@ -170,7 +156,6 @@ public class FileControllerTests
         _mockFileService
             .Setup(s => s.ImportTourFromJsonAsync(json))
             .ThrowsAsync(new InvalidOperationException("Tour with the same ID already exists"));
-
 
         Assert.ThrowsAsync<InvalidOperationException>(() => _controller.ImportTourFromJsonAsync(json));
         return Task.CompletedTask;
@@ -184,7 +169,6 @@ public class FileControllerTests
         _mockFileService
             .Setup(s => s.GenerateSummaryReport(tours))
             .Throws(new InvalidOperationException("PDF generation failed"));
-
 
         Assert.Throws<InvalidOperationException>(() => _controller.GetSummaryReport());
     }

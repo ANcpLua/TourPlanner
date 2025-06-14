@@ -15,12 +15,6 @@ public class TourViewModel : BaseViewModel
     private readonly IJSRuntime _jsRuntime;
     private readonly MapViewModel _mapViewModel;
     private readonly IRouteApiService _routeApiService;
-    private readonly IViewModelHelperService _viewModelHelperService;
-
-    private bool _isFormVisible;
-    private bool _isMapVisible;
-    private Tour _modalTour = new();
-    private Tour _selectedTour = new();
 
     public TourViewModel(
         IHttpService httpService,
@@ -29,8 +23,7 @@ public class TourViewModel : BaseViewModel
         IJSRuntime jsRuntime,
         IRouteApiService routeApiService,
         ILogger logger,
-        MapViewModel mapViewModel,
-        IViewModelHelperService viewModelHelperService
+        MapViewModel mapViewModel
     )
         : base(httpService, toastServiceWrapper, logger)
     {
@@ -38,7 +31,6 @@ public class TourViewModel : BaseViewModel
         _jsRuntime = jsRuntime;
         _mapViewModel = mapViewModel;
         _routeApiService = routeApiService;
-        _viewModelHelperService = viewModelHelperService;
 
         Tours = [];
     }
@@ -47,32 +39,32 @@ public class TourViewModel : BaseViewModel
 
     public bool IsFormVisible
     {
-        get => _isFormVisible;
-        set => SetProperty(ref _isFormVisible, value);
+        get;
+        set => SetProperty(ref field, value);
     }
 
     public Tour SelectedTour
     {
-        get => _selectedTour;
+        get;
         set
         {
-            if (!SetProperty(ref _selectedTour, value)) return;
+            if (!SetProperty(ref field, value)) return;
             _mapViewModel.FromCity = value.From;
             _mapViewModel.ToCity = value.To;
             OnPropertyChanged(nameof(FilteredToCities));
         }
-    }
+    } = new();
 
     public Tour ModalTour
     {
-        get => _modalTour;
-        private set => SetProperty(ref _modalTour, value);
-    }
+        get;
+        set => SetProperty(ref field, value);
+    } = new();
 
     public bool IsMapVisible
     {
-        get => _isMapVisible;
-        set => SetProperty(ref _isMapVisible, value);
+        get;
+        set => SetProperty(ref field, value);
     }
 
     public bool IsFormValid =>
@@ -86,8 +78,7 @@ public class TourViewModel : BaseViewModel
 
     public void ToggleMap()
     {
-        _viewModelHelperService.ToggleVisibility(ref _isMapVisible);
-        OnPropertyChanged(nameof(IsMapVisible));
+        IsMapVisible = !IsMapVisible;
     }
 
     public void ShowAddTourForm()
@@ -101,19 +92,16 @@ public class TourViewModel : BaseViewModel
             SelectedTour = new Tour();
             _mapViewModel.FromCity = string.Empty;
             _mapViewModel.ToCity = string.Empty;
-            _viewModelHelperService.ShowForm(ref _isFormVisible);
-            OnPropertyChanged(nameof(IsFormVisible));
+            IsFormVisible = true;
         }
     }
 
     public void ResetForm()
     {
-        _viewModelHelperService.ResetForm(ref _selectedTour, () => new Tour());
+        SelectedTour = new Tour();
         _mapViewModel.FromCity = string.Empty;
         _mapViewModel.ToCity = string.Empty;
         IsFormVisible = false;
-        OnPropertyChanged(nameof(SelectedTour));
-        OnPropertyChanged(nameof(IsFormVisible));
     }
 
     [UiMethodDecorator]
@@ -138,12 +126,6 @@ public class TourViewModel : BaseViewModel
             return await HandleApiRequestAsync(
                 async () =>
                 {
-                    if (!IsFormValid)
-                    {
-                        ToastServiceWrapper.ShowError("Please fill in all required fields correctly.");
-                        return false;
-                    }
-
                     var fromCoords = _mapViewModel.GetCoordinates(SelectedTour.From);
                     var toCoords = _mapViewModel.GetCoordinates(SelectedTour.To);
 

@@ -1,27 +1,17 @@
 ﻿using System.Reflection;
-using Moq;
-using Serilog;
 using UI.Decorator;
 using UI.Service.Interface;
 using UI.ViewModel.Base;
 
 namespace Test.UI;
 
-public class TestViewModelWithToast : BaseViewModel
-{
-    public TestViewModelWithToast(IToastServiceWrapper? toastService)
-        : base(Mock.Of<IHttpService>(),
-            toastService ?? Mock.Of<IToastServiceWrapper>(), Log.Logger)
-    {
-    }
-}
-
 [TestFixture]
 public class UiMethodDecoratorTests
 {
-    private UiMethodDecorator _decorator;
-    private MethodInfo _testMethod;
-    private Mock<IToastServiceWrapper> _mockToastService;
+    private UiMethodDecorator _decorator = null!;
+    private MethodInfo _testMethod = null!;
+    private Mock<IToastServiceWrapper> _mockToastService = null!;
+    private Mock<ILogger> _mockLogger = null!;
 
     [SetUp]
     public void SetUp()
@@ -29,83 +19,91 @@ public class UiMethodDecoratorTests
         _decorator = new UiMethodDecorator();
         _testMethod = GetType().GetMethod(nameof(SetUp))!;
         _mockToastService = new Mock<IToastServiceWrapper>();
+        _mockLogger = new Mock<ILogger>();
+        Log.Logger = _mockLogger.Object;
     }
 
     [Test]
     public void Init_WithBaseViewModelHavingToastService_SetsToastService()
     {
-        var viewModel = new TestViewModelWithToast(_mockToastService.Object);
-        
-        _decorator.Init(viewModel, _testMethod, ["arg1", 42]);
-        
-        var exception = new InvalidOperationException("Test exception");
-        _decorator.OnException(exception);
-        
+        var mockViewModel = new Mock<BaseViewModel>(
+            Mock.Of<IHttpService>(),
+            _mockToastService.Object,
+            Mock.Of<ILogger>()
+        ) { CallBase = true };
+
+        _decorator.Init(mockViewModel.Object, _testMethod, ["arg1", 42]);
+        _decorator.OnException(new InvalidOperationException("Test exception"));
+
         _mockToastService.Verify(
-            ts => ts.ShowError(It.Is<string>(msg => 
-                msg.Contains("An error occurred in") && 
-                msg.Contains("Test exception"))), 
+            ts => ts.ShowError(It.Is<string>(msg =>
+                msg.Contains("An error occurred in") &&
+                msg.Contains("Test exception"))),
             Times.Once);
     }
 
     [Test]
     public void Init_WithBaseViewModelHavingNullToastService_HandlesGracefully()
     {
-        var viewModel = new TestViewModelWithToast(null);
-        
-        Assert.DoesNotThrow(() => _decorator.Init(viewModel, _testMethod, []));
-        Assert.DoesNotThrow(() => _decorator.OnException(new Exception("test")));
+        IToastServiceWrapper? nullToastService = null;
+        var mockViewModel = new Mock<BaseViewModel>(
+            Mock.Of<IHttpService>(),
+            nullToastService!,
+            Mock.Of<ILogger>()
+        ) { CallBase = true };
+
+        _decorator.Init(mockViewModel.Object, _testMethod, []);
+        _decorator.OnException(new Exception("test"));
     }
 
     [Test]
     public void Init_WithNonBaseViewModelInstance_DoesNotSetToastService()
     {
         var regularObject = new object();
-        
+
         _decorator.Init(regularObject, _testMethod, []);
-        
-        Assert.DoesNotThrow(() => _decorator.OnException(new Exception("test")));
+        _decorator.OnException(new Exception("test"));
     }
 
     [Test]
-    public void OnEntry_DoesNotThrow()
+    public void OnEntry_ExecutesWithoutException()
     {
         _decorator.Init(new object(), _testMethod, []);
-        
-        Assert.DoesNotThrow(() => _decorator.OnEntry());
+        _decorator.OnEntry();
     }
 
     [Test]
-    public void OnExit_DoesNotThrow()
+    public void OnExit_ExecutesWithoutException()
     {
         _decorator.Init(new object(), _testMethod, []);
-        
-        Assert.DoesNotThrow(() => _decorator.OnExit());
+        _decorator.OnExit();
     }
 
     [Test]
-    public void OnException_WithoutToastService_DoesNotThrow()
+    public void OnException_WithoutToastService_HandlesGracefully()
     {
         var regularObject = new object();
         _decorator.Init(regularObject, _testMethod, []);
-        var exception = new InvalidOperationException("Test exception");
-        
-        Assert.DoesNotThrow(() => _decorator.OnException(exception));
+
+        _decorator.OnException(new InvalidOperationException("Test exception"));
     }
 
     [Test]
     public void CompleteLifecycle_WithBaseViewModel_ExecutesAllMethods()
     {
-        var viewModel = new TestViewModelWithToast(_mockToastService.Object);
-        var exception = new ArgumentException("Test exception");
-        
-        _decorator.Init(viewModel, _testMethod, ["test", 123]);
+        var mockViewModel = new Mock<BaseViewModel>(
+            Mock.Of<IHttpService>(),
+            _mockToastService.Object,
+            Mock.Of<ILogger>()
+        ) { CallBase = true };
+
+        _decorator.Init(mockViewModel.Object, _testMethod, ["test", 123]);
         _decorator.OnEntry();
         _decorator.OnExit();
-        _decorator.OnException(exception);
-        
+        _decorator.OnException(new ArgumentException("Test exception"));
+
         _mockToastService.Verify(
-            ts => ts.ShowError(It.IsAny<string>()), 
+            ts => ts.ShowError(It.IsAny<string>()),
             Times.Once);
     }
 
@@ -113,50 +111,91 @@ public class UiMethodDecoratorTests
     public void CompleteLifecycle_WithRegularObject_ExecutesAllMethods()
     {
         var regularObject = new { Name = "Test" };
-        var exception = new ArgumentException("Test exception");
-        
-        Assert.DoesNotThrow(() => {
-            _decorator.Init(regularObject, _testMethod, ["test", 123]);
-            _decorator.OnEntry();
-            _decorator.OnExit();
-            _decorator.OnException(exception);
-        });
+
+        _decorator.Init(regularObject, _testMethod, ["test", 123]);
+        _decorator.OnEntry();
+        _decorator.OnExit();
+        _decorator.OnException(new ArgumentException("Test exception"));
     }
-    
+
     [Test]
     public void Init_WithMethodHavingDeclaringType_SetsMethodNameWithFullTypeName()
     {
-        var viewModel = new TestViewModelWithToast(_mockToastService.Object);
-        var testMethod = typeof(TestViewModelWithToast).GetConstructor(
-            BindingFlags.Public | BindingFlags.Instance, 
-            null, 
-            [typeof(IToastServiceWrapper)], 
-            null)!;
+        var mockViewModel = new Mock<BaseViewModel>(
+            Mock.Of<IHttpService>(),
+            _mockToastService.Object,
+            Mock.Of<ILogger>()
+        ) { CallBase = true };
 
-        _decorator.Init(viewModel, testMethod, []);
+        var mockMethod = new Mock<MethodInfo>();
+        mockMethod.Setup(m => m.Name).Returns("TestMethod");
+        mockMethod.Setup(m => m.DeclaringType).Returns(typeof(UiMethodDecoratorTests));
+
+        _decorator.Init(mockViewModel.Object, mockMethod.Object, []);
         _decorator.OnException(new Exception("test"));
 
         _mockToastService.Verify(
-            ts => ts.ShowError(It.Is<string>(msg => 
-                msg.Contains($"{typeof(TestViewModelWithToast).FullName}..ctor"))), 
+            ts => ts.ShowError(It.Is<string>(msg =>
+                msg.Contains("UiMethodDecoratorTests.TestMethod") &&
+                !msg.Contains("null"))),
             Times.Once);
     }
 
     [Test]
     public void Init_WithMethodHavingNullDeclaringType_HandlesNullGracefully()
     {
-        var viewModel = new TestViewModelWithToast(_mockToastService.Object);
+        var mockViewModel = new Mock<BaseViewModel>(
+            Mock.Of<IHttpService>(),
+            _mockToastService.Object,
+            Mock.Of<ILogger>()
+        ) { CallBase = true };
+
         var mockMethod = new Mock<MethodInfo>();
         mockMethod.Setup(m => m.Name).Returns("TestMethod");
         mockMethod.Setup(m => m.DeclaringType).Returns((Type?)null);
-    
-        _decorator.Init(viewModel, mockMethod.Object, []);
+
+        _decorator.Init(mockViewModel.Object, mockMethod.Object, []);
         _decorator.OnException(new Exception("test"));
-    
+
         _mockToastService.Verify(
-            ts => ts.ShowError(It.Is<string>(msg => 
-                msg.Contains(".TestMethod") && 
-                !msg.Contains("null"))), 
+            ts => ts.ShowError(It.Is<string>(msg =>
+                msg.Contains(".TestMethod") &&
+                !msg.Contains("null"))),
             Times.Once);
+    }
+
+    [Test]
+    public void OnException_LogsAndShowsError()
+    {
+        var method = typeof(BaseViewModel).GetMethod(nameof(BaseViewModel.OnPropertyChanged))!;
+        var args = new object[] { "TestProperty" };
+        var exception = new InvalidOperationException("Test exception message");
+
+        var mockViewModel = new Mock<BaseViewModel>(
+            Mock.Of<IHttpService>(),
+            _mockToastService.Object,
+            Mock.Of<ILogger>()
+        ) { CallBase = true };
+
+        _decorator.Init(mockViewModel.Object, method, args);
+        _decorator.OnException(exception);
+        using (Assert.EnterMultipleScope())
+        {
+            _mockLogger.Verify(
+                l => l.Error(
+                    exception,
+                    "Exception in {MethodName} with arguments: {@Arguments} after {Duration}ms",
+                    It.Is<string>(s => s.Contains("OnPropertyChanged")),
+                    args,
+                    It.IsAny<long>()
+                ),
+                Times.Once
+            );
+
+            _mockToastService.Verify(
+                t => t.ShowError(It.Is<string>(s => s.Contains("Test exception message"))),
+                Times.Once
+            );
+        }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System.Text;
-using BL.DomainModel;
+﻿using BL.DomainModel;
 using BL.Service;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
@@ -11,30 +10,29 @@ namespace Test.BL;
 public class PdfReportServiceTests
 {
     private readonly PdfReportService _pdfReportService = new();
-    private const string PdfHeader = "%PDF";
 
     [Test]
     public void GenerateTourReport_ValidTour_ReturnsPdfBytes()
     {
         var result = _pdfReportService.GenerateTourReport(TestData.SampleTourDomain());
-        AssertValidPdf(result);
+        TestData.AssertValidPdf(result);
     }
 
     [Test]
     public void GenerateSummaryReport_ValidTours_ReturnsPdfBytes()
     {
         var result = _pdfReportService.GenerateSummaryReport(TestData.SampleTourDomainList());
-        AssertValidPdf(result);
+        TestData.AssertValidPdf(result);
     }
 
     [Test]
     public void GenerateReport_NullValues_HandlesNullsGracefully()
     {
         var tour = TestData.SampleTourDomain();
-        
+
         tour.Distance = null;
         tour.EstimatedTime = null;
-        
+
         tour.Logs =
         [
             new TourLogDomain
@@ -49,7 +47,7 @@ public class PdfReportServiceTests
         ];
 
         var result = _pdfReportService.GenerateTourReport(tour);
-        AssertValidPdf(result);
+        TestData.AssertValidPdf(result);
     }
 
     [Test]
@@ -57,7 +55,7 @@ public class PdfReportServiceTests
     {
         const string specialChars = "Special: áéíóú ñ ¿¡ € &<>\"'";
         var tour = TestData.SampleTourDomain();
-        
+
         tour.Name = specialChars;
         tour.Description = new string('A', 1000);
         tour.From = specialChars;
@@ -75,7 +73,7 @@ public class PdfReportServiceTests
             .ToList();
 
         var result = _pdfReportService.GenerateTourReport(tour);
-        AssertValidPdf(result);
+        TestData.AssertValidPdf(result);
     }
 
     [Test]
@@ -85,7 +83,7 @@ public class PdfReportServiceTests
         tour.ImagePath = null;
 
         var result = _pdfReportService.GenerateTourReport(tour);
-        AssertValidPdf(result);
+        TestData.AssertValidPdf(result);
     }
 
     [TestCase("")]
@@ -96,7 +94,7 @@ public class PdfReportServiceTests
         tour.ImagePath = imagePath;
 
         var result = _pdfReportService.GenerateTourReport(tour);
-        AssertValidPdf(result);
+        TestData.AssertValidPdf(result);
     }
 
     [Test]
@@ -107,16 +105,16 @@ public class PdfReportServiceTests
         {
             image.Save(tempPath, new PngEncoder());
         }
-        
+
         var tour = TestData.SampleTourDomain();
         tour.ImagePath = tempPath;
-        
+
         var pdfWithImage = _pdfReportService.GenerateTourReport(tour);
-        
+
         tour.ImagePath = null;
         var pdfWithoutImage = _pdfReportService.GenerateTourReport(tour);
-        
-        Assert.That(pdfWithImage.Length, Is.GreaterThan(pdfWithoutImage.Length), 
+
+        Assert.That(pdfWithImage, Has.Length.GreaterThan(pdfWithoutImage.Length),
             "PDF with image should be larger");
     }
 
@@ -125,20 +123,14 @@ public class PdfReportServiceTests
     {
         var tempPath = Path.GetTempFileName();
         File.WriteAllText(tempPath, "Not an image");
-        
+
         var tour = TestData.SampleTourDomain();
         tour.ImagePath = tempPath;
-        
+
         Assert.DoesNotThrow(() =>
         {
             var result = _pdfReportService.GenerateTourReport(tour);
-            AssertValidPdf(result);
+            TestData.AssertValidPdf(result);
         });
-    }
-
-    private static void AssertValidPdf(byte[] pdfBytes)
-    {
-        Assert.That(pdfBytes, Is.Not.Null.And.Not.Empty);
-        Assert.That(pdfBytes[..4], Is.EqualTo(Encoding.UTF8.GetBytes(PdfHeader)));
     }
 }

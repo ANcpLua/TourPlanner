@@ -12,8 +12,6 @@ namespace UI.ViewModel;
 public class SearchViewModel : BaseViewModel
 {
     private readonly NavigationManager _navigationManager;
-    private ObservableCollection<Tour> _searchResults = [];
-    private string _searchText = string.Empty;
 
     public SearchViewModel(
         IHttpService httpService,
@@ -28,15 +26,15 @@ public class SearchViewModel : BaseViewModel
 
     public string SearchText
     {
-        get => _searchText;
-        set => SetProperty(ref _searchText, value);
-    }
+        get;
+        set => SetProperty(ref field, value);
+    } = string.Empty;
 
     public ObservableCollection<Tour> SearchResults
     {
-        get => _searchResults;
-        set => SetProperty(ref _searchResults, value);
-    }
+        get;
+        set => SetProperty(ref field, value);
+    } = [];
 
     [UiMethodDecorator]
     public Task SearchToursAsync()

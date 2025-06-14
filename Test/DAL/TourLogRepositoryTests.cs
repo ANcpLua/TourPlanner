@@ -7,6 +7,9 @@ namespace Test.DAL;
 [TestFixture]
 public class TourLogRepositoryTests
 {
+    private TourPlannerContext _context = null!;
+    private TourLogRepository _repository = null!;
+
     [SetUp]
     public void Setup()
     {
@@ -24,18 +27,13 @@ public class TourLogRepositoryTests
         _context.Dispose();
     }
 
-    private TourPlannerContext _context;
-    private TourLogRepository _repository;
-
     [Test]
     public async Task CreateTourLogAsync_WithValidTourLog_ReturnsSavedTourLog()
     {
         var tourLog = TestData.SampleTourLogPersistence();
 
-
         var result = await _repository.CreateTourLogAsync(tourLog);
         var logCount = await _context.TourLogsPersistence.CountAsync();
-
 
         Assert.That(result, Is.Not.Null);
         using (Assert.EnterMultipleScope())
@@ -52,9 +50,7 @@ public class TourLogRepositoryTests
         _context.TourLogsPersistence.AddRange(tourLogs);
         _context.SaveChanges();
 
-
         var result = _repository.GetTourLogsByTourId(TestData.TestGuid).ToList();
-
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Has.Count.EqualTo(tourLogs.Count));
@@ -65,9 +61,7 @@ public class TourLogRepositoryTests
     {
         var nonExistentTourId = Guid.NewGuid();
 
-
         var result = _repository.GetTourLogsByTourId(nonExistentTourId);
-
 
         Assert.That(result, Is.Empty);
     }
@@ -79,9 +73,7 @@ public class TourLogRepositoryTests
         _context.TourLogsPersistence.Add(tourLog);
         _context.SaveChanges();
 
-
         var result = _repository.GetTourLogById(tourLog.Id);
-
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Id, Is.EqualTo(tourLog.Id));
@@ -92,9 +84,7 @@ public class TourLogRepositoryTests
     {
         var nonExistingId = Guid.NewGuid();
 
-
         var result = _repository.GetTourLogById(nonExistingId);
-
 
         Assert.That(result, Is.Null);
     }
@@ -107,11 +97,9 @@ public class TourLogRepositoryTests
         await _context.SaveChangesAsync();
         tourLog.Comment = "Updated comment";
 
-
         var result = await _repository.UpdateTourLogAsync(tourLog);
         var dbTourLog = await _context.TourLogsPersistence
             .FirstAsync(t => t.Id == tourLog.Id);
-
 
         Assert.That(result, Is.Not.Null);
         using (Assert.EnterMultipleScope())
@@ -128,11 +116,9 @@ public class TourLogRepositoryTests
         _context.TourLogsPersistence.Add(tourLog);
         await _context.SaveChangesAsync();
 
-
         await _repository.DeleteTourLogAsync(tourLog.Id);
 
-
-        Assert.That(await _context.TourLogsPersistence.CountAsync(), Is.EqualTo(0));
+        Assert.That(await _context.TourLogsPersistence.CountAsync(), Is.Zero);
     }
 
     [Test]
@@ -141,9 +127,7 @@ public class TourLogRepositoryTests
         var tourLog = TestData.SampleTourLogPersistence();
         tourLog.DateTime = DateTime.Now;
 
-
         var result = await _repository.CreateTourLogAsync(tourLog);
-
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result.DateTime.Kind, Is.EqualTo(DateTimeKind.Local));
@@ -155,9 +139,7 @@ public class TourLogRepositoryTests
         var tourLog = TestData.SampleTourLogPersistence();
         tourLog.TotalDistance = 10.123456789;
 
-
         var result = await _repository.CreateTourLogAsync(tourLog);
-
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result.TotalDistance, Is.EqualTo(10.123456789).Within(0.000000001),
@@ -171,9 +153,7 @@ public class TourLogRepositoryTests
         var tourLog = TestData.SampleTourLogPersistence();
         tourLog.DateTime = DateTime.UtcNow.AddYears(1);
 
-
         var result = await _repository.CreateTourLogAsync(tourLog);
-
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result.DateTime, Is.GreaterThan(DateTime.UtcNow));

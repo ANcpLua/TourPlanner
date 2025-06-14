@@ -1,6 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
-using BlazorDownloadFile;
+using Blazor.DownloadFileFast.Interfaces;
 using Microsoft.AspNetCore.Components.Forms;
 using UI.Decorator;
 using UI.Model;
@@ -14,36 +14,31 @@ public class ReportViewModel : BaseViewModel
 {
     private readonly IBlazorDownloadFileService _blazorDownloadFile;
     private readonly TourViewModel _tourViewModel;
-    private readonly IViewModelHelperService _viewModelHelper;
-    private string _currentReportUrl = string.Empty;
-    private Guid _selectedDetailedTourId = Guid.Empty;
 
     public ReportViewModel(
         IHttpService httpService,
         IToastServiceWrapper toastServiceWrapper,
         ILogger logger,
         IBlazorDownloadFileService blazorDownloadFile,
-        TourViewModel tourViewModel,
-        IViewModelHelperService viewModelHelper
+        TourViewModel tourViewModel
     )
         : base(httpService, toastServiceWrapper, logger)
     {
         _blazorDownloadFile = blazorDownloadFile;
         _tourViewModel = tourViewModel;
-        _viewModelHelper = viewModelHelper;
     }
 
     public string CurrentReportUrl
     {
-        get => _currentReportUrl;
-        set => SetProperty(ref _currentReportUrl, value);
-    }
+        get;
+        set => SetProperty(ref field, value);
+    } = string.Empty;
 
     public Guid SelectedDetailedTourId
     {
-        get => _selectedDetailedTourId;
-        set => SetProperty(ref _selectedDetailedTourId, value);
-    }
+        get;
+        set => SetProperty(ref field, value);
+    } = Guid.Empty;
 
     public IEnumerable<Tour> Tours => _tourViewModel.Tours;
 
@@ -55,13 +50,12 @@ public class ReportViewModel : BaseViewModel
 
     public void ResetCurrentReportUrl()
     {
-        _viewModelHelper.ResetForm(ref _currentReportUrl, () => string.Empty);
-        OnPropertyChanged(nameof(CurrentReportUrl));
+        CurrentReportUrl = string.Empty;
     }
 
     public void ClearCurrentReport()
     {
-        ResetCurrentReportUrl();
+        CurrentReportUrl = string.Empty;
     }
 
     [UiMethodDecorator]
@@ -106,16 +100,18 @@ public class ReportViewModel : BaseViewModel
     {
         var reportBytes = await HttpService.GetByteArrayAsync(uri);
         var fileName = $"{reportType}_{DateTime.UtcNow:yyyyMMdd_HHmmss}.pdf";
-        await _blazorDownloadFile.DownloadFile(fileName, reportBytes, "application/pdf");
-
-        if (reportBytes != null)
+        if (reportBytes is null || reportBytes.Length == 0)
         {
-            _viewModelHelper.ResetForm(
-                ref _currentReportUrl,
-                () => $"data:application/pdf;base64,{Convert.ToBase64String(reportBytes)}"
-            );
-            OnPropertyChanged(nameof(CurrentReportUrl));
+            ToastServiceWrapper.ShowError($"Error generating {reportType}: No data received.");
+            return;
         }
+
+        await _blazorDownloadFile.DownloadFileAsync(
+            fileName,
+            reportBytes,
+            "application/pdf"
+        );
+        OnPropertyChanged(nameof(CurrentReportUrl));
 
         ToastServiceWrapper.ShowSuccess($"{reportType} generated successfully.");
     }
@@ -136,7 +132,7 @@ public class ReportViewModel : BaseViewModel
                     }
 
                     var fileName = $"Tour_{tourId}_{DateTime.UtcNow:yyyyMMdd_HHmmss}.json";
-                    await _blazorDownloadFile.DownloadFile(
+                    await _blazorDownloadFile.DownloadFileAsync(
                         fileName,
                         Encoding.UTF8.GetBytes(json),
                         "application/json"

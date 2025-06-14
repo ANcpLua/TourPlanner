@@ -3,8 +3,6 @@ using BL.Interface;
 using BL.Module;
 using DAL.Interface;
 using MapsterMapper;
-using Microsoft.Extensions.Configuration;
-using Moq;
 
 namespace Test.BL;
 
@@ -31,12 +29,12 @@ public class BusinessLogicModuleTests
         using var container = builder.Build();
         var service = container.Resolve<IPdfReportService>();
         container.Resolve<ITourService>();
-        container.Resolve<ITourLogService>(); 
+        container.Resolve<ITourLogService>();
         container.Resolve<IFileService>();
 
         Assert.That(service, Is.Not.Null);
     }
-    
+
     [Test]
     public void Module_Load_WithMissingImageBasePath_UsesEmptyString()
     {
@@ -56,10 +54,10 @@ public class BusinessLogicModuleTests
 
         using var container = builder.Build();
         var service = container.Resolve<IPdfReportService>();
-    
+
         Assert.That(service, Is.Not.Null);
     }
-    
+
     [Test]
     public void Module_Load_WithNullImageBasePath_UsesEmptyString()
     {
@@ -79,7 +77,7 @@ public class BusinessLogicModuleTests
 
         using var container = builder.Build();
         var service = container.Resolve<IPdfReportService>();
-    
+
         Assert.That(service, Is.Not.Null);
     }
 }

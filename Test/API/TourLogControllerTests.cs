@@ -4,7 +4,6 @@ using BL.Interface;
 using MapsterMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Moq;
 using UI.Model;
 
 namespace Test.API;
@@ -12,6 +11,10 @@ namespace Test.API;
 [TestFixture]
 public class TourLogControllerTests
 {
+    private Mock<ITourLogService> _mockTourLogService = null!;
+    private Mock<IMapper> _mockMapper = null!;
+    private TourLogController _controller = null!;
+
     [SetUp]
     public void Setup()
     {
@@ -19,10 +22,6 @@ public class TourLogControllerTests
         _mockMapper = new Mock<IMapper>();
         _controller = new TourLogController(_mockTourLogService.Object, _mockMapper.Object);
     }
-
-    private Mock<ITourLogService> _mockTourLogService;
-    private Mock<IMapper> _mockMapper;
-    private TourLogController _controller;
 
     [Test]
     public async Task CreateTourLogAsync_HappyPath_ReturnsCreatedTourLog()
@@ -35,9 +34,7 @@ public class TourLogControllerTests
             .ReturnsAsync(tourLogDomain);
         _mockMapper.Setup(m => m.Map<TourLog>(tourLogDomain)).Returns(tourLogDto);
 
-
         var result = await _controller.CreateTourLog(tourLogDto);
-
 
         Assert.That(result, Is.TypeOf<OkObjectResult>());
         var okResult = (OkObjectResult)result;
@@ -53,7 +50,6 @@ public class TourLogControllerTests
         _mockTourLogService
             .Setup(s => s.CreateTourLogAsync(tourLogDomain, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new ArgumentException("Invalid tour log data"));
-
 
         Assert.ThrowsAsync<ArgumentException>(() => _controller.CreateTourLog(tourLogDto));
         return Task.CompletedTask;
@@ -73,7 +69,6 @@ public class TourLogControllerTests
                 )
             );
 
-
         Assert.ThrowsAsync<InvalidOperationException>(() => _controller.CreateTourLog(tourLogDto));
         return Task.CompletedTask;
     }
@@ -87,9 +82,7 @@ public class TourLogControllerTests
         _mockTourLogService.Setup(s => s.GetTourLogById(tourLogId)).Returns(tourLogDomain);
         _mockMapper.Setup(m => m.Map<TourLog>(tourLogDomain)).Returns(tourLogDto);
 
-
         var result = _controller.GetTourLogById(tourLogId);
-
 
         Assert.That(result, Is.TypeOf<OkObjectResult>());
         var okResult = (OkObjectResult)result;
@@ -102,9 +95,7 @@ public class TourLogControllerTests
         var tourLogId = TestData.NonexistentGuid;
         _mockTourLogService.Setup(s => s.GetTourLogById(tourLogId)).Returns((TourLogDomain)null!);
 
-
         var result = _controller.GetTourLogById(tourLogId);
-
 
         Assert.That(result, Is.TypeOf<NotFoundResult>());
     }
@@ -120,9 +111,7 @@ public class TourLogControllerTests
             .Returns(tourLogsDomain);
         _mockMapper.Setup(m => m.Map<IEnumerable<TourLog>>(tourLogsDomain)).Returns(tourLogsDto);
 
-
         var result = _controller.GetTourLogsByTourId(tourId);
-
 
         Assert.That(result, Is.TypeOf<OkObjectResult>());
         var okResult = (OkObjectResult)result;
@@ -137,7 +126,6 @@ public class TourLogControllerTests
             .Setup(s => s.GetTourLogsByTourId(tourId))
             .Throws(new KeyNotFoundException("Tour not found"));
 
-
         Assert.Throws<KeyNotFoundException>(() => _controller.GetTourLogsByTourId(tourId));
     }
 
@@ -148,7 +136,6 @@ public class TourLogControllerTests
         _mockTourLogService
             .Setup(s => s.GetTourLogsByTourId(tourId))
             .Throws(new Exception("Database connection error"));
-
 
         Assert.Throws<Exception>(() => _controller.GetTourLogsByTourId(tourId));
     }
@@ -165,9 +152,7 @@ public class TourLogControllerTests
             .ReturnsAsync(tourLogDomain);
         _mockMapper.Setup(m => m.Map<TourLog>(tourLogDomain)).Returns(tourLogDto);
 
-
         var result = await _controller.UpdateTourLog(tourLogId, tourLogDto);
-
 
         Assert.That(result, Is.TypeOf<OkObjectResult>());
         var okResult = (OkObjectResult)result;
@@ -185,7 +170,6 @@ public class TourLogControllerTests
             .Setup(s => s.UpdateTourLogAsync(tourLogDomain, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new DbUpdateConcurrencyException("Concurrency conflict occurred"));
 
-
         Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => _controller.UpdateTourLog(tourLogId, tourLogDto)
         );
         return Task.CompletedTask;
@@ -199,9 +183,7 @@ public class TourLogControllerTests
             .Setup(s => s.DeleteTourLogAsync(tourLogId, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-
         var result = await _controller.DeleteTourLog(tourLogId);
-
 
         Assert.That(result, Is.TypeOf<NoContentResult>());
     }
@@ -213,7 +195,6 @@ public class TourLogControllerTests
         _mockTourLogService
             .Setup(s => s.DeleteTourLogAsync(tourLogId, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new KeyNotFoundException("TourLog not found"));
-
 
         Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.DeleteTourLog(tourLogId));
         return Task.CompletedTask;

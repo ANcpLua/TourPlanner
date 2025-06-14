@@ -1,10 +1,9 @@
 @page "/log/list"
 @page "/log/list/{TourId:guid?}"
-@inject TourLogViewModel TourLogViewModel
-@inject TourViewModel TourViewModel
 @using UI.View.TourLogComponents
 @using UI.ViewModel
-@implements IDisposable
+@inject TourLogViewModel TourLogViewModel
+@inject TourViewModel TourViewModel
 
 <div class="tour-planner-app">
     <div class="container-fluid tour-planner-container">
@@ -78,11 +77,4 @@
             InvokeAsync(StateHasChanged);
         }
     }
-
-    public void Dispose()
-    {
-        TourLogViewModel.PropertyChanged -= OnTourLogViewModelPropertyChanged;
-        TourViewModel.PropertyChanged -= OnTourViewModelPropertyChanged;
-    }
-
 }

@@ -8,11 +8,9 @@ namespace UI.ViewModel.Base;
 
 public abstract class BaseViewModel : INotifyPropertyChanged
 {
-    private readonly TryCatchToastWrapper _tryCatchToastWrapper;
     public readonly IHttpService HttpService;
     public readonly IToastServiceWrapper ToastServiceWrapper;
-
-    private bool _isProcessing;
+    private readonly TryCatchToastWrapper _tryCatchToastWrapper;
 
     protected BaseViewModel(
         IHttpService httpService,
@@ -26,13 +24,13 @@ public abstract class BaseViewModel : INotifyPropertyChanged
 
     public bool IsProcessing
     {
-        get => _isProcessing;
-        set => SetProperty(ref _isProcessing, value);
+        get;
+        set => SetProperty(ref field, value);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    public void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
@@ -63,7 +61,7 @@ public abstract class BaseViewModel : INotifyPropertyChanged
         return true;
     }
 
-    protected Task<T?> HandleApiRequestAsync<T>(Func<Task<T>> apiCall, string errorMessage)
+    public Task<T?> HandleApiRequestAsync<T>(Func<Task<T>> apiCall, string errorMessage)
     {
         return _tryCatchToastWrapper.ExecuteAsync(apiCall, errorMessage);
     }

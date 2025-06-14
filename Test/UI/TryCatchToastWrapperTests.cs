@@ -1,6 +1,4 @@
-﻿using Moq;
-using Serilog;
-using UI.Decorator;
+﻿using UI.Decorator;
 using UI.Service.Interface;
 
 namespace Test.UI;
@@ -8,9 +6,9 @@ namespace Test.UI;
 [TestFixture]
 public class TryCatchToastWrapperTests
 {
-    private Mock<IToastServiceWrapper> _mockToastService;
-    private Mock<ILogger> _mockLogger;
-    private TryCatchToastWrapper _wrapper;
+    private Mock<IToastServiceWrapper> _mockToastService = null!;
+    private Mock<ILogger> _mockLogger = null!;
+    private TryCatchToastWrapper _wrapper = null!;
 
     [SetUp]
     public void SetUp()
@@ -31,7 +29,6 @@ public class TryCatchToastWrapperTests
             "Test error",
             ErrorHandler
         );
-
         using (Assert.EnterMultipleScope())
         {
             Assert.That(errorHandlerCalled, Is.True);
@@ -40,7 +37,10 @@ public class TryCatchToastWrapperTests
 
         return;
 
-        void ErrorHandler(Exception _) => errorHandlerCalled = true;
+        void ErrorHandler(Exception _)
+        {
+            errorHandlerCalled = true;
+        }
     }
 
     [Test]
@@ -56,8 +56,12 @@ public class TryCatchToastWrapperTests
         );
 
         Assert.That(errorHandlerCalled, Is.True);
+
         return;
 
-        void ErrorHandler(Exception _) => errorHandlerCalled = true;
+        void ErrorHandler(Exception _)
+        {
+            errorHandlerCalled = true;
+        }
     }
 }
