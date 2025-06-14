@@ -125,7 +125,7 @@ public class HttpServiceTests
     [Test]
     public async Task GetStringAsync_ReturnsStringContent()
     {
-        var expectedContent = "Sample tour data";
+        const string expectedContent = "Sample tour data";
         SetupHttpResponse(HttpStatusCode.OK, expectedContent);
 
         var result = await _httpService.GetStringAsync("api/tours/export");
@@ -145,8 +145,7 @@ public class HttpServiceTests
         Assert.That(result, Is.EqualTo(expectedBytes));
         VerifyHttpRequest(HttpMethod.Get, "api/reports/tour");
     }
-
-
+    
     [Test]
     public async Task GetByteArrayAsync_EmptyResponse_ReturnsEmptyArray()
     {
@@ -186,6 +185,38 @@ public class HttpServiceTests
         await _httpService.PostAsync("api/test", null);
 
         VerifyHttpRequest(HttpMethod.Post, "api/test");
+    }
+    
+    [Test]
+    public async Task SendRequestAsync_SuccessfulRequest_CompletesSuccessfully()
+    {
+        SetupHttpResponse(HttpStatusCode.OK, "");
+    
+        await _httpService.SendRequestAsync(HttpMethod.Delete, "api/test");
+    
+        VerifyHttpRequest(HttpMethod.Delete, "api/test");
+    }
+
+    [Test]
+    public async Task SendRequestAsync_WithPostData_SendsDataSuccessfully()
+    {
+        var testData = new { Name = "Test", Value = 123 };
+        SetupHttpResponse(HttpStatusCode.OK, "");
+    
+        await _httpService.SendRequestAsync(HttpMethod.Post, "api/test", testData);
+    
+        VerifyHttpRequest(HttpMethod.Post, "api/test");
+    }
+
+    [Test]
+    public async Task SendRequestAsync_FailedRequest_HandlesError()
+    {
+        SetupHttpResponse(HttpStatusCode.InternalServerError, "Server Error");
+    
+        await _httpService.SendRequestAsync(HttpMethod.Get, "api/test");
+    
+        _mockToastService.Verify(t => t.ShowError(It.IsAny<string>()), Times.Once);
+        VerifyHttpRequest(HttpMethod.Get, "api/test");
     }
 
     private void SetupHttpResponse(HttpStatusCode statusCode, string content)
