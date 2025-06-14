@@ -5,20 +5,27 @@
             <DataCollector friendlyName="XPlat Code Coverage">
                 <Configuration>
                     <ExcludeByFile>
-                        **/Views/*.cs,
-                        **/View/*.cs,
-                        **/Program.cs
+                        **/View/**/*.razor,
+                        **/View/**/*.razor.cs,
+                        **/Views/**/*.razor,
+                        **/Views/**/*.razor.cs,
+                        **/Program.cs,
+                        **/_Imports.razor,
+                        **/App.razor
                     </ExcludeByFile>
                     <ExcludeByAttribute>
                         ExcludeFromCodeCoverage,
-                        GeneratedCodeAttribute
+                        GeneratedCodeAttribute,
+                        CompilerGeneratedAttribute
                     </ExcludeByAttribute>
                     <Exclude>
+                        [*]*.View.*,
                         [*]*.Views.*,
-                        [*]*.View,
+                        [UI]UI.View.*,
                         [*]*Window,
                         [*]*Form*,
-                        [*]Program
+                        [*]Program,
+                        [*]*.razor
                     </Exclude>
                 </Configuration>
             </DataCollector>

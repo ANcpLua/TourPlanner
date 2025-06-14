@@ -11,6 +11,7 @@
 
     <ItemGroup>
         <PackageReference Include="Autofac" Version="8.3.0"/>
+        <PackageReference Include="bunit" Version="1.39.5" />
         <PackageReference Include="Mapster" Version="7.4.0"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.6" />
         <PackageReference Include="Moq" Version="4.20.72" />
