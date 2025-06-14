@@ -122,4 +122,41 @@ public class UiMethodDecoratorTests
             _decorator.OnException(exception);
         });
     }
+    
+    [Test]
+    public void Init_WithMethodHavingDeclaringType_SetsMethodNameWithFullTypeName()
+    {
+        var viewModel = new TestViewModelWithToast(_mockToastService.Object);
+        var testMethod = typeof(TestViewModelWithToast).GetConstructor(
+            BindingFlags.Public | BindingFlags.Instance, 
+            null, 
+            [typeof(IToastServiceWrapper)], 
+            null)!;
+
+        _decorator.Init(viewModel, testMethod, []);
+        _decorator.OnException(new Exception("test"));
+
+        _mockToastService.Verify(
+            ts => ts.ShowError(It.Is<string>(msg => 
+                msg.Contains($"{typeof(TestViewModelWithToast).FullName}..ctor"))), 
+            Times.Once);
+    }
+
+    [Test]
+    public void Init_WithMethodHavingNullDeclaringType_HandlesNullGracefully()
+    {
+        var viewModel = new TestViewModelWithToast(_mockToastService.Object);
+        var mockMethod = new Mock<MethodInfo>();
+        mockMethod.Setup(m => m.Name).Returns("TestMethod");
+        mockMethod.Setup(m => m.DeclaringType).Returns((Type?)null);
+    
+        _decorator.Init(viewModel, mockMethod.Object, []);
+        _decorator.OnException(new Exception("test"));
+    
+        _mockToastService.Verify(
+            ts => ts.ShowError(It.Is<string>(msg => 
+                msg.Contains(".TestMethod") && 
+                !msg.Contains("null"))), 
+            Times.Once);
+    }
 }
