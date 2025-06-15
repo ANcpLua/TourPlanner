@@ -79,4 +79,102 @@ public sealed class TourListComponentTests : BunitTestBase
 
         Assert.That(cut.Markup, Does.Contain("No tours available"));
     }
+
+    [TestCase(100.5, "100[.,]50")]
+    [TestCase(null, "N/A")]
+    public void TourCard_Distance_DisplaysCorrectValue(double? distance, string expectedPattern)
+    {
+        var tour = Services.ViewModel<TourViewModel>().Tours.First();
+        tour.Distance = distance;
+
+        var cut = RenderComponent<TourListComponent>(p => p
+            .Add(x => x.ViewModel, Services.ViewModel<TourViewModel>())
+            .Add(x => x.ReportViewModel, Services.ViewModel<ReportViewModel>()));
+
+        var tourCard = cut.Find("div.tour-card");
+        if (distance.HasValue)
+        {
+            Assert.That(tourCard.TextContent, Does.Match($@"Distance: {expectedPattern} meters"));
+        }
+        else
+        {
+            Assert.That(tourCard.TextContent, Does.Contain($"Distance: {expectedPattern} meters"));
+        }
+    }
+
+    [TestCase(60.0, "60")]
+    [TestCase(null, "N/A")]
+    public void TourCard_EstimatedTime_DisplaysCorrectValue(double? estimatedTime, string expectedText)
+    {
+        var tour = Services.ViewModel<TourViewModel>().Tours.First();
+        tour.EstimatedTime = estimatedTime;
+
+        var cut = RenderComponent<TourListComponent>(p => p
+            .Add(x => x.ViewModel, Services.ViewModel<TourViewModel>())
+            .Add(x => x.ReportViewModel, Services.ViewModel<ReportViewModel>()));
+
+        var tourCard = cut.Find("div.tour-card");
+        Assert.That(tourCard.TextContent, Does.Contain($"Estimated Time: {expectedText} minutes"));
+    }
+
+    [TestCase(true, "Yes")]
+    [TestCase(false, "No")]
+    public void TourCard_ChildFriendly_DisplaysCorrectValue(bool isChildFriendly, string expectedText)
+    {
+        var tour = Services.ViewModel<TourViewModel>().Tours.First();
+        tour.TourLogs.Clear();
+        if (isChildFriendly)
+        {
+            tour.TourLogs.Add(new TourLog { Difficulty = 2, Rating = 3 });
+        }
+
+        var cut = RenderComponent<TourListComponent>(p => p
+            .Add(x => x.ViewModel, Services.ViewModel<TourViewModel>())
+            .Add(x => x.ReportViewModel, Services.ViewModel<ReportViewModel>()));
+
+        var tourCard = cut.Find("div.tour-card");
+        Assert.That(tourCard.TextContent, Does.Contain($"Child Friendly: {expectedText}"));
+    }
+
+    [Test]
+    public void EditButton_FormVisibleForSelectedTour_ShowsHideEditForm()
+    {
+        var tour = Services.ViewModel<TourViewModel>().Tours.First();
+        Services.ViewModel<TourViewModel>().IsFormVisible = true;
+        Services.ViewModel<TourViewModel>().SelectedTour = tour;
+
+        var cut = RenderComponent<TourListComponent>(p => p
+            .Add(x => x.ViewModel, Services.ViewModel<TourViewModel>())
+            .Add(x => x.ReportViewModel, Services.ViewModel<ReportViewModel>()));
+
+        var editButton = cut.FindAll("button").First(b => b.TextContent.Contains("Hide Edit Form"));
+        Assert.That(editButton, Is.Not.Null);
+    }
+
+    [Test]
+    public void EditButton_FormNotVisibleOrDifferentTour_ShowsEdit()
+    {
+        Services.ViewModel<TourViewModel>().IsFormVisible = false;
+
+        var cut = RenderComponent<TourListComponent>(p => p
+            .Add(x => x.ViewModel, Services.ViewModel<TourViewModel>())
+            .Add(x => x.ReportViewModel, Services.ViewModel<ReportViewModel>()));
+
+        var editButton = cut.FindAll("button").First(b => b.TextContent.Trim() == "Edit");
+        Assert.That(editButton, Is.Not.Null);
+    }
+
+    [TestCase(true, "Exporting...")]
+    [TestCase(false, "Export")]
+    public void ExportButton_ProcessingState_DisplaysCorrectText(bool isProcessing, string expectedText)
+    {
+        Services.ViewModel<ReportViewModel>().IsProcessing = isProcessing;
+
+        var cut = RenderComponent<TourListComponent>(p => p
+            .Add(x => x.ViewModel, Services.ViewModel<TourViewModel>())
+            .Add(x => x.ReportViewModel, Services.ViewModel<ReportViewModel>()));
+
+        var exportButton = cut.FindAll("button").First(b => b.TextContent.Contains(expectedText));
+        Assert.That(exportButton, Is.Not.Null);
+    }
 }
