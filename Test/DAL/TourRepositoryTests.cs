@@ -7,6 +7,9 @@ namespace Test.DAL;
 [TestFixture]
 public class TourRepositoryTests
 {
+    private TourPlannerContext _context = null!;
+    private TourRepository _repository = null!;
+
     [SetUp]
     public void Setup()
     {
@@ -24,18 +27,13 @@ public class TourRepositoryTests
         _context.Dispose();
     }
 
-    private TourPlannerContext _context;
-    private TourRepository _repository;
-
     [Test]
     public async Task CreateTourAsync_WithValidTour_ReturnsSavedTour()
     {
         var tour = TestData.SampleTourPersistence();
 
-
         var result = await _repository.CreateTourAsync(tour);
         var tourCount = await _context.ToursPersistence.CountAsync();
-
 
         Assert.That(result, Is.Not.Null);
         using (Assert.EnterMultipleScope())
@@ -52,7 +50,6 @@ public class TourRepositoryTests
         var tour = TestData.SampleTourPersistence();
         tour.Name = null!;
 
-
         Assert.That(async () => await _repository.CreateTourAsync(tour), Throws.InstanceOf<DbUpdateException>());
     }
 
@@ -63,9 +60,7 @@ public class TourRepositoryTests
         _context.ToursPersistence.AddRange(tours);
         _context.SaveChanges();
 
-
         var result = _repository.GetAllTours().ToList();
-
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Has.Count.EqualTo(tours.Count));
@@ -75,7 +70,6 @@ public class TourRepositoryTests
     public void GetAllTours_WithNoExistingTours_ReturnsEmptyList()
     {
         var result = _repository.GetAllTours().ToList();
-
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Is.Empty);
@@ -88,9 +82,7 @@ public class TourRepositoryTests
         _context.ToursPersistence.Add(tour);
         _context.SaveChanges();
 
-
         var result = _repository.GetTourById(tour.Id);
-
 
         Assert.That(result, Is.Not.Null);
         using (Assert.EnterMultipleScope())
@@ -105,9 +97,7 @@ public class TourRepositoryTests
     {
         var nonExistingId = Guid.NewGuid();
 
-
         var result = _repository.GetTourById(nonExistingId);
-
 
         Assert.That(result, Is.Null);
     }
@@ -121,10 +111,8 @@ public class TourRepositoryTests
 
         tour.Name = "Updated Tour Name";
 
-
         var result = await _repository.UpdateTourAsync(tour);
         var dbTour = await _context.ToursPersistence.FirstAsync(t => t.Id == tour.Id);
-
 
         Assert.That(result, Is.Not.Null);
         using (Assert.EnterMultipleScope())
@@ -139,7 +127,6 @@ public class TourRepositoryTests
     {
         var tour = TestData.SampleTourPersistence();
 
-
         Assert.That(async () => await _repository.UpdateTourAsync(tour),
             Throws.InstanceOf<DbUpdateConcurrencyException>());
         return Task.CompletedTask;
@@ -152,11 +139,9 @@ public class TourRepositoryTests
         _context.ToursPersistence.Add(tour);
         await _context.SaveChangesAsync();
 
-
         await _repository.DeleteTourAsync(tour.Id);
 
-
-        Assert.That(await _context.ToursPersistence.CountAsync(), Is.EqualTo(0));
+        Assert.That(await _context.ToursPersistence.CountAsync(), Is.Zero);
     }
 
     [Test]
@@ -166,9 +151,7 @@ public class TourRepositoryTests
         _context.ToursPersistence.Add(tour);
         await _context.SaveChangesAsync();
 
-
         await _repository.DeleteTourAsync(Guid.NewGuid());
-
 
         Assert.That(await _context.ToursPersistence.CountAsync(), Is.EqualTo(1));
     }
@@ -176,18 +159,16 @@ public class TourRepositoryTests
     [Test]
     public async Task SearchToursAsync_WithMatchingSearchText_ReturnsMatchingTours()
     {
-        var tours = TestData.SampleTourPersistenceList();
-        await _context.ToursPersistence.AddRangeAsync(tours);
+        var tour = TestData.SampleTourPersistence();
+        await _context.ToursPersistence.AddAsync(tour);
         await _context.SaveChangesAsync();
 
-
-        var result = _repository.SearchToursAsync("Sample");
-
+        var result = await _repository.SearchToursAsync("Sample").ToListAsync();
 
         Assert.That(result, Is.Not.Null);
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(result.Count(), Is.EqualTo(1));
+            Assert.That(result, Has.Count.EqualTo(1));
             Assert.That(result.First().Name, Is.EqualTo("Sample Tour"));
         }
     }
@@ -199,12 +180,10 @@ public class TourRepositoryTests
         await _context.ToursPersistence.AddRangeAsync(tours);
         await _context.SaveChangesAsync();
 
-
         var result = _repository.SearchToursAsync("NonExistingTour");
 
-
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.Count(), Is.EqualTo(0));
+        Assert.That(result.Count(), Is.Zero);
     }
 
     [Test]

@@ -1,8 +1,4 @@
 ﻿using System.Net;
-using System.Text;
-using Microsoft.Extensions.Configuration;
-using Moq;
-using Moq.Protected;
 using UI.Service;
 
 namespace Test.UI.Services;
@@ -10,6 +6,11 @@ namespace Test.UI.Services;
 [TestFixture]
 public class RouteApiServiceTests
 {
+    private Mock<HttpMessageHandler> _mockHttpMessageHandler = null!;
+    private HttpClient _httpClient = null!;
+    private Mock<IConfiguration> _mockConfiguration = null!;
+    private RouteApiService _sut = null!;
+
     [SetUp]
     public void Setup()
     {
@@ -19,7 +20,7 @@ public class RouteApiServiceTests
             BaseAddress = new Uri("https://api.openrouteservice.org/")
         };
         _mockConfiguration = TestData.MockConfiguration();
-        _routeApiService = new RouteApiService(_httpClient, _mockConfiguration.Object);
+        _sut = new RouteApiService(_httpClient, _mockConfiguration.Object);
     }
 
     [TearDown]
@@ -27,11 +28,6 @@ public class RouteApiServiceTests
     {
         _httpClient.Dispose();
     }
-
-    private Mock<HttpMessageHandler> _mockHttpMessageHandler = null!;
-    private HttpClient _httpClient = null!;
-    private Mock<IConfiguration> _mockConfiguration = null!;
-    private RouteApiService _routeApiService = null!;
 
     [TestCase("Car", "driving-car")]
     [TestCase("Bike", "cycling-regular")]
@@ -43,27 +39,27 @@ public class RouteApiServiceTests
     {
         var from = TestData.TestCoordinates;
         var to = (52.5200, 13.4050);
-        var responseJson = """
-                           {
-                               "routes": [{
-                                   "summary": {
-                                       "distance": 1000.5,
-                                       "duration": 3600.0
-                                   }
-                               }]
-                           }
-                           """;
+        const string responseJson = """
+                                    {
+                                        "routes": [{
+                                            "summary": {
+                                                "distance": 1000.5,
+                                                "duration": 3600.0
+                                            }
+                                        }]
+                                    }
+                                    """;
 
-        SetupSuccessfulHttpResponse(responseJson);
+        TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler, responseJson);
 
-        var result = await _routeApiService.FetchRouteDataAsync(from, to, transportType);
+        var result = await _sut.FetchRouteDataAsync(from, to, transportType);
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result.Distance, Is.EqualTo(1000.5));
             Assert.That(result.Duration, Is.EqualTo(3600.0));
         }
 
-        VerifyHttpPostRequest($"v2/directions/{expectedEndpoint}");
+        TestData.VerifyHttpPostRequest(_mockHttpMessageHandler, $"v2/directions/{expectedEndpoint}");
     }
 
     [Test]
@@ -71,20 +67,20 @@ public class RouteApiServiceTests
     {
         var from = TestData.TestCoordinates;
         var to = (52.5200, 13.4050);
-        var responseJson = """
-                           {
-                               "routes": [{
-                                   "summary": {
-                                       "distance": 523400.0,
-                                       "duration": 18000.0
-                                   }
-                               }]
-                           }
-                           """;
+        const string responseJson = """
+                                    {
+                                        "routes": [{
+                                            "summary": {
+                                                "distance": 523400.0,
+                                                "duration": 18000.0
+                                            }
+                                        }]
+                                    }
+                                    """;
 
-        SetupSuccessfulHttpResponse(responseJson);
+        TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler, responseJson);
 
-        var result = await _routeApiService.FetchRouteDataAsync(from, to, "Car");
+        var result = await _sut.FetchRouteDataAsync(from, to, "Car");
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result.Distance, Is.EqualTo(523400.0));
@@ -97,9 +93,9 @@ public class RouteApiServiceTests
     {
         var from = TestData.TestCoordinates;
         var to = (52.5200, 13.4050);
-        SetupErrorHttpResponse(HttpStatusCode.BadRequest, "Bad Request");
+        TestData.SetupHttpMessageHandlerError(_mockHttpMessageHandler, HttpStatusCode.BadRequest, "Bad Request");
 
-        var ex = Assert.ThrowsAsync<HttpRequestException>(() => _routeApiService.FetchRouteDataAsync(from, to, "Car"));
+        var ex = Assert.ThrowsAsync<HttpRequestException>(() => _sut.FetchRouteDataAsync(from, to, "Car"));
 
         Assert.That(ex.Message, Does.Contain("Error fetching route data"));
         Assert.That(ex.Message, Does.Contain("BadRequest"));
@@ -111,9 +107,9 @@ public class RouteApiServiceTests
     {
         var from = TestData.TestCoordinates;
         var to = (52.5200, 13.4050);
-        SetupErrorHttpResponse(HttpStatusCode.Unauthorized, "Invalid API key");
+        TestData.SetupHttpMessageHandlerError(_mockHttpMessageHandler, HttpStatusCode.Unauthorized, "Invalid API key");
 
-        var ex = Assert.ThrowsAsync<HttpRequestException>(() => _routeApiService.FetchRouteDataAsync(from, to, "Car"));
+        var ex = Assert.ThrowsAsync<HttpRequestException>(() => _sut.FetchRouteDataAsync(from, to, "Car"));
 
         Assert.That(ex.Message, Does.Contain("Invalid API key"));
         return Task.CompletedTask;
@@ -124,22 +120,22 @@ public class RouteApiServiceTests
     {
         var from = TestData.TestCoordinates;
         var to = (52.5200, 13.4050);
-        var responseJson = """
-                           {
-                               "routes": [{
-                                   "summary": {
-                                       "distance": 1000.0,
-                                       "duration": 3600.0
-                                   }
-                               }]
-                           }
-                           """;
+        const string responseJson = """
+                                    {
+                                        "routes": [{
+                                            "summary": {
+                                                "distance": 1000.0,
+                                                "duration": 3600.0
+                                            }
+                                        }]
+                                    }
+                                    """;
 
-        SetupSuccessfulHttpResponse(responseJson);
+        TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler, responseJson);
 
-        await _routeApiService.FetchRouteDataAsync(from, to, "Car");
+        await _sut.FetchRouteDataAsync(from, to, "Car");
 
-        VerifyHttpRequestWithHeaders();
+        TestData.VerifyHttpRequestHeaders(_mockHttpMessageHandler, "dummy-api-key");
     }
 
     [Test]
@@ -147,94 +143,21 @@ public class RouteApiServiceTests
     {
         var from = TestData.TestCoordinates;
         var to = (52.5200, 13.4050);
-        var responseJson = """
-                           {
-                               "routes": [{
-                                   "summary": {
-                                       "distance": 1000.0,
-                                       "duration": 3600.0
-                                   }
-                               }]
-                           }
-                           """;
+        const string responseJson = """
+                                    {
+                                        "routes": [{
+                                            "summary": {
+                                                "distance": 1000.0,
+                                                "duration": 3600.0
+                                            }
+                                        }]
+                                    }
+                                    """;
 
-        SetupSuccessfulHttpResponse(responseJson);
+        TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler, responseJson);
 
-        await _routeApiService.FetchRouteDataAsync(from, to, "Car");
+        await _sut.FetchRouteDataAsync(from, to, "Car");
 
-        VerifyPayloadContent();
-    }
-
-    private void SetupSuccessfulHttpResponse(string jsonContent)
-    {
-        var response = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(jsonContent, Encoding.UTF8, "application/json")
-        };
-
-        _mockHttpMessageHandler
-            .Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(response);
-    }
-
-    private void SetupErrorHttpResponse(HttpStatusCode statusCode, string content)
-    {
-        var response = new HttpResponseMessage(statusCode)
-        {
-            Content = new StringContent(content, Encoding.UTF8, "text/plain")
-        };
-
-        _mockHttpMessageHandler
-            .Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(response);
-    }
-
-    private void VerifyHttpPostRequest(string expectedEndpoint)
-    {
-        _mockHttpMessageHandler
-            .Protected()
-            .Verify(
-                "SendAsync",
-                Times.Once(),
-                ItExpr.Is<HttpRequestMessage>(req =>
-                    req.Method == HttpMethod.Post &&
-                    req.RequestUri!.ToString().Contains(expectedEndpoint)),
-                ItExpr.IsAny<CancellationToken>());
-    }
-
-    private void VerifyHttpRequestWithHeaders()
-    {
-        _mockHttpMessageHandler
-            .Protected()
-            .Verify(
-                "SendAsync",
-                Times.Once(),
-                ItExpr.Is<HttpRequestMessage>(req =>
-                    req.Headers.Authorization != null &&
-                    req.Headers.Authorization.Scheme == "Bearer" &&
-                    req.Headers.Authorization.Parameter == "dummy-api-key" &&
-                    req.Headers.Accept.Any(h => h.MediaType == "application/json")),
-                ItExpr.IsAny<CancellationToken>());
-    }
-
-    private void VerifyPayloadContent()
-    {
-        _mockHttpMessageHandler
-            .Protected()
-            .Verify(
-                "SendAsync",
-                Times.Once(),
-                ItExpr.Is<HttpRequestMessage>(req =>
-                    req.Content != null &&
-                    req.Content.Headers.ContentType!.MediaType == "application/json"),
-                ItExpr.IsAny<CancellationToken>());
+        TestData.VerifyHttpJsonContent(_mockHttpMessageHandler);
     }
 }

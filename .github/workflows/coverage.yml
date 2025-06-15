@@ -30,7 +30,7 @@ jobs:
           sudo apt-get install -y libgdiplus
 
       - name: Test with coverage
-        run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage" --settings:.runsettings
+        run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5

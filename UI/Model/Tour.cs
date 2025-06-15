@@ -13,7 +13,7 @@ public class Tour
 
     [Required(ErrorMessage = "Description is required")]
     [JsonPropertyName("description")]
-    public string Description { get; set; } = string.Empty;
+    public string? Description { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "From city is required")]
     [JsonPropertyName("from")]

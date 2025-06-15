@@ -3,7 +3,6 @@ using DAL.Infrastructure;
 using DAL.Interface;
 using DAL.Module;
 using DAL.Repository;
-using Microsoft.Extensions.Configuration;
 
 namespace Test.DAL;
 

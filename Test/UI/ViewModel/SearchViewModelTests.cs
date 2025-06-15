@@ -1,9 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-using Moq;
-using Serilog;
-using UI.Model;
+﻿using UI.Model;
 using UI.Service.Interface;
 using UI.ViewModel;
 
@@ -17,7 +12,7 @@ public class SearchViewModelTests
     private Mock<ILogger> _mockLogger = null!;
     private TestNavigationManager _mockNavigationManager = null!;
     private SearchViewModel _viewModel = null!;
-    
+
     [SetUp]
     public void Setup()
     {
