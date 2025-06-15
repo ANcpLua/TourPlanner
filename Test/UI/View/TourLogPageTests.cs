@@ -47,7 +47,7 @@ public sealed class TourLogPageTests : BunitTestBase
 
     [TestCase("", 0, false)]
     [TestCase("Valid", 3, true)]
-    public void ValidatesFormCorrectly(string comment, int difficulty, bool expectedValid)
+    public void ValidatesFormCorrectly(string comment, double difficulty, bool expectedValid)
     {
         var log = TestData.SampleTourLog(difficulty: difficulty);
         log.Comment = comment;
