@@ -95,4 +95,17 @@ public sealed class ReportPageTests : BunitTestBase
             Assert.That(iframe.GetAttribute("title"), Is.EqualTo("Generated Report"));
         }
     }
+    
+    [TestCase(true, "Generating...", true)]
+    [TestCase(false, "Generate Summary", false)]
+    public void GenerateSummaryButton_ProcessingState_DisplaysCorrectly(bool isProcessing, string expectedText, bool expectedDisabled)
+    {
+        Services.ViewModel<ReportViewModel>().IsProcessing = isProcessing;
+    
+        var component = RenderComponent<ReportPage>();
+    
+        var generateButton = component.FindAll("button")
+            .First(b => b.TextContent.Contains(expectedText));
+        Assert.That(generateButton.HasAttribute("disabled"), Is.EqualTo(expectedDisabled));
+    }
 }
