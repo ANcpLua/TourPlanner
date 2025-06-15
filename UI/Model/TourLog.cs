@@ -15,7 +15,7 @@ public class TourLog
 
     [Range(1, 5, ErrorMessage = "Difficulty must be between 1 and 5")]
     [JsonPropertyName("difficulty")]
-    public int? Difficulty { get; set; }
+    public double? Difficulty { get; set; }
 
     [Range(0, double.MaxValue, ErrorMessage = "Total Distance must be positive")]
     [JsonPropertyName("totalDistance")]
@@ -27,5 +27,5 @@ public class TourLog
 
     [Range(1, 5, ErrorMessage = "Rating must be between 1 and 5")]
     [JsonPropertyName("rating")]
-    public int? Rating { get; set; }
+    public double? Rating { get; set; }
 }

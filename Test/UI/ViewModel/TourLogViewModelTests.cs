@@ -132,7 +132,7 @@ public class TourLogViewModelTests
     [TestCase("Valid", 3, 1, 1, 6, false)]
     [TestCase("Valid", 3, 1, 1, 3, true)]
     public void IsFormValid_WithVariousInputs_ShouldValidateCorrectly(
-        string comment, int difficulty, double distance, int time, int? rating, bool expected)
+        string comment, double difficulty, double distance, int time, double? rating, bool expected)
     {
         _viewModel.SelectedTourLog = new TourLog
         {
@@ -353,6 +353,28 @@ public class TourLogViewModelTests
         }
 
         _mockHttpService.Verify(s => s.GetAsync<TourLog>($"api/tourlog/{logId}"), Times.Once);
+    }
+    
+    [Test]
+    public async Task EditHandleTourLogAction_WithNullLogId_ShouldToggleLogForm()
+    {
+        _viewModel.SelectedTourId = Guid.NewGuid();
+        _viewModel.IsLogFormVisible = false;
+    
+        await _viewModel.EditHandleTourLogAction();
+    
+        Assert.That(_viewModel.IsLogFormVisible, Is.True);
+    }
+
+    [Test]
+    public async Task EditHandleTourLogAction_WithEmptyLogId_ShouldToggleLogForm()
+    {
+        _viewModel.SelectedTourId = Guid.NewGuid();
+        _viewModel.IsLogFormVisible = false;
+    
+        await _viewModel.EditHandleTourLogAction(Guid.Empty);
+    
+        Assert.That(_viewModel.IsLogFormVisible, Is.True);
     }
 
     [TestCase(true)]
