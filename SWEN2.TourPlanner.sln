@@ -15,6 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{437B2A5D-ED8
 		init.sql = init.sql
 		Dockerfile = Dockerfile
 		nginx.conf = nginx.conf
+		.runsettings = .runsettings
 	EndProjectSection
 EndProject
 Global
