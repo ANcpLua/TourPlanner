@@ -102,7 +102,7 @@ public static class TestData
         return [.. Enumerable.Range(1, count).Select(i => SampleTour($"Tour {i}", Guid.NewGuid()))];
     }
 
-    public static TourLog SampleTourLog(int? rating = 4, int difficulty = 3, Guid? tourId = null, Guid? id = null)
+    public static TourLog SampleTourLog(double? rating = 4, double difficulty = 3, Guid? tourId = null, Guid? id = null)
     {
         return new TourLog
         {
@@ -235,7 +235,7 @@ public static class TestData
         };
     }
 
-    public static TourLog SampleTourLogDto(int? rating = 4, int difficulty = 3, Guid? tourId = null)
+    public static TourLog SampleTourLogDto(double? rating = 4, double difficulty = 3, Guid? tourId = null)
     {
         return SampleTourLog(rating, difficulty, tourId);
     }
