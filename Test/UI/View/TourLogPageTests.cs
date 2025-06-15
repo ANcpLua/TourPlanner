@@ -87,4 +87,30 @@ public sealed class TourLogPageTests : BunitTestBase
 
         Assert.That(cut.RenderCount, Is.EqualTo(initialRenderCount));
     }
+    
+    [Test]
+    public void FormHeader_AddingNewLog_DisplaysAddNewLog()
+    {
+        var tourId = Services.ViewModel<TourViewModel>().Tours.First().Id;
+        Services.ViewModel<TourLogViewModel>().SelectedTourId = tourId;
+        Services.ViewModel<TourLogViewModel>().IsLogFormVisible = true;
+        Services.ViewModel<TourLogViewModel>().SelectedTourLog = new TourLog { Id = Guid.Empty };
+    
+        var cut = RenderComponent<TourLogPage>();
+    
+        Assert.That(cut.Find(".tour-log-form-section h5").TextContent, Is.EqualTo("Add New Log"));
+    }
+
+    [Test]
+    public void FormHeader_EditingExistingLog_DisplaysEditLog()
+    {
+        var tourId = Services.ViewModel<TourViewModel>().Tours.First().Id;
+        Services.ViewModel<TourLogViewModel>().SelectedTourId = tourId;
+        Services.ViewModel<TourLogViewModel>().IsLogFormVisible = true;
+        Services.ViewModel<TourLogViewModel>().SelectedTourLog = new TourLog { Id = Guid.NewGuid() };
+    
+        var cut = RenderComponent<TourLogPage>();
+    
+        Assert.That(cut.Find(".tour-log-form-section h5").TextContent, Is.EqualTo("Edit Log"));
+    }
 }
