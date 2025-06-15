@@ -1,11 +1,10 @@
 ﻿@page "/"
-@inject TourViewModel TourViewModel
-@inject MapViewModel MapViewModel
-@inject ReportViewModel ReportViewModel
 @using UI.View.SharedComponents
 @using UI.View.TourComponents
 @using UI.ViewModel
-@implements IDisposable
+@inject TourViewModel TourViewModel
+@inject MapViewModel MapViewModel
+@inject ReportViewModel ReportViewModel
 
 <div class="tour-planner-app">
     <div class="container-fluid tour-planner-container">
@@ -54,9 +53,7 @@
     <TourDetailsModal TourViewModel="TourViewModel"/>
 </div>
 
-
 @code {
-
     protected override async Task OnInitializedAsync()
     {
         await TourViewModel.LoadToursAsync();
@@ -79,12 +76,4 @@
     {
         InvokeAsync(StateHasChanged);
     }
-
-    public void Dispose()
-    {
-        TourViewModel.PropertyChanged -= OnTourViewModelPropertyChanged;
-        MapViewModel.PropertyChanged -= OnMapViewModelPropertyChanged;
-        ReportViewModel.PropertyChanged -= OnReportViewModelPropertyChanged;
-    }
-
 }

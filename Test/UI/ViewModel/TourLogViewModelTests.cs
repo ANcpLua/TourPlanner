@@ -1,7 +1,4 @@
-﻿using Microsoft.JSInterop;
-using Moq;
-using Serilog;
-using UI.Model;
+﻿using UI.Model;
 using UI.Service.Interface;
 using UI.ViewModel;
 
@@ -13,10 +10,9 @@ public class TourLogViewModelTests
     private Mock<IHttpService> _mockHttpService = null!;
     private Mock<IToastServiceWrapper> _mockToastService = null!;
     private Mock<IJSRuntime> _mockJsRuntime = null!;
-    private Mock<IViewModelHelperService> _mockViewModelHelperService = null!;
     private Mock<ILogger> _mockLogger = null!;
     private TourLogViewModel _viewModel = null!;
-    
+
     [SetUp]
     public void Setup()
     {
@@ -24,14 +20,12 @@ public class TourLogViewModelTests
         _mockToastService = TestData.MockToastService();
         _mockJsRuntime = TestData.MockJsRuntime();
         _mockLogger = TestData.MockLogger();
-        _mockViewModelHelperService = TestData.MockViewModelHelperService();
 
         _viewModel = new TourLogViewModel(
             _mockHttpService.Object,
             _mockToastService.Object,
             _mockJsRuntime.Object,
-            _mockLogger.Object,
-            _mockViewModelHelperService.Object
+            _mockLogger.Object
         );
     }
 
@@ -56,7 +50,6 @@ public class TourLogViewModelTests
         var eventRaised = false;
         _viewModel.PropertyChanged += (_, _) => eventRaised = true;
 
-
         _viewModel.SelectedTourLog = newTourLog;
         using (Assert.EnterMultipleScope())
         {
@@ -70,7 +63,6 @@ public class TourLogViewModelTests
     {
         _viewModel.IsLogFormVisible = true;
 
-
         Assert.That(_viewModel.IsLogFormVisible, Is.True);
     }
 
@@ -78,7 +70,6 @@ public class TourLogViewModelTests
     public void IsEditing_WhenSet_ShouldUpdateProperty()
     {
         _viewModel.IsEditing = true;
-
 
         Assert.That(_viewModel.IsEditing, Is.True);
     }
@@ -91,9 +82,7 @@ public class TourLogViewModelTests
             .Setup(s => s.GetListAsync<TourLog>($"api/tourlog/bytour/{newTourId}"))
             .ReturnsAsync(TestData.SampleTourLogDtoList());
 
-
         _viewModel.SelectedTourId = newTourId;
-
 
         Assert.That(_viewModel.SelectedTourId, Is.EqualTo(newTourId));
         return Task.CompletedTask;
@@ -114,9 +103,7 @@ public class TourLogViewModelTests
     {
         _viewModel.TourLogs.Add(TestData.SampleTourLogDto());
 
-
         _viewModel.SelectedTourId = Guid.Empty;
-
 
         Assert.That(_viewModel.TourLogs, Is.Empty);
     }
@@ -132,7 +119,6 @@ public class TourLogViewModelTests
             TotalTime = 60,
             Rating = 4
         };
-
 
         Assert.That(_viewModel.IsFormValid, Is.True);
     }
@@ -157,7 +143,6 @@ public class TourLogViewModelTests
             Rating = rating
         };
 
-
         Assert.That(_viewModel.IsFormValid, Is.EqualTo(expected));
     }
 
@@ -173,7 +158,6 @@ public class TourLogViewModelTests
             Rating = null
         };
 
-
         Assert.That(_viewModel.IsFormValid, Is.False);
     }
 
@@ -181,7 +165,6 @@ public class TourLogViewModelTests
     public void ToggleLogForm_WithNullTourId_ShouldNotShowForm()
     {
         _viewModel.SelectedTourId = null;
-
 
         _viewModel.ToggleLogForm();
         using (Assert.EnterMultipleScope())
@@ -192,31 +175,13 @@ public class TourLogViewModelTests
     }
 
     [Test]
-    public void ToggleLogForm_WhenFormNotVisible_ShouldShowForm()
-    {
-        _viewModel.SelectedTourId = Guid.NewGuid();
-        _viewModel.IsLogFormVisible = false;
-
-
-        _viewModel.ToggleLogForm();
-
-
-        _mockViewModelHelperService.Verify(
-            v => v.ShowForm(ref It.Ref<bool>.IsAny),
-            Times.Once
-        );
-    }
-
-    [Test]
     public void ToggleLogForm_WhenFormVisible_ShouldHideForm()
     {
         _viewModel.SelectedTourId = Guid.NewGuid();
         _viewModel.ToggleLogForm();
         _viewModel.IsLogFormVisible = true;
 
-
         _viewModel.ToggleLogForm();
-
 
         Assert.That(_viewModel.IsLogFormVisible, Is.False);
     }
@@ -231,9 +196,7 @@ public class TourLogViewModelTests
             .Setup(s => s.GetListAsync<TourLog>($"api/tourlog/bytour/{tourId}"))
             .ReturnsAsync(logs);
 
-
         await _viewModel.LoadTourLogsAsync();
-
 
         Assert.That(_viewModel.TourLogs, Has.Count.EqualTo(logs.Count));
     }
@@ -243,9 +206,7 @@ public class TourLogViewModelTests
     {
         _viewModel.SelectedTourId = null;
 
-
         await _viewModel.LoadTourLogsAsync();
-
 
         _mockHttpService.Verify(
             s => s.GetListAsync<TourLog>(It.IsAny<string>()),
@@ -264,7 +225,6 @@ public class TourLogViewModelTests
         _mockHttpService
             .Setup(s => s.PostAsync<TourLog>(It.IsAny<string>(), It.IsAny<TourLog>()))
             .ReturnsAsync(newLog);
-
 
         var result = await _viewModel.SaveTourLogAsync();
         using (Assert.EnterMultipleScope())
@@ -289,7 +249,6 @@ public class TourLogViewModelTests
             .Setup(s => s.PutAsync<TourLog>(It.IsAny<string>(), It.IsAny<TourLog>()))
             .ReturnsAsync(existingLog);
 
-
         var result = await _viewModel.SaveTourLogAsync();
         using (Assert.EnterMultipleScope())
         {
@@ -308,7 +267,6 @@ public class TourLogViewModelTests
         _viewModel.SelectedTourId = TestData.SampleTour().Id;
         _viewModel.SelectedTourLog = new TourLog();
 
-
         var result = await _viewModel.SaveTourLogAsync();
         using (Assert.EnterMultipleScope())
         {
@@ -323,7 +281,6 @@ public class TourLogViewModelTests
         _viewModel.SelectedTourId = null;
         _viewModel.SelectedTourLog = TestData.SampleTourLogDto();
 
-
         var result = await _viewModel.SaveTourLogAsync();
         using (Assert.EnterMultipleScope())
         {
@@ -335,73 +292,67 @@ public class TourLogViewModelTests
     [Test]
     public async Task EditHandleTourLogAction_WithExistingLog_ShouldLoadLogForEditing()
     {
-        var existingLog = TestData.SampleTourLogDto();
+        var logId = Guid.NewGuid();
+        var tourLog = TestData.SampleTourLog(id: logId);
+        var tourId = tourLog.TourId;
+
         _mockHttpService
-            .Setup(s => s.GetAsync<TourLog>(It.IsAny<string>()))
-            .ReturnsAsync(existingLog);
+            .Setup(s => s.GetAsync<TourLog>($"api/tourlog/{logId}"))
+            .ReturnsAsync(tourLog);
 
+        _mockHttpService
+            .Setup(s => s.GetListAsync<TourLog>(It.IsAny<string>()))
+            .ReturnsAsync(new List<TourLog>());
 
-        await _viewModel.EditHandleTourLogAction(existingLog.Id);
+        _viewModel.SelectedTourId = tourId;
+
+        await _viewModel.EditHandleTourLogAction(logId);
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(_viewModel.SelectedTourLog, Is.EqualTo(existingLog));
-            Assert.That(_viewModel.SelectedTourId, Is.EqualTo(existingLog.TourId));
-            Assert.That(_viewModel.IsLogFormVisible, Is.True);
             Assert.That(_viewModel.IsEditing, Is.True);
+            Assert.That(_viewModel.IsLogFormVisible, Is.True);
+            Assert.That(_viewModel.SelectedTourLog.Id, Is.EqualTo(logId));
+            Assert.That(_viewModel.SelectedTourLog.TourId, Is.EqualTo(tourId));
         }
+
+        _mockHttpService.Verify(s => s.GetAsync<TourLog>($"api/tourlog/{logId}"), Times.Once);
     }
 
     [Test]
     public async Task EditHandleTourLogAction_WithSameLogIdWhenEditing_ShouldResetForm()
     {
         var logId = Guid.NewGuid();
-        var tourLog = TestData.SampleTourLogDto();
-        tourLog.Id = logId;
+        var tourLog = TestData.SampleTourLog(id: logId);
+        var tourId = tourLog.TourId;
 
         _mockHttpService
             .Setup(s => s.GetAsync<TourLog>($"api/tourlog/{logId}"))
             .ReturnsAsync(tourLog);
 
+        _mockHttpService
+            .Setup(s => s.GetListAsync<TourLog>(It.IsAny<string>()))
+            .ReturnsAsync(new List<TourLog>());
+
+        _viewModel.SelectedTourId = tourId;
 
         await _viewModel.EditHandleTourLogAction(logId);
-        _viewModel.IsEditing = true;
-        _viewModel.IsLogFormVisible = true;
-
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_viewModel.IsEditing, Is.True);
+            Assert.That(_viewModel.IsLogFormVisible, Is.True);
+            Assert.That(_viewModel.SelectedTourLog.Id, Is.EqualTo(logId));
+        }
 
         await _viewModel.EditHandleTourLogAction(logId);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_viewModel.IsLogFormVisible, Is.False);
+            Assert.That(_viewModel.IsEditing, Is.False);
+            Assert.That(_viewModel.SelectedTourLog.Id, Is.EqualTo(Guid.Empty));
+            Assert.That(_viewModel.SelectedTourLog.TourId, Is.EqualTo(tourId));
+        }
 
-
-        Assert.That(_viewModel.IsLogFormVisible, Is.False);
-    }
-
-    [Test]
-    public async Task EditHandleTourLogAction_WithNullLogId_ShouldToggleForm()
-    {
-        _viewModel.SelectedTourId = Guid.NewGuid();
-
-
-        await _viewModel.EditHandleTourLogAction();
-
-
-        _mockViewModelHelperService.Verify(
-            v => v.ShowForm(ref It.Ref<bool>.IsAny),
-            Times.Once
-        );
-    }
-
-    [Test]
-    public async Task EditHandleTourLogAction_WithEmptyGuid_ShouldToggleForm()
-    {
-        _viewModel.SelectedTourId = Guid.NewGuid();
-
-
-        await _viewModel.EditHandleTourLogAction(Guid.Empty);
-
-
-        _mockViewModelHelperService.Verify(
-            v => v.ShowForm(ref It.Ref<bool>.IsAny),
-            Times.Once
-        );
+        _mockHttpService.Verify(s => s.GetAsync<TourLog>($"api/tourlog/{logId}"), Times.Once);
     }
 
     [TestCase(true)]
@@ -413,9 +364,7 @@ public class TourLogViewModelTests
             .Setup(j => j.InvokeAsync<bool>(It.IsAny<string>(), It.IsAny<object[]>()))
             .ReturnsAsync(userConfirms);
 
-
         await _viewModel.DeleteTourLogAsync(logId);
-
 
         if (userConfirms)
             using (Assert.EnterMultipleScope())
@@ -438,36 +387,26 @@ public class TourLogViewModelTests
             .Setup(j => j.InvokeAsync<bool>(It.IsAny<string>(), It.IsAny<object[]>()))
             .ReturnsAsync(true);
 
-
         await _viewModel.DeleteTourLogAsync(Guid.Empty);
-
 
         _mockHttpService.Verify(s => s.DeleteAsync(It.IsAny<string>()), Times.Never);
     }
 
-
     [Test]
-    public void ShowAddLogForm_WithValidTourId_ShouldExecuteLambdaAndCreateTourLog()
+    public void ShowAddLogForm_WithValidTourId_ShouldCreateNewTourLog()
     {
         var tourId = Guid.NewGuid();
         _viewModel.SelectedTourId = tourId;
-        TourLog? capturedTourLog = null;
-
-
-        _mockViewModelHelperService
-            .Setup(v => v.ResetForm(ref It.Ref<TourLog>.IsAny, It.IsAny<Func<TourLog>>()))
-            .Callback(new ResetFormCallback((ref tourLog, factory) =>
-            {
-                capturedTourLog = factory();
-                tourLog = capturedTourLog;
-            }));
-
 
         _viewModel.ShowAddLogForm();
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(capturedTourLog, Is.Not.Null);
-            Assert.That(capturedTourLog!.TourId, Is.EqualTo(tourId));
+            Assert.That(_viewModel.SelectedTourLog, Is.Not.Null);
+            Assert.That(_viewModel.SelectedTourLog.TourId, Is.EqualTo(tourId));
+            Assert.That(_viewModel.SelectedTourLog.DateTime, Is.EqualTo(DateTime.Now).Within(1).Seconds);
+            Assert.That(_viewModel.SelectedTourLog.Difficulty, Is.EqualTo(1));
+            Assert.That(_viewModel.SelectedTourLog.Rating, Is.EqualTo(1));
+            Assert.That(_viewModel.IsLogFormVisible, Is.True);
             Assert.That(_viewModel.IsEditing, Is.False);
         }
     }
@@ -476,67 +415,44 @@ public class TourLogViewModelTests
     public void ShowAddLogForm_WithNullTourId_ShouldReturnEarly()
     {
         _viewModel.SelectedTourId = null;
-
+        var previousTourLog = _viewModel.SelectedTourLog;
+        var previousFormVisible = _viewModel.IsLogFormVisible;
 
         _viewModel.ShowAddLogForm();
-
-
-        _mockViewModelHelperService.Verify(
-            v => v.ResetForm(ref It.Ref<TourLog>.IsAny, It.IsAny<Func<TourLog>>()),
-            Times.Never);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_viewModel.SelectedTourLog, Is.SameAs(previousTourLog));
+            Assert.That(_viewModel.IsLogFormVisible, Is.EqualTo(previousFormVisible));
+        }
     }
 
     [Test]
-    public void ResetForm_ShouldExecuteLambdaAndCreateTourLog()
+    public void ResetForm_WithValidTourId_ShouldResetAllProperties()
     {
         var tourId = Guid.NewGuid();
         _viewModel.SelectedTourId = tourId;
-        TourLog? capturedTourLog = null;
-
-
-        _mockViewModelHelperService
-            .Setup(v => v.ResetForm(ref It.Ref<TourLog>.IsAny, It.IsAny<Func<TourLog>>()))
-            .Callback(new ResetFormCallback((ref tourLog, factory) =>
-            {
-                capturedTourLog = factory();
-                tourLog = capturedTourLog;
-            }));
-
+        _viewModel.IsLogFormVisible = true;
+        _viewModel.IsEditing = true;
+        _viewModel.SelectedTourLog = TestData.SampleTourLog(tourId: Guid.NewGuid());
 
         _viewModel.ResetForm();
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(capturedTourLog, Is.Not.Null);
-            Assert.That(capturedTourLog!.TourId, Is.EqualTo(tourId));
+            Assert.That(_viewModel.SelectedTourLog, Is.Not.Null);
+            Assert.That(_viewModel.SelectedTourLog.TourId, Is.EqualTo(tourId));
+            Assert.That(_viewModel.SelectedTourLog.Id, Is.EqualTo(Guid.Empty));
             Assert.That(_viewModel.IsLogFormVisible, Is.False);
             Assert.That(_viewModel.IsEditing, Is.False);
         }
     }
 
     [Test]
-    public void ResetForm_WithNullTourId_ShouldUseFallbackGuid()
+    public void ResetForm_WithNullTourId_ShouldUseEmptyGuid()
     {
         _viewModel.SelectedTourId = null;
-        TourLog? capturedTourLog = null;
-
-
-        _mockViewModelHelperService
-            .Setup(v => v.ResetForm(ref It.Ref<TourLog>.IsAny, It.IsAny<Func<TourLog>>()))
-            .Callback(new ResetFormCallback((ref tourLog, factory) =>
-            {
-                capturedTourLog = factory();
-                tourLog = capturedTourLog;
-            }));
-
 
         _viewModel.ResetForm();
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(capturedTourLog, Is.Not.Null);
-            Assert.That(capturedTourLog!.TourId, Is.EqualTo(Guid.Empty));
-        }
+
+        Assert.That(_viewModel.SelectedTourLog.TourId, Is.EqualTo(Guid.Empty));
     }
-
-
-    public delegate void ResetFormCallback(ref TourLog tourLog, Func<TourLog> factory);
 }

@@ -1,7 +1,6 @@
 ﻿@page "/reports"
-@inject ReportViewModel ReportViewModel
 @using UI.ViewModel
-@implements IDisposable
+@inject ReportViewModel ReportViewModel
 
 <div class="tour-planner-app">
     <div class="container-fluid tour-planner-container">
@@ -64,10 +63,4 @@
     {
         InvokeAsync(StateHasChanged);
     }
-
-    public void Dispose()
-    {
-        ReportViewModel.PropertyChanged -= OnReportViewModelPropertyChanged;
-    }
-
 }

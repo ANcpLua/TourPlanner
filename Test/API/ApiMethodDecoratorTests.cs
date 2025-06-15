@@ -1,16 +1,14 @@
 ﻿using System.Reflection;
 using API.AOP;
-using Moq;
-using Serilog;
 
 namespace Test.API;
 
 [TestFixture]
 public class ApiMethodDecoratorTests
 {
-    private ApiMethodDecorator _decorator;
-    private Mock<ILogger> _mockLogger;
-    private MethodInfo _testMethod;
+    private ApiMethodDecorator _decorator = null!;
+    private Mock<ILogger> _mockLogger = null!;
+    private MethodInfo _testMethod = null!;
 
     [SetUp]
     public void SetUp()
@@ -19,12 +17,6 @@ public class ApiMethodDecoratorTests
         _mockLogger = new Mock<ILogger>();
         Log.Logger = _mockLogger.Object;
         _testMethod = GetType().GetMethod(nameof(SetUp))!;
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
-        Log.CloseAndFlush();
     }
 
     [Test]
@@ -87,9 +79,8 @@ public class ApiMethodDecoratorTests
         var method = typeof(TestApiClass).GetMethod(nameof(TestApiClass.TestMethod))!;
         var args = new object[] { "arg1", 42 };
         var exception = new InvalidOperationException("Test exception");
-        
-        _decorator.Init(testObject, method, args);
 
+        _decorator.Init(testObject, method, args);
         _decorator.OnException(exception);
 
         _mockLogger.Verify(
@@ -103,11 +94,11 @@ public class ApiMethodDecoratorTests
     }
 
     [Test]
-    public void OnEntry_DoesNotThrow()
+    public void OnEntry_ExecutesWithoutException()
     {
         _decorator.Init(new object(), _testMethod, []);
 
-        Assert.DoesNotThrow(() => _decorator.OnEntry());
+        _decorator.OnEntry();
     }
 
     [Test]
@@ -122,27 +113,31 @@ public class ApiMethodDecoratorTests
         _decorator.OnEntry();
         _decorator.OnExit();
         _decorator.OnException(exception);
+        using (Assert.EnterMultipleScope())
+        {
+            _mockLogger.Verify(
+                l => l.Information(
+                    "Entering {MethodName} with arguments: {@Arguments}",
+                    It.IsAny<string>(),
+                    It.IsAny<object[]>()),
+                Times.Once);
 
-        _mockLogger.Verify(
-            l => l.Information(
-                "Entering {MethodName} with arguments: {@Arguments}",
-                It.IsAny<string>(),
-                It.IsAny<object[]>()),
-            Times.Once);
-        _mockLogger.Verify(
-            l => l.Information(
-                "Exiting {MethodName} after {Duration}ms",
-                It.IsAny<string>(),
-                It.IsAny<long>()),
-            Times.Once);
-        _mockLogger.Verify(
-            l => l.Error(
-                It.IsAny<Exception>(),
-                "Exception in {MethodName} with arguments: {@Arguments} after {Duration}ms",
-                It.IsAny<string>(),
-                It.IsAny<object[]>(),
-                It.IsAny<long>()),
-            Times.Once);
+            _mockLogger.Verify(
+                l => l.Information(
+                    "Exiting {MethodName} after {Duration}ms",
+                    It.IsAny<string>(),
+                    It.IsAny<long>()),
+                Times.Once);
+
+            _mockLogger.Verify(
+                l => l.Error(
+                    It.IsAny<Exception>(),
+                    "Exception in {MethodName} with arguments: {@Arguments} after {Duration}ms",
+                    It.IsAny<string>(),
+                    It.IsAny<object[]>(),
+                    It.IsAny<long>()),
+                Times.Once);
+        }
     }
 
     private class TestApiClass

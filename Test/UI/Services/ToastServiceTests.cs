@@ -1,28 +1,26 @@
-﻿using Blazored.Toast.Services;
-using Moq;
-using ToastService = UI.Service.ToastService;
+﻿using ToastService = UI.Service.ToastService;
 
 namespace Test.UI.Services;
 
 [TestFixture]
 public class ToastServiceTests
 {
+    private Mock<IToastService> _mockBlazorToastService = null!;
+    private ToastService _sut = null!;
+
     [SetUp]
     public void Setup()
     {
         _mockBlazorToastService = new Mock<IToastService>();
-        _toastService = new ToastService(_mockBlazorToastService.Object);
+        _sut = new ToastService(_mockBlazorToastService.Object);
     }
-
-    private Mock<IToastService> _mockBlazorToastService;
-    private ToastService _toastService;
 
     [Test]
     public void ShowSuccess_WithMessage_CallsUnderlyingToastService()
     {
         const string message = "Tour saved successfully";
 
-        _toastService.ShowSuccess(message);
+        _sut.ShowSuccess(message);
 
         _mockBlazorToastService.Verify(
             t => t.ShowSuccess(message, null),
@@ -34,7 +32,7 @@ public class ToastServiceTests
     {
         const string message = "Failed to save tour";
 
-        _toastService.ShowError(message);
+        _sut.ShowError(message);
 
         _mockBlazorToastService.Verify(
             t => t.ShowError(message, null),
@@ -46,7 +44,7 @@ public class ToastServiceTests
     {
         const string message = "";
 
-        _toastService.ShowSuccess(message);
+        _sut.ShowSuccess(message);
 
         _mockBlazorToastService.Verify(
             t => t.ShowSuccess(message, null),
@@ -58,7 +56,7 @@ public class ToastServiceTests
     {
         const string message = "";
 
-        _toastService.ShowError(message);
+        _sut.ShowError(message);
 
         _mockBlazorToastService.Verify(
             t => t.ShowError(message, null),
@@ -70,7 +68,7 @@ public class ToastServiceTests
     {
         const string message = TestData.ValidSearchText;
 
-        _toastService.ShowSuccess(message);
+        _sut.ShowSuccess(message);
 
         _mockBlazorToastService.Verify(
             t => t.ShowSuccess(message, null),
@@ -82,7 +80,7 @@ public class ToastServiceTests
     {
         const string message = TestData.InvalidSearchText;
 
-        _toastService.ShowError(message);
+        _sut.ShowError(message);
 
         _mockBlazorToastService.Verify(
             t => t.ShowError(message, null),

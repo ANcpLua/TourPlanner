@@ -9,14 +9,13 @@ namespace Test.BL;
 [TestFixture]
 public class MappingConfigurationTests
 {
-    [SetUp]
-    public void Setup()
+    private readonly Mapper _mapper;
+
+    public MappingConfigurationTests()
     {
         var config = MappingConfiguration.RegisterMapping();
         _mapper = new Mapper(config);
     }
-
-    private IMapper _mapper = null!;
 
     [Test]
     public void TourPersistence_To_TourDomain_MapsAllPropertiesCorrectly()
@@ -247,7 +246,7 @@ public class MappingConfigurationTests
             Comment = "Default DateTime test"
         };
 
-        Assert.That(tourLogPersistence.DateTime, Is.Not.EqualTo(default(DateTime)));
+        Assert.That(tourLogPersistence.DateTime, Is.Not.Default);
     }
 
     [Test]

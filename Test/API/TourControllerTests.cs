@@ -3,7 +3,6 @@ using BL.DomainModel;
 using BL.Interface;
 using MapsterMapper;
 using Microsoft.AspNetCore.Mvc;
-using Moq;
 using UI.Model;
 
 namespace Test.API;
@@ -11,6 +10,10 @@ namespace Test.API;
 [TestFixture]
 public class TourControllerTests
 {
+    private Mock<ITourService> _mockTourService = null!;
+    private Mock<IMapper> _mockMapper = null!;
+    private TourController _controller = null!;
+
     [SetUp]
     public void Setup()
     {
@@ -18,10 +21,6 @@ public class TourControllerTests
         _mockMapper = new Mock<IMapper>();
         _controller = new TourController(_mockTourService.Object, _mockMapper.Object);
     }
-
-    private Mock<ITourService> _mockTourService;
-    private Mock<IMapper> _mockMapper;
-    private TourController _controller;
 
     [Test]
     public async Task CreateTourAsync_HappyPath_ReturnsCreatedTour()
@@ -32,9 +31,7 @@ public class TourControllerTests
         _mockTourService.Setup(s => s.CreateTourAsync(tourDomain)).ReturnsAsync(tourDomain);
         _mockMapper.Setup(m => m.Map<Tour>(tourDomain)).Returns(tourDto);
 
-
         var result = await _controller.CreateTour(tourDto);
-
 
         Assert.That(result.Result, Is.TypeOf<OkObjectResult>());
         var okResult = (OkObjectResult)result.Result;
@@ -51,7 +48,6 @@ public class TourControllerTests
             .Setup(s => s.CreateTourAsync(tourDomain))
             .ThrowsAsync(new ArgumentException("Invalid tour data"));
 
-
         Assert.ThrowsAsync<ArgumentException>(() => _controller.CreateTour(tourDto));
         return Task.CompletedTask;
     }
@@ -64,9 +60,7 @@ public class TourControllerTests
         _mockTourService.Setup(s => s.GetAllTours()).Returns(toursDomain);
         _mockMapper.Setup(m => m.Map<IEnumerable<Tour>>(toursDomain)).Returns(toursDto);
 
-
         var result = _controller.GetAllTours();
-
 
         Assert.That(result.Result, Is.TypeOf<OkObjectResult>());
         var okResult = (OkObjectResult)result.Result;
@@ -80,7 +74,6 @@ public class TourControllerTests
             .Setup(s => s.GetAllTours())
             .Throws(new Exception("Database connection error"));
 
-
         Assert.Throws<Exception>(() => _controller.GetAllTours());
     }
 
@@ -93,9 +86,7 @@ public class TourControllerTests
         _mockTourService.Setup(s => s.GetTourById(tourId)).Returns(tourDomain);
         _mockMapper.Setup(m => m.Map<Tour>(tourDomain)).Returns(tourDto);
 
-
         var result = _controller.GetTourById(tourId);
-
 
         Assert.That(result.Result, Is.TypeOf<OkObjectResult>());
         var okResult = (OkObjectResult)result.Result;
@@ -109,7 +100,6 @@ public class TourControllerTests
         _mockTourService
             .Setup(s => s.GetTourById(tourId))
             .Throws(new KeyNotFoundException("Tour not found"));
-
 
         Assert.Throws<KeyNotFoundException>(() => _controller.GetTourById(tourId));
     }
@@ -125,9 +115,7 @@ public class TourControllerTests
         _mockTourService.Setup(s => s.UpdateTourAsync(tourDomain)).ReturnsAsync(tourDomain);
         _mockMapper.Setup(m => m.Map<Tour>(tourDomain)).Returns(tourDto);
 
-
         var result = await _controller.UpdateTour(tourId, tourDto);
-
 
         Assert.That(result.Result, Is.TypeOf<OkObjectResult>());
         var okResult = (OkObjectResult)result.Result;
@@ -141,9 +129,7 @@ public class TourControllerTests
         var tourDto = TestData.SampleTour();
         tourDto.Id = Guid.NewGuid();
 
-
         var result = await _controller.UpdateTour(tourId, tourDto);
-
 
         Assert.That(result.Result, Is.TypeOf<BadRequestObjectResult>());
         var badRequestResult = (BadRequestObjectResult)result.Result;
@@ -156,9 +142,7 @@ public class TourControllerTests
         var tourId = Guid.NewGuid();
         _mockTourService.Setup(s => s.DeleteTourAsync(tourId)).Returns(Task.CompletedTask);
 
-
         var result = await _controller.DeleteTour(tourId);
-
 
         Assert.That(result, Is.TypeOf<NoContentResult>());
     }
@@ -170,7 +154,6 @@ public class TourControllerTests
         _mockTourService
             .Setup(s => s.DeleteTourAsync(tourId))
             .ThrowsAsync(new KeyNotFoundException("Tour not found"));
-
 
         Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.DeleteTour(tourId));
         return Task.CompletedTask;
@@ -187,9 +170,7 @@ public class TourControllerTests
             .Setup(m => m.Map<IEnumerable<Tour>>(It.IsAny<IEnumerable<TourDomain>>()))
             .Returns(toursDto);
 
-
         var result = _controller.SearchTours(searchText);
-
 
         Assert.That(result, Is.TypeOf<OkObjectResult>());
         var okResult = (OkObjectResult)result;
@@ -207,12 +188,10 @@ public class TourControllerTests
             .Setup(m => m.Map<IEnumerable<Tour>>(It.IsAny<IEnumerable<TourDomain>>()))
             .Returns(new List<Tour>());
 
-
         var result = _controller.SearchTours(searchText);
-
 
         Assert.That(result, Is.TypeOf<OkObjectResult>());
         var okResult = (OkObjectResult)result;
-        Assert.That(((IEnumerable<Tour>)okResult.Value!).Count(), Is.EqualTo(0));
+        Assert.That(((IEnumerable<Tour>)okResult.Value!).Count(), Is.Zero);
     }
 }
