@@ -1,4 +1,4 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+﻿FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 COPY *.sln ./
@@ -17,7 +17,7 @@ RUN dotnet publish "UI/UI.csproj" -c Release -o /app/ui/publish \
     --no-restore \
     /p:ServiceWorkerForce=true
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS api
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS api
 WORKDIR /app
 
 COPY --from=build /app/api/publish ./

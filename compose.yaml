@@ -11,6 +11,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
     networks:
       - tourplanner-network
@@ -39,6 +44,9 @@ services:
       context: .
       dockerfile: Dockerfile
       target: api
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
       - "7102:80"
     environment:
@@ -58,6 +66,8 @@ services:
       context: .
       dockerfile: Dockerfile
       target: ui
+    depends_on:
+      - api
     ports:
       - "7226:80"
     environment:
