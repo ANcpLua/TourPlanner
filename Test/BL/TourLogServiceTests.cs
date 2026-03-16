@@ -10,10 +10,6 @@ namespace Test.BL;
 [TestFixture]
 public class TourLogServiceTests
 {
-    private Mock<ITourLogRepository> _mockTourLogRepository = null!;
-    private Mock<IMapper> _mockMapper = null!;
-    private TourLogService _tourLogService = null!;
-
     [SetUp]
     public void Setup()
     {
@@ -21,6 +17,10 @@ public class TourLogServiceTests
         _mockMapper = new Mock<IMapper>();
         _tourLogService = new TourLogService(_mockTourLogRepository.Object, _mockMapper.Object);
     }
+
+    private Mock<ITourLogRepository> _mockTourLogRepository = null!;
+    private Mock<IMapper> _mockMapper = null!;
+    private TourLogService _tourLogService = null!;
 
     [Test]
     public async Task CreateTourLogAsync_ValidTourLog_ReturnsMappedTourLogDomain()

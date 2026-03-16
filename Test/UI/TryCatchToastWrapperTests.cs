@@ -6,10 +6,6 @@ namespace Test.UI;
 [TestFixture]
 public class TryCatchToastWrapperTests
 {
-    private Mock<IToastServiceWrapper> _mockToastService = null!;
-    private Mock<ILogger> _mockLogger = null!;
-    private TryCatchToastWrapper _wrapper = null!;
-
     [SetUp]
     public void SetUp()
     {
@@ -17,6 +13,10 @@ public class TryCatchToastWrapperTests
         _mockLogger = new Mock<ILogger>();
         _wrapper = new TryCatchToastWrapper(_mockToastService.Object, _mockLogger.Object);
     }
+
+    private Mock<IToastServiceWrapper> _mockToastService = null!;
+    private Mock<ILogger> _mockLogger = null!;
+    private TryCatchToastWrapper _wrapper = null!;
 
     [Test]
     public async Task ExecuteAsync_WithGeneric_WhenExceptionAndErrorHandler_CallsErrorHandler()

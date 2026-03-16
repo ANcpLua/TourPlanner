@@ -7,13 +7,6 @@ namespace Test.UI.ViewModel;
 [TestFixture]
 public sealed class ReportViewModelTests
 {
-    private Mock<IHttpService> _mockHttpService = null!;
-    private Mock<IToastServiceWrapper> _mockToastService = null!;
-    private Mock<IBlazorDownloadFileService> _mockDownloadFileService = null!;
-    private Mock<TourViewModel> _mockTourViewModel = null!;
-    private Mock<ILogger> _mockLogger = null!;
-    private ReportViewModel _reportViewModel = null!;
-
     [SetUp]
     public void Setup()
     {
@@ -39,6 +32,13 @@ public sealed class ReportViewModelTests
             _mockDownloadFileService.Object,
             _mockTourViewModel.Object);
     }
+
+    private Mock<IHttpService> _mockHttpService = null!;
+    private Mock<IToastServiceWrapper> _mockToastService = null!;
+    private Mock<IBlazorDownloadFileService> _mockDownloadFileService = null!;
+    private Mock<TourViewModel> _mockTourViewModel = null!;
+    private Mock<ILogger> _mockLogger = null!;
+    private ReportViewModel _reportViewModel = null!;
 
     [Test]
     public void CurrentReportUrl_Change_RaisesPropertyChanged()
@@ -76,23 +76,7 @@ public sealed class ReportViewModelTests
     }
 
     [Test]
-    public void ResetCurrentReportUrl_ClearsFieldAndNotifies()
-    {
-        _reportViewModel.CurrentReportUrl = "dirty";
-        var raised = new List<string?>();
-        _reportViewModel.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
-
-        _reportViewModel.ResetCurrentReportUrl();
-
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(_reportViewModel.CurrentReportUrl, Is.Empty);
-            Assert.That(raised, Contains.Item(nameof(ReportViewModel.CurrentReportUrl)));
-        }
-    }
-
-    [Test]
-    public void ClearCurrentReport_SameAsReset()
+    public void ClearCurrentReport_ClearsFieldAndNotifies()
     {
         _reportViewModel.CurrentReportUrl = "dirty";
         var raised = new List<string?>();

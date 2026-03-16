@@ -7,9 +7,6 @@ namespace Test.DAL;
 [TestFixture]
 public class TourLogRepositoryTests
 {
-    private TourPlannerContext _context = null!;
-    private TourLogRepository _repository = null!;
-
     [SetUp]
     public void Setup()
     {
@@ -26,6 +23,9 @@ public class TourLogRepositoryTests
         _context.Database.EnsureDeleted();
         _context.Dispose();
     }
+
+    private TourPlannerContext _context = null!;
+    private TourLogRepository _repository = null!;
 
     [Test]
     public async Task CreateTourLogAsync_WithValidTourLog_ReturnsSavedTourLog()

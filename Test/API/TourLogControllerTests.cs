@@ -11,10 +11,6 @@ namespace Test.API;
 [TestFixture]
 public class TourLogControllerTests
 {
-    private Mock<ITourLogService> _mockTourLogService = null!;
-    private Mock<IMapper> _mockMapper = null!;
-    private TourLogController _controller = null!;
-
     [SetUp]
     public void Setup()
     {
@@ -22,6 +18,10 @@ public class TourLogControllerTests
         _mockMapper = new Mock<IMapper>();
         _controller = new TourLogController(_mockTourLogService.Object, _mockMapper.Object);
     }
+
+    private Mock<ITourLogService> _mockTourLogService = null!;
+    private Mock<IMapper> _mockMapper = null!;
+    private TourLogController _controller = null!;
 
     [Test]
     public async Task CreateTourLogAsync_HappyPath_ReturnsCreatedTourLog()

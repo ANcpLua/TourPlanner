@@ -15,13 +15,17 @@ public class TourLogRepository(TourPlannerContext dbContext) : ITourLogRepositor
         return newTourLogPersistence;
     }
 
-    public IEnumerable<TourLogPersistence> GetTourLogsByTourId(Guid tourId) =>
-        dbContext
+    public IEnumerable<TourLogPersistence> GetTourLogsByTourId(Guid tourId)
+    {
+        return dbContext
             .TourLogsPersistence.Where(t => t.TourPersistenceId == tourId)
             .ToList();
+    }
 
-    public TourLogPersistence? GetTourLogById(Guid id) =>
-        dbContext.TourLogsPersistence.FirstOrDefault(t => t.Id == id);
+    public TourLogPersistence? GetTourLogById(Guid id)
+    {
+        return dbContext.TourLogsPersistence.FirstOrDefault(t => t.Id == id);
+    }
 
     public async Task<TourLogPersistence> UpdateTourLogAsync(TourLogPersistence updatedTourLogPersistence,
         CancellationToken cancellationToken = default)

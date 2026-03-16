@@ -9,10 +9,6 @@ namespace Test.BL;
 [TestFixture]
 public class TourServiceTests
 {
-    private Mock<ITourRepository> _mockTourRepository = null!;
-    private Mock<IMapper> _mockMapper = null!;
-    private TourService _tourService = null!;
-
     [SetUp]
     public void Setup()
     {
@@ -20,6 +16,10 @@ public class TourServiceTests
         _mockMapper = new Mock<IMapper>();
         _tourService = new TourService(_mockTourRepository.Object, _mockMapper.Object);
     }
+
+    private Mock<ITourRepository> _mockTourRepository = null!;
+    private Mock<IMapper> _mockMapper = null!;
+    private TourService _tourService = null!;
 
     [Test]
     public async Task CreateTourAsync_ValidTour_ReturnsMappedTourDomain()

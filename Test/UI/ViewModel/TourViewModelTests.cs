@@ -7,15 +7,6 @@ namespace Test.UI.ViewModel;
 [TestFixture]
 public class TourViewModelTests
 {
-    private Mock<IHttpService> _mockHttpService = null!;
-    private Mock<IToastServiceWrapper> _mockToastService = null!;
-    private Mock<IConfiguration> _mockConfiguration = null!;
-    private Mock<IJSRuntime> _mockJsRuntime = null!;
-    private Mock<IRouteApiService> _mockRouteApiService = null!;
-    private Mock<ILogger> _mockLogger = null!;
-    private Mock<MapViewModel> _mockMapViewModel = null!;
-    private TourViewModel _viewModel = null!;
-
     [SetUp]
     public void Setup()
     {
@@ -37,6 +28,15 @@ public class TourViewModelTests
             _mockMapViewModel.Object
         );
     }
+
+    private Mock<IHttpService> _mockHttpService = null!;
+    private Mock<IToastServiceWrapper> _mockToastService = null!;
+    private Mock<IConfiguration> _mockConfiguration = null!;
+    private Mock<IJSRuntime> _mockJsRuntime = null!;
+    private Mock<IRouteApiService> _mockRouteApiService = null!;
+    private Mock<ILogger> _mockLogger = null!;
+    private Mock<MapViewModel> _mockMapViewModel = null!;
+    private TourViewModel _viewModel = null!;
 
     [Test]
     public void Constructor_ShouldInitializePropertiesCorrectly()

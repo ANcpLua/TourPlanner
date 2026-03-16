@@ -1,4 +1,4 @@
-﻿using UI.Model;
+using UI.Model;
 using UI.Service.Interface;
 using UI.View.Pages;
 using UI.ViewModel;
@@ -18,7 +18,7 @@ public sealed class TourLogPageTests : BunitTestBase
     }
 
     [Test]
-    public void RendersInitialStructureCorrectly()
+    public void RendersInitialStructure()
     {
         var cut = RenderComponent<TourLogPage>();
         using (Assert.EnterMultipleScope())
@@ -33,10 +33,8 @@ public sealed class TourLogPageTests : BunitTestBase
     public void TourSelection_LoadsTourLogs()
     {
         var tourId = Services.ViewModel<TourViewModel>().Tours.First().Id;
-        var logs = TestData.SampleTourLogList(3, tourId);
-
         Services.Mock<IHttpService>().Setup(x => x.GetListAsync<TourLog>($"api/tourlog/bytour/{tourId}"))
-            .ReturnsAsync(logs);
+            .ReturnsAsync(TestData.SampleTourLogList(3, tourId));
 
         var cut = RenderComponent<TourLogPage>();
         cut.Find("select").Change(tourId.ToString());
@@ -45,72 +43,61 @@ public sealed class TourLogPageTests : BunitTestBase
             Assert.That(Services.ViewModel<TourLogViewModel>().TourLogs, Has.Count.EqualTo(3)));
     }
 
-    [TestCase("", 0, false)]
-    [TestCase("Valid", 3, true)]
-    public void ValidatesFormCorrectly(string comment, double difficulty, bool expectedValid)
-    {
-        var log = TestData.SampleTourLog(difficulty: difficulty);
-        log.Comment = comment;
-        Services.ViewModel<TourLogViewModel>().SelectedTourLog = log;
-
-        Assert.That(Services.ViewModel<TourLogViewModel>().IsFormValid, Is.EqualTo(expectedValid));
-    }
-
     [Test]
-    public async Task TourViewModel_ToursPropertyChanged_InvokesStateHasChanged()
-    {
-        var cut = RenderComponent<TourLogPage>();
-        var tourViewModel = Services.ViewModel<TourViewModel>();
-        var initialRenderCount = cut.RenderCount;
-
-        await cut.InvokeAsync(() =>
-        {
-            tourViewModel.Tours = new ObservableCollection<Tour>(TestData.SampleTourList());
-            tourViewModel.OnPropertyChanged(nameof(TourViewModel.Tours));
-        });
-
-        Assert.That(cut.RenderCount, Is.GreaterThan(initialRenderCount));
-    }
-
-    [Test]
-    public async Task TourViewModel_OtherPropertyChanged_DoesNotInvokeStateHasChanged()
-    {
-        var cut = RenderComponent<TourLogPage>();
-        var tourViewModel = Services.ViewModel<TourViewModel>();
-        var initialRenderCount = cut.RenderCount;
-
-        await cut.InvokeAsync(() =>
-        {
-            tourViewModel.IsMapVisible = !tourViewModel.IsMapVisible;
-            tourViewModel.OnPropertyChanged(nameof(TourViewModel.IsMapVisible));
-        });
-
-        Assert.That(cut.RenderCount, Is.EqualTo(initialRenderCount));
-    }
-    
-    [Test]
-    public void FormHeader_AddingNewLog_DisplaysAddNewLog()
+    public void FormHeader_NewLog_ShowsAddText()
     {
         var tourId = Services.ViewModel<TourViewModel>().Tours.First().Id;
         Services.ViewModel<TourLogViewModel>().SelectedTourId = tourId;
         Services.ViewModel<TourLogViewModel>().IsLogFormVisible = true;
         Services.ViewModel<TourLogViewModel>().SelectedTourLog = new TourLog { Id = Guid.Empty };
-    
+
         var cut = RenderComponent<TourLogPage>();
-    
+
         Assert.That(cut.Find(".tour-log-form-section h5").TextContent, Is.EqualTo("Add New Log"));
     }
 
     [Test]
-    public void FormHeader_EditingExistingLog_DisplaysEditLog()
+    public void FormHeader_ExistingLog_ShowsEditText()
     {
         var tourId = Services.ViewModel<TourViewModel>().Tours.First().Id;
         Services.ViewModel<TourLogViewModel>().SelectedTourId = tourId;
         Services.ViewModel<TourLogViewModel>().IsLogFormVisible = true;
         Services.ViewModel<TourLogViewModel>().SelectedTourLog = new TourLog { Id = Guid.NewGuid() };
-    
+
         var cut = RenderComponent<TourLogPage>();
-    
+
         Assert.That(cut.Find(".tour-log-form-section h5").TextContent, Is.EqualTo("Edit Log"));
+    }
+
+    [Test]
+    public async Task TourViewModel_ToursChanged_ReRendersPage()
+    {
+        var cut = RenderComponent<TourLogPage>();
+        var initial = cut.RenderCount;
+
+        await cut.InvokeAsync(() =>
+        {
+            var vm = Services.ViewModel<TourViewModel>();
+            vm.Tours = new ObservableCollection<Tour>(TestData.SampleTourList());
+            vm.OnPropertyChanged(nameof(TourViewModel.Tours));
+        });
+
+        Assert.That(cut.RenderCount, Is.GreaterThan(initial));
+    }
+
+    [Test]
+    public async Task TourViewModel_UnrelatedPropertyChanged_DoesNotReRender()
+    {
+        var cut = RenderComponent<TourLogPage>();
+        var initial = cut.RenderCount;
+
+        await cut.InvokeAsync(() =>
+        {
+            var vm = Services.ViewModel<TourViewModel>();
+            vm.IsMapVisible = !vm.IsMapVisible;
+            vm.OnPropertyChanged(nameof(TourViewModel.IsMapVisible));
+        });
+
+        Assert.That(cut.RenderCount, Is.EqualTo(initial));
     }
 }

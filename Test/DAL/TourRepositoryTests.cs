@@ -7,9 +7,6 @@ namespace Test.DAL;
 [TestFixture]
 public class TourRepositoryTests
 {
-    private TourPlannerContext _context = null!;
-    private TourRepository _repository = null!;
-
     [SetUp]
     public void Setup()
     {
@@ -26,6 +23,9 @@ public class TourRepositoryTests
         _context.Database.EnsureDeleted();
         _context.Dispose();
     }
+
+    private TourPlannerContext _context = null!;
+    private TourRepository _repository = null!;
 
     [Test]
     public async Task CreateTourAsync_WithValidTour_ReturnsSavedTour()

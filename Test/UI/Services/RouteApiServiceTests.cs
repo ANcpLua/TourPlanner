@@ -6,11 +6,6 @@ namespace Test.UI.Services;
 [TestFixture]
 public class RouteApiServiceTests
 {
-    private Mock<HttpMessageHandler> _mockHttpMessageHandler = null!;
-    private HttpClient _httpClient = null!;
-    private Mock<IConfiguration> _mockConfiguration = null!;
-    private RouteApiService _sut = null!;
-
     [SetUp]
     public void Setup()
     {
@@ -28,6 +23,11 @@ public class RouteApiServiceTests
     {
         _httpClient.Dispose();
     }
+
+    private Mock<HttpMessageHandler> _mockHttpMessageHandler = null!;
+    private HttpClient _httpClient = null!;
+    private Mock<IConfiguration> _mockConfiguration = null!;
+    private RouteApiService _sut = null!;
 
     [TestCase("Car", "driving-car")]
     [TestCase("Bike", "cycling-regular")]

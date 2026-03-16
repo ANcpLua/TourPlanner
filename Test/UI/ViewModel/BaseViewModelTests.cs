@@ -6,11 +6,6 @@ namespace Test.UI.ViewModel;
 [TestFixture]
 public class BaseViewModelTests
 {
-    private Mock<IHttpService> _mockHttpService = null!;
-    private Mock<IToastServiceWrapper> _mockToastService = null!;
-    private Mock<ILogger> _mockLogger = null!;
-    private TestViewModel _viewModel = null!;
-
     [SetUp]
     public void Setup()
     {
@@ -19,6 +14,11 @@ public class BaseViewModelTests
         _mockLogger = new Mock<ILogger>();
         _viewModel = new TestViewModel(_mockHttpService.Object, _mockToastService.Object, _mockLogger.Object);
     }
+
+    private Mock<IHttpService> _mockHttpService = null!;
+    private Mock<IToastServiceWrapper> _mockToastService = null!;
+    private Mock<ILogger> _mockLogger = null!;
+    private TestViewModel _viewModel = null!;
 
     private class TestViewModel : BaseViewModel
     {

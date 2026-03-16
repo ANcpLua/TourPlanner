@@ -9,11 +9,6 @@ namespace Test.API;
 [TestFixture]
 public class FileControllerTests
 {
-    private Mock<IFileService> _mockFileService = null!;
-    private Mock<ITourService> _mockTourService = null!;
-    private Mock<IMapper> _mockMapper = null!;
-    private FileController _controller = null!;
-
     [SetUp]
     public void Setup()
     {
@@ -26,6 +21,11 @@ public class FileControllerTests
             _mockMapper.Object
         );
     }
+
+    private Mock<IFileService> _mockFileService = null!;
+    private Mock<ITourService> _mockTourService = null!;
+    private Mock<IMapper> _mockMapper = null!;
+    private FileController _controller = null!;
 
     [Test]
     public void GetSummaryReport_HappyPath_ReturnsPdfFile()

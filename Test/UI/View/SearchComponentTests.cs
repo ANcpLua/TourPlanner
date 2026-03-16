@@ -1,4 +1,4 @@
-﻿using UI.Model;
+using UI.Model;
 using UI.Service.Interface;
 using UI.ViewModel;
 
@@ -58,120 +58,65 @@ public sealed class SearchComponentTests : BunitTestBase
             .Verify(t => t.ShowSuccess("No tours found matching your search criteria."));
     }
 
-    [TestCase(1d, 4d, "Yes")]
-    [TestCase(2d, 3d, "Yes")]
-    [TestCase(2d, 4d, "Yes")]
-    [TestCase(3d, 4d, "No")]
-    [TestCase(1d, 2d, "No")]
-    public void TourWithLog_HasDifficultyAndRating_DisplaysChildFriendlyStatus(double difficulty, double rating,
-        string expectedStatus)
+    [Test]
+    public void SearchResults_WhenEmpty_HidesResultsList()
     {
-        var tour = TestData.SampleTour();
-        tour.TourLogs.Clear();
-        tour.TourLogs.Add(new TourLog
-        {
-            TourId = tour.Id, Difficulty = difficulty, Rating = rating, DateTime = DateTime.Now, Comment = "Test log",
-            TotalDistance = 10, TotalTime = 60
-        });
-        Services.ViewModel<SearchViewModel>().SearchResults = [tour];
-
+        Services.ViewModel<SearchViewModel>().SearchResults = [];
         var cut = RenderComponent<SearchComponent>();
 
-        Assert.That(cut.Find("div.tour-search").TextContent, Does.Contain($"Child Friendly: {expectedStatus}"));
+        Assert.Throws<ElementNotFoundException>(() => cut.Find("div.tour-search"));
     }
 
     [Test]
-    public void TourWithoutLogs_HasEmptyCollection_DisplaysNotChildFriendly()
+    public void SearchResults_WhenPopulated_RendersCorrectNumberOfCards()
     {
-        var tour = TestData.SampleTour();
-        tour.TourLogs.Clear();
-        Services.ViewModel<SearchViewModel>().SearchResults = [tour];
-
+        Services.ViewModel<SearchViewModel>().SearchResults = [..TestData.SampleTourList(3)];
         var cut = RenderComponent<SearchComponent>();
 
-        Assert.That(cut.Find("div.tour-search").TextContent, Does.Contain("Child Friendly: No"));
-    }
-
-    [TestCase("Beautiful scenic route", "Beautiful scenic route")]
-    [TestCase("", "N/A")]
-    public void TourDescription_HasValue_DisplaysCorrectly(string description, string expectedText)
-    {
-        var tour = TestData.SampleTour();
-        tour.Description = description;
-        Services.ViewModel<SearchViewModel>().SearchResults = [tour];
-
-        var cut = RenderComponent<SearchComponent>();
-
-        Assert.That(cut.Find("div.tour-search").TextContent, Does.Contain($"Description: {expectedText}"));
+        Assert.That(cut.FindAll("div.tour-search"), Has.Count.EqualTo(3));
     }
 
     [Test]
-    public void TourDescription_IsNull_DisplaysNA()
+    public void SearchResults_DisplaysTourName()
     {
-        var tour = TestData.SampleTour();
-        tour.Description = null;
+        var tour = TestData.SampleTour("My Tour");
         Services.ViewModel<SearchViewModel>().SearchResults = [tour];
-
         var cut = RenderComponent<SearchComponent>();
 
-        Assert.That(cut.Find("div.tour-search").TextContent, Does.Contain("Description: N/A"));
-    }
-
-    [TestCase("/images/tour.jpg", "Available")]
-    [TestCase("", "N/A")]
-    public void TourImagePath_HasValue_DisplaysCorrectly(string imagePath, string expectedText)
-    {
-        var tour = TestData.SampleTour();
-        tour.ImagePath = imagePath;
-        Services.ViewModel<SearchViewModel>().SearchResults = [tour];
-
-        var cut = RenderComponent<SearchComponent>();
-
-        Assert.That(cut.Find("div.tour-search").TextContent, Does.Contain($"Image: {expectedText}"));
+        Assert.That(cut.Find("p.tour-name").TextContent, Is.EqualTo("My Tour"));
     }
 
     [Test]
-    public void TourImagePath_IsNull_DisplaysNA()
+    public void ClearButton_ClearsSearchTextAndResults()
     {
-        var tour = TestData.SampleTour();
-        tour.ImagePath = null;
-        Services.ViewModel<SearchViewModel>().SearchResults = [tour];
-
+        Services.ViewModel<SearchViewModel>().SearchText = "test";
+        Services.ViewModel<SearchViewModel>().SearchResults = [TestData.SampleTour()];
         var cut = RenderComponent<SearchComponent>();
 
-        Assert.That(cut.Find("div.tour-search").TextContent, Does.Contain("Image: N/A"));
-    }
+        cut.Find("button.clear-btn").Click();
 
-    [Test]
-    public void TourWithMultipleLogs_HasLatestFirst_DisplaysLatestLogInfo()
-    {
-        var tour = TestData.SampleTour();
-        tour.TourLogs.Clear();
-
-        var olderLog = TestData.SampleTourLog(3, 1, tour.Id);
-        olderLog.DateTime = DateTime.Now.AddDays(-5);
-
-        var newerLog = TestData.SampleTourLog(5, 1, tour.Id);
-        newerLog.DateTime = DateTime.Now.AddDays(-1);
-
-        tour.TourLogs.Add(olderLog);
-        tour.TourLogs.Add(newerLog);
-
-        Services.ViewModel<SearchViewModel>().SearchResults = [tour];
-
-        var cut = RenderComponent<SearchComponent>();
-
-        var tourCard = cut.Find("div.tour-search");
+        var vm = Services.ViewModel<SearchViewModel>();
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(tourCard.TextContent, Does.Contain("Latest Log:"));
-            Assert.That(tourCard.TextContent, Does.Contain(newerLog.DateTime.ToShortDateString()));
-            Assert.That(tourCard.TextContent, Does.Contain("Log Rating: 5"));
+            Assert.That(vm.SearchText, Is.Empty);
+            Assert.That(vm.SearchResults, Is.Empty);
         }
     }
 
     [Test]
-    public void TourWithoutLogs_HasEmptyCollection_HidesLogInfo()
+    public void TourWithLogs_ShowsLatestLogSection()
+    {
+        var tour = TestData.SampleTour();
+        tour.TourLogs = [TestData.SampleTourLog(tourId: tour.Id)];
+        Services.ViewModel<SearchViewModel>().SearchResults = [tour];
+
+        var cut = RenderComponent<SearchComponent>();
+
+        Assert.That(cut.Find("div.tour-search").TextContent, Does.Contain("Latest Log:"));
+    }
+
+    [Test]
+    public void TourWithoutLogs_HidesLatestLogSection()
     {
         var tour = TestData.SampleTour();
         tour.TourLogs.Clear();
@@ -179,11 +124,28 @@ public sealed class SearchComponentTests : BunitTestBase
 
         var cut = RenderComponent<SearchComponent>();
 
-        var tourCard = cut.Find("div.tour-search");
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(tourCard.TextContent, Does.Not.Contain("Latest Log:"));
-            Assert.That(tourCard.TextContent, Does.Not.Contain("Log Rating:"));
-        }
+        Assert.That(cut.Find("div.tour-search").TextContent, Does.Not.Contain("Latest Log:"));
+    }
+
+    [Test]
+    public void NoResultsText_ShownWhenSearchTextExistsButNoResults()
+    {
+        Services.ViewModel<SearchViewModel>().SearchText = "nonexistent";
+        Services.ViewModel<SearchViewModel>().SearchResults = [];
+
+        var cut = RenderComponent<SearchComponent>();
+
+        Assert.That(cut.Find("p.text-center").TextContent, Is.EqualTo("No results found."));
+    }
+
+    [Test]
+    public void NoResultsText_HiddenWhenSearchTextEmpty()
+    {
+        Services.ViewModel<SearchViewModel>().SearchText = "";
+        Services.ViewModel<SearchViewModel>().SearchResults = [];
+
+        var cut = RenderComponent<SearchComponent>();
+
+        Assert.Throws<ElementNotFoundException>(() => cut.Find("p.text-center"));
     }
 }

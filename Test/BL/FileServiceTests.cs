@@ -7,10 +7,6 @@ namespace Test.BL;
 [TestFixture]
 public class FileServiceTests
 {
-    private Mock<ITourService> _mockTourService = null!;
-    private Mock<IPdfReportService> _mockPdfReportService = null!;
-    private FileService _fileService = null!;
-
     [SetUp]
     public void Setup()
     {
@@ -18,6 +14,10 @@ public class FileServiceTests
         _mockPdfReportService = new Mock<IPdfReportService>();
         _fileService = new FileService(_mockTourService.Object, _mockPdfReportService.Object);
     }
+
+    private Mock<ITourService> _mockTourService = null!;
+    private Mock<IPdfReportService> _mockPdfReportService = null!;
+    private FileService _fileService = null!;
 
     [Test]
     public void GenerateTourReport_ValidTourId_ReturnsPdfBytes()
@@ -109,29 +109,27 @@ public class FileServiceTests
     }
 
     [Test]
-    public void ExportTourToJsonAsync_InvalidTourId_ReturnsNull()
+    public void ExportTourToJson_InvalidTourId_ThrowsInvalidOperationException()
     {
         var invalidTourId = TestData.NonexistentGuid;
-        _mockTourService.Setup(s => s.GetTourById(invalidTourId)).Returns((TourDomain)null!);
+        _mockTourService.Setup(s => s.GetTourById(invalidTourId)).Returns((TourDomain?)null);
 
-        var result = _fileService.ExportTourToJson(invalidTourId);
-
-        Assert.That(result, Is.Null);
+        Assert.That(
+            () => _fileService.ExportTourToJson(invalidTourId),
+            Throws.TypeOf<InvalidOperationException>());
         _mockTourService.Verify(s => s.GetTourById(invalidTourId), Times.Once);
     }
 
     [Test]
-    public void GenerateTourReportAsync_InvalidTourId_ReturnsEmptyByteArray()
+    public void GenerateTourReport_InvalidTourId_ThrowsInvalidOperationException()
     {
         var invalidTourId = TestData.NonexistentGuid;
-        _mockTourService.Setup(s => s.GetTourById(invalidTourId)).Returns((TourDomain)null!);
-        _mockPdfReportService.Setup(s => s.GenerateTourReport(null!)).Returns([]);
+        _mockTourService.Setup(s => s.GetTourById(invalidTourId)).Returns((TourDomain?)null);
 
-        var result = _fileService.GenerateTourReport(invalidTourId);
-
-        Assert.That(result, Is.Empty);
+        Assert.That(
+            () => _fileService.GenerateTourReport(invalidTourId),
+            Throws.TypeOf<InvalidOperationException>());
         _mockTourService.Verify(s => s.GetTourById(invalidTourId), Times.Once);
-        _mockPdfReportService.Verify(s => s.GenerateTourReport(null!), Times.Once);
     }
 
     [Test]
@@ -141,13 +139,13 @@ public class FileServiceTests
         var json = TestData.SampleTourDomainJson();
 
         _mockTourService
-            .Setup(s => s.CreateTourAsync(It.IsAny<TourDomain>()))
+            .Setup(s => s.CreateTourAsync(It.IsAny<TourDomain>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedTour);
 
         await _fileService.ImportTourFromJsonAsync(json);
 
         _mockTourService.Verify(
-            s => s.CreateTourAsync(It.Is<TourDomain>(t => t.Id == expectedTour.Id)),
+            s => s.CreateTourAsync(It.Is<TourDomain>(t => t.Id == expectedTour.Id), It.IsAny<CancellationToken>()),
             Times.Once
         );
     }
@@ -157,11 +155,12 @@ public class FileServiceTests
     {
         const string invalidJson = "{invalid json}";
         _mockTourService
-            .Setup(s => s.CreateTourAsync(It.IsAny<TourDomain>()))
+            .Setup(s => s.CreateTourAsync(It.IsAny<TourDomain>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((TourDomain)null!);
 
         Assert.ThrowsAsync<JsonException>(() => _fileService.ImportTourFromJsonAsync(invalidJson));
-        _mockTourService.Verify(s => s.CreateTourAsync(It.IsAny<TourDomain>()), Times.Never);
+        _mockTourService.Verify(s => s.CreateTourAsync(It.IsAny<TourDomain>(), It.IsAny<CancellationToken>()),
+            Times.Never);
         return Task.CompletedTask;
     }
 }

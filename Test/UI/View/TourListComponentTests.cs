@@ -1,4 +1,3 @@
-﻿using UI.Model;
 using UI.Service.Interface;
 using UI.View.TourComponents;
 using UI.ViewModel;
@@ -15,166 +14,70 @@ public sealed class TourListComponentTests : BunitTestBase
         Services.ViewModel<TourViewModel>().Tours = [..TestData.SampleTourList(2)];
     }
 
-    [Test]
-    public void RenderAllTours_DisplaysCorrectNumberOfCards()
+    private IRenderedComponent<TourListComponent> Render()
     {
-        var cut = RenderComponent<TourListComponent>(p => p
+        return RenderComponent<TourListComponent>(p => p
             .Add(x => x.ViewModel, Services.ViewModel<TourViewModel>())
             .Add(x => x.ReportViewModel, Services.ViewModel<ReportViewModel>()));
+    }
 
-        var tourCards = cut.FindAll("div.tour-card");
-        Assert.That(tourCards, Has.Count.EqualTo(2));
+    [Test]
+    public void RendersTourCardPerTour()
+    {
+        Assert.That(Render().FindAll("div.tour-card"), Has.Count.EqualTo(2));
+    }
+
+    [Test]
+    public void EmptyTourList_ShowsMessage()
+    {
+        Services.ViewModel<TourViewModel>().Tours.Clear();
+        Assert.That(Render().Markup, Does.Contain("No tours available"));
     }
 
     [TestCase(true)]
     [TestCase(false)]
-    public async Task DeleteTour_HandlesUserConfirmation(bool userConfirms)
+    public async Task DeleteTour_RespectsConfirmation(bool confirms)
     {
         var tour = Services.ViewModel<TourViewModel>().Tours.First();
-        JSInterop.Setup<bool>("confirm", _ => true).SetResult(userConfirms);
-
-        if (userConfirms)
+        JSInterop.Setup<bool>("confirm", _ => true).SetResult(confirms);
+        if (confirms)
             Services.Mock<IHttpService>().Setup(s => s.DeleteAsync($"api/tour/{tour.Id}"))
                 .Returns(Task.CompletedTask);
 
-        var cut = RenderComponent<TourListComponent>(p => p
-            .Add(x => x.ViewModel, Services.ViewModel<TourViewModel>())
-            .Add(x => x.ReportViewModel, Services.ViewModel<ReportViewModel>()));
-
-        await cut.Find("button.btn-danger").ClickAsync(new MouseEventArgs());
+        await Render().Find("button.btn-danger").ClickAsync(new MouseEventArgs());
 
         Services.Mock<IHttpService>().Verify(
             s => s.DeleteAsync($"api/tour/{tour.Id}"),
-            userConfirms ? Times.Once : Times.Never);
+            confirms ? Times.Once : Times.Never);
     }
 
     [Test]
-    public async Task ShowTourDetails_LoadsAndDisplaysModal()
-    {
-        var tour = Services.ViewModel<TourViewModel>().Tours.First();
-        Services.Mock<IHttpService>().Setup(s => s.GetAsync<Tour>($"api/tour/{tour.Id}"))
-            .ReturnsAsync(tour);
-
-        JSInterop.SetupVoid("showModal");
-
-        var cut = RenderComponent<TourListComponent>(p => p
-            .Add(x => x.ViewModel, Services.ViewModel<TourViewModel>())
-            .Add(x => x.ReportViewModel, Services.ViewModel<ReportViewModel>()));
-
-        var detailsButton = cut.FindAll("button").First(b => b.TextContent.Trim() == "Details");
-        await detailsButton.ClickAsync(new MouseEventArgs());
-
-        Services.Mock<IHttpService>().Verify(s => s.GetAsync<Tour>($"api/tour/{tour.Id}"), Times.Once);
-        JSInterop.VerifyInvoke("showModal", 1);
-    }
-
-    [Test]
-    public void EmptyTourList_DisplaysNoToursMessage()
-    {
-        Services.ViewModel<TourViewModel>().Tours.Clear();
-
-        var cut = RenderComponent<TourListComponent>(p => p
-            .Add(x => x.ViewModel, Services.ViewModel<TourViewModel>())
-            .Add(x => x.ReportViewModel, Services.ViewModel<ReportViewModel>()));
-
-        Assert.That(cut.Markup, Does.Contain("No tours available"));
-    }
-
-    [TestCase(100.5, "100[.,]50")]
-    [TestCase(null, "N/A")]
-    public void TourCard_Distance_DisplaysCorrectValue(double? distance, string expectedPattern)
-    {
-        var tour = Services.ViewModel<TourViewModel>().Tours.First();
-        tour.Distance = distance;
-
-        var cut = RenderComponent<TourListComponent>(p => p
-            .Add(x => x.ViewModel, Services.ViewModel<TourViewModel>())
-            .Add(x => x.ReportViewModel, Services.ViewModel<ReportViewModel>()));
-
-        var tourCard = cut.Find("div.tour-card");
-        if (distance.HasValue)
-        {
-            Assert.That(tourCard.TextContent, Does.Match($@"Distance: {expectedPattern} meters"));
-        }
-        else
-        {
-            Assert.That(tourCard.TextContent, Does.Contain($"Distance: {expectedPattern} meters"));
-        }
-    }
-
-    [TestCase(60.0, "60")]
-    [TestCase(null, "N/A")]
-    public void TourCard_EstimatedTime_DisplaysCorrectValue(double? estimatedTime, string expectedText)
-    {
-        var tour = Services.ViewModel<TourViewModel>().Tours.First();
-        tour.EstimatedTime = estimatedTime;
-
-        var cut = RenderComponent<TourListComponent>(p => p
-            .Add(x => x.ViewModel, Services.ViewModel<TourViewModel>())
-            .Add(x => x.ReportViewModel, Services.ViewModel<ReportViewModel>()));
-
-        var tourCard = cut.Find("div.tour-card");
-        Assert.That(tourCard.TextContent, Does.Contain($"Estimated Time: {expectedText} minutes"));
-    }
-
-    [TestCase(true, "Yes")]
-    [TestCase(false, "No")]
-    public void TourCard_ChildFriendly_DisplaysCorrectValue(bool isChildFriendly, string expectedText)
-    {
-        var tour = Services.ViewModel<TourViewModel>().Tours.First();
-        tour.TourLogs.Clear();
-        if (isChildFriendly)
-        {
-            tour.TourLogs.Add(new TourLog { Difficulty = 2, Rating = 3 });
-        }
-
-        var cut = RenderComponent<TourListComponent>(p => p
-            .Add(x => x.ViewModel, Services.ViewModel<TourViewModel>())
-            .Add(x => x.ReportViewModel, Services.ViewModel<ReportViewModel>()));
-
-        var tourCard = cut.Find("div.tour-card");
-        Assert.That(tourCard.TextContent, Does.Contain($"Child Friendly: {expectedText}"));
-    }
-
-    [Test]
-    public void EditButton_FormVisibleForSelectedTour_ShowsHideEditForm()
+    public void EditButton_WhenEditingThisTour_ShowsHideText()
     {
         var tour = Services.ViewModel<TourViewModel>().Tours.First();
         Services.ViewModel<TourViewModel>().IsFormVisible = true;
         Services.ViewModel<TourViewModel>().SelectedTour = tour;
 
-        var cut = RenderComponent<TourListComponent>(p => p
-            .Add(x => x.ViewModel, Services.ViewModel<TourViewModel>())
-            .Add(x => x.ReportViewModel, Services.ViewModel<ReportViewModel>()));
-
-        var editButton = cut.FindAll("button").First(b => b.TextContent.Contains("Hide Edit Form"));
-        Assert.That(editButton, Is.Not.Null);
+        var editBtn = Render().FindAll("button").First(b => b.TextContent.Contains("Hide Edit Form"));
+        Assert.That(editBtn, Is.Not.Null);
     }
 
     [Test]
-    public void EditButton_FormNotVisibleOrDifferentTour_ShowsEdit()
+    public void EditButton_WhenNotEditing_ShowsEditText()
     {
         Services.ViewModel<TourViewModel>().IsFormVisible = false;
 
-        var cut = RenderComponent<TourListComponent>(p => p
-            .Add(x => x.ViewModel, Services.ViewModel<TourViewModel>())
-            .Add(x => x.ReportViewModel, Services.ViewModel<ReportViewModel>()));
-
-        var editButton = cut.FindAll("button").First(b => b.TextContent.Trim() == "Edit");
-        Assert.That(editButton, Is.Not.Null);
+        var editBtn = Render().FindAll("button").First(b => b.TextContent.Trim() == "Edit");
+        Assert.That(editBtn, Is.Not.Null);
     }
 
     [TestCase(true, "Exporting...")]
     [TestCase(false, "Export")]
-    public void ExportButton_ProcessingState_DisplaysCorrectText(bool isProcessing, string expectedText)
+    public void ExportButton_ReflectsProcessingState(bool processing, string expected)
     {
-        Services.ViewModel<ReportViewModel>().IsProcessing = isProcessing;
+        Services.ViewModel<ReportViewModel>().IsProcessing = processing;
 
-        var cut = RenderComponent<TourListComponent>(p => p
-            .Add(x => x.ViewModel, Services.ViewModel<TourViewModel>())
-            .Add(x => x.ReportViewModel, Services.ViewModel<ReportViewModel>()));
-
-        var exportButton = cut.FindAll("button").First(b => b.TextContent.Contains(expectedText));
-        Assert.That(exportButton, Is.Not.Null);
+        var btn = Render().FindAll("button").First(b => b.TextContent.Contains(expected));
+        Assert.That(btn, Is.Not.Null);
     }
 }

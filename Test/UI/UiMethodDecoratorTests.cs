@@ -8,11 +8,6 @@ namespace Test.UI;
 [TestFixture]
 public class UiMethodDecoratorTests
 {
-    private UiMethodDecorator _decorator = null!;
-    private MethodInfo _testMethod = null!;
-    private Mock<IToastServiceWrapper> _mockToastService = null!;
-    private Mock<ILogger> _mockLogger = null!;
-
     [SetUp]
     public void SetUp()
     {
@@ -22,6 +17,11 @@ public class UiMethodDecoratorTests
         _mockLogger = new Mock<ILogger>();
         Log.Logger = _mockLogger.Object;
     }
+
+    private UiMethodDecorator _decorator = null!;
+    private MethodInfo _testMethod = null!;
+    private Mock<IToastServiceWrapper> _mockToastService = null!;
+    private Mock<ILogger> _mockLogger = null!;
 
     [Test]
     public void Init_WithBaseViewModelHavingToastService_SetsToastService()

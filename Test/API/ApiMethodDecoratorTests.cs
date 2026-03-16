@@ -6,10 +6,6 @@ namespace Test.API;
 [TestFixture]
 public class ApiMethodDecoratorTests
 {
-    private ApiMethodDecorator _decorator = null!;
-    private Mock<ILogger> _mockLogger = null!;
-    private MethodInfo _testMethod = null!;
-
     [SetUp]
     public void SetUp()
     {
@@ -18,6 +14,10 @@ public class ApiMethodDecoratorTests
         Log.Logger = _mockLogger.Object;
         _testMethod = GetType().GetMethod(nameof(SetUp))!;
     }
+
+    private ApiMethodDecorator _decorator = null!;
+    private Mock<ILogger> _mockLogger = null!;
+    private MethodInfo _testMethod = null!;
 
     [Test]
     public void Init_WithMethodHavingDeclaringType_LogsFullTypeName()

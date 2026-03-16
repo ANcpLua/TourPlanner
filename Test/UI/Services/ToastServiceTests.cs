@@ -5,15 +5,15 @@ namespace Test.UI.Services;
 [TestFixture]
 public class ToastServiceTests
 {
-    private Mock<IToastService> _mockBlazorToastService = null!;
-    private ToastService _sut = null!;
-
     [SetUp]
     public void Setup()
     {
         _mockBlazorToastService = new Mock<IToastService>();
         _sut = new ToastService(_mockBlazorToastService.Object);
     }
+
+    private Mock<IToastService> _mockBlazorToastService = null!;
+    private ToastService _sut = null!;
 
     [Test]
     public void ShowSuccess_WithMessage_CallsUnderlyingToastService()

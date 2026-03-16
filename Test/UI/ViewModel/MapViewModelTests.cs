@@ -6,12 +6,6 @@ namespace Test.UI.ViewModel;
 [TestFixture]
 public class MapViewModelTests
 {
-    private Mock<IJSRuntime> _mockJsRuntime = null!;
-    private Mock<IHttpService> _mockHttpService = null!;
-    private Mock<IToastServiceWrapper> _mockToastService = null!;
-    private Mock<ILogger> _mockLogger = null!;
-    private MapViewModel _viewModel = null!;
-
     [SetUp]
     public void Setup()
     {
@@ -27,6 +21,12 @@ public class MapViewModelTests
             _mockLogger.Object
         );
     }
+
+    private Mock<IJSRuntime> _mockJsRuntime = null!;
+    private Mock<IHttpService> _mockHttpService = null!;
+    private Mock<IToastServiceWrapper> _mockToastService = null!;
+    private Mock<ILogger> _mockLogger = null!;
+    private MapViewModel _viewModel = null!;
 
     [Test]
     public void Constructor_ShouldInitializePropertiesCorrectly()

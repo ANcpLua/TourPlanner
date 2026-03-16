@@ -7,12 +7,6 @@ namespace Test.UI.Services;
 [TestFixture]
 public class HttpServiceTests
 {
-    private Mock<HttpMessageHandler> _mockHttpMessageHandler = null!;
-    private HttpClient _httpClient = null!;
-    private Mock<IToastServiceWrapper> _mockToastService = null!;
-    private Mock<ILogger> _mockLogger = null!;
-    private HttpService _httpService = null!;
-
     [SetUp]
     public void Setup()
     {
@@ -31,6 +25,12 @@ public class HttpServiceTests
     {
         _httpClient.Dispose();
     }
+
+    private Mock<HttpMessageHandler> _mockHttpMessageHandler = null!;
+    private HttpClient _httpClient = null!;
+    private Mock<IToastServiceWrapper> _mockToastService = null!;
+    private Mock<ILogger> _mockLogger = null!;
+    private HttpService _httpService = null!;
 
     [Test]
     public async Task GetAsync_SuccessfulRequest_ReturnsDeserializedObject()
