@@ -34,7 +34,8 @@ builder.Services.AddCors(options =>
 });
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddHttpClient();
+builder.Services.AddHttpClient("default").AddStandardResilienceHandler();
+builder.Services.AddHealthChecks();
 var app = builder.Build();
 await using var scope = app.Services.CreateAsyncScope();
 await scope.ServiceProvider.GetRequiredService<TourPlannerContext>().Database.EnsureCreatedAsync();
@@ -44,6 +45,7 @@ app.UseStaticFiles();
 app.UseAuthorization();
 app.UseSerilogRequestLogging();
 app.MapControllers();
+app.MapHealthChecks("/health");
 app.UseExceptionHandler(new ExceptionHandlerOptions
 {
     ExceptionHandlingPath = "/Error",

@@ -61,7 +61,7 @@ public class PdfReportServiceTests
         tour.From = specialChars;
         tour.To = specialChars;
         tour.Logs = [.. Enumerable.Range(0, 50)
-            .Select(_ => new TourLogDomain
+            .Select(static _ => new TourLogDomain
             {
                 DateTime = TimeProvider.System.GetUtcNow().UtcDateTime,
                 Comment = specialChars,

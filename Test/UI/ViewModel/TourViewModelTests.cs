@@ -199,13 +199,13 @@ public class TourViewModelTests
     public async Task LoadToursAsync_OnException_ShouldShowErrorMessage()
     {
         _mockHttpService
-            .Setup(s => s.GetListAsync<Tour>(It.IsAny<string>()))
+            .Setup(static s => s.GetListAsync<Tour>(It.IsAny<string>()))
             .ThrowsAsync(new Exception("Network error"));
 
         await _viewModel.LoadToursAsync();
 
         _mockToastService.Verify(
-            t => t.ShowError(It.Is<string>(msg => msg.Contains("Error loading tours"))),
+            static t => t.ShowError(It.Is<string>(static msg => msg.Contains("Error loading tours"))),
             Times.Once
         );
     }
@@ -224,12 +224,12 @@ public class TourViewModelTests
         _mockMapViewModel.Setup(m => m.GetCoordinates(tour.To)).Returns(toCoords);
         _mockRouteApiService.Setup(r => r.FetchRouteDataAsync(fromCoords, toCoords, tour.TransportType))
             .ReturnsAsync((523.4, 480.0));
-        _mockHttpService.Setup(s => s.PostAsync<Tour>("api/tour", It.IsAny<Tour>()))
+        _mockHttpService.Setup(static s => s.PostAsync<Tour>("api/tour", It.IsAny<Tour>()))
             .ReturnsAsync(tour);
-        _mockHttpService.Setup(s => s.GetListAsync<Tour>("api/tour"))
+        _mockHttpService.Setup(static s => s.GetListAsync<Tour>("api/tour"))
             .ReturnsAsync(TestData.SampleTourList());
 
-        _mockJsRuntime.Setup(j => j.InvokeAsync<IJSVoidResult>(
+        _mockJsRuntime.Setup(static j => j.InvokeAsync<IJSVoidResult>(
                 "TourPlannerMap.setRoute",
                 It.IsAny<object[]>()))
             .ReturnsAsync(Mock.Of<IJSVoidResult>());
@@ -244,8 +244,8 @@ public class TourViewModelTests
             Assert.That(tour.RouteInformation, Is.Not.Empty);
         }
 
-        _mockHttpService.Verify(s => s.PostAsync<Tour>("api/tour", It.IsAny<Tour>()), Times.Once);
-        _mockToastService.Verify(t => t.ShowSuccess("Tour saved successfully."), Times.Once);
+        _mockHttpService.Verify(static s => s.PostAsync<Tour>("api/tour", It.IsAny<Tour>()), Times.Once);
+        _mockToastService.Verify(static t => t.ShowSuccess("Tour saved successfully."), Times.Once);
     }
 
     [Test]
@@ -263,10 +263,10 @@ public class TourViewModelTests
             .ReturnsAsync((100.5, 60.0));
         _mockHttpService.Setup(s => s.PutAsync<Tour>($"api/tour/{tour.Id}", It.IsAny<Tour>()))
             .ReturnsAsync(tour);
-        _mockHttpService.Setup(s => s.GetListAsync<Tour>("api/tour"))
+        _mockHttpService.Setup(static s => s.GetListAsync<Tour>("api/tour"))
             .ReturnsAsync(TestData.SampleTourList());
 
-        _mockJsRuntime.Setup(j => j.InvokeAsync<IJSVoidResult>(
+        _mockJsRuntime.Setup(static j => j.InvokeAsync<IJSVoidResult>(
                 "TourPlannerMap.setRoute",
                 It.IsAny<object[]>()))
             .ReturnsAsync(Mock.Of<IJSVoidResult>());
@@ -275,7 +275,7 @@ public class TourViewModelTests
 
         Assert.That(result, Is.True);
         _mockHttpService.Verify(s => s.PutAsync<Tour>($"api/tour/{tour.Id}", It.IsAny<Tour>()), Times.Once);
-        _mockToastService.Verify(t => t.ShowSuccess("Tour updated successfully."), Times.Once);
+        _mockToastService.Verify(static t => t.ShowSuccess("Tour updated successfully."), Times.Once);
     }
 
     [Test]
@@ -284,10 +284,10 @@ public class TourViewModelTests
         var testTour = TestData.SampleTour();
         _viewModel.SelectedTour = testTour;
 
-        _mockMapViewModel.Setup(m => m.GetCoordinates(It.IsAny<string>()))
+        _mockMapViewModel.Setup(static m => m.GetCoordinates(It.IsAny<string>()))
             .Returns(TestData.TestCoordinates);
         _mockRouteApiService
-            .Setup(r => r.FetchRouteDataAsync(It.IsAny<(double, double)>(), It.IsAny<(double, double)>(),
+            .Setup(static r => r.FetchRouteDataAsync(It.IsAny<(double, double)>(), It.IsAny<(double, double)>(),
                 It.IsAny<string>()))
             .ThrowsAsync(new Exception("Network error"));
 
@@ -295,14 +295,14 @@ public class TourViewModelTests
 
         Assert.That(result, Is.False);
 
-        _mockToastService.Verify(t => t.ShowError(It.Is<string>(s => s.Contains("Error saving tour"))), Times.Once);
+        _mockToastService.Verify(static t => t.ShowError(It.Is<string>(static s => s.Contains("Error saving tour"))), Times.Once);
     }
 
     [Test]
     public async Task ShowTourDetailsAsync_ShouldLoadTourSuccessfully()
     {
         var testTour = TestData.SampleTour();
-        _mockHttpService.Setup(s => s.GetAsync<Tour>(It.IsAny<string>())).ReturnsAsync(testTour);
+        _mockHttpService.Setup(static s => s.GetAsync<Tour>(It.IsAny<string>())).ReturnsAsync(testTour);
 
         await _viewModel.ShowTourDetailsAsync(testTour.Id);
         using (Assert.EnterMultipleScope())
@@ -318,13 +318,13 @@ public class TourViewModelTests
     public async Task ShowTourDetailsAsync_OnException_ShouldShowErrorMessage()
     {
         _mockHttpService
-            .Setup(s => s.GetAsync<Tour>(It.IsAny<string>()))
+            .Setup(static s => s.GetAsync<Tour>(It.IsAny<string>()))
             .ThrowsAsync(new Exception("Network error"));
 
         await _viewModel.ShowTourDetailsAsync(TestData.TestGuid);
 
         _mockToastService.Verify(
-            t => t.ShowError(It.Is<string>(msg => msg.Contains("Error loading tour details"))),
+            static t => t.ShowError(It.Is<string>(static msg => msg.Contains("Error loading tour details"))),
             Times.Once
         );
     }
@@ -333,7 +333,7 @@ public class TourViewModelTests
     public async Task EditTourAsync_ShouldLoadTourSuccessfully()
     {
         var testTour = TestData.SampleTour();
-        _mockHttpService.Setup(s => s.GetAsync<Tour>(It.IsAny<string>())).ReturnsAsync(testTour);
+        _mockHttpService.Setup(static s => s.GetAsync<Tour>(It.IsAny<string>())).ReturnsAsync(testTour);
 
         await _viewModel.EditTourAsync(testTour.Id);
         using (Assert.EnterMultipleScope())
@@ -369,13 +369,13 @@ public class TourViewModelTests
     public async Task EditTourAsync_OnException_ShouldShowErrorMessage()
     {
         _mockHttpService
-            .Setup(s => s.GetAsync<Tour>(It.IsAny<string>()))
+            .Setup(static s => s.GetAsync<Tour>(It.IsAny<string>()))
             .ThrowsAsync(new Exception("Network error"));
 
         await _viewModel.EditTourAsync(Guid.Empty);
 
         _mockToastService.Verify(
-            t => t.ShowError(It.Is<string>(msg => msg.Contains("Error handling tour edit action"))),
+            static t => t.ShowError(It.Is<string>(static msg => msg.Contains("Error handling tour edit action"))),
             Times.Once
         );
     }
@@ -386,7 +386,7 @@ public class TourViewModelTests
     {
         var testTour = TestData.SampleTour();
         _mockJsRuntime
-            .Setup(js => js.InvokeAsync<bool>("confirm", It.IsAny<object[]>()))
+            .Setup(static js => js.InvokeAsync<bool>("confirm", It.IsAny<object[]>()))
             .ReturnsAsync(userConfirms);
 
         if (userConfirms) _viewModel.Tours.Add(testTour);
@@ -397,9 +397,9 @@ public class TourViewModelTests
             using (Assert.EnterMultipleScope())
             {
                 _mockHttpService.Verify(s => s.DeleteAsync($"api/tour/{testTour.Id}"), Times.Once);
-                _mockToastService.Verify(t => t.ShowSuccess("Tour deleted successfully."), Times.Once);
+                _mockToastService.Verify(static t => t.ShowSuccess("Tour deleted successfully."), Times.Once);
             }
         else
-            _mockHttpService.Verify(s => s.DeleteAsync(It.IsAny<string>()), Times.Never);
+            _mockHttpService.Verify(static s => s.DeleteAsync(It.IsAny<string>()), Times.Never);
     }
 }

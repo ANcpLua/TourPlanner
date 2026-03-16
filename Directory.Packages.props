@@ -61,6 +61,9 @@
         <PackageVersion Include="NUnit3TestAdapter" Version="$(NUnit3TestAdapterVersion)"/>
 
 
+        <!-- HTTP Resilience -->
+        <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="$(MicrosoftExtensionsHttpResilienceVersion)"/>
+
         <!-- Code Quality -->
         <PackageVersion Include="ANcpLua.Analyzers" Version="$(ANcpLuaAnalyzersVersion)"/>
     </ItemGroup>

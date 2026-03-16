@@ -17,9 +17,8 @@ public class TourLogRepository(TourPlannerContext dbContext) : ITourLogRepositor
 
     public IEnumerable<TourLogPersistence> GetTourLogsByTourId(Guid tourId)
     {
-        return dbContext
-            .TourLogsPersistence.Where(t => t.TourPersistenceId == tourId)
-            .ToList();
+        return [.. dbContext
+            .TourLogsPersistence.Where(t => t.TourPersistenceId == tourId)];
     }
 
     public TourLogPersistence? GetTourLogById(Guid id)

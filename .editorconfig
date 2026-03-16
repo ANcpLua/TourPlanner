@@ -14,6 +14,9 @@ dotnet_diagnostic.CA1716.severity = none
 # CA1710: Identifiers should have correct suffix — Fody decorators are Attributes by convention but not named as such
 dotnet_diagnostic.CA1710.severity = none
 
+# AL0038 requires ANcpLua.Roslyn.Utilities which this project doesn't use
+dotnet_diagnostic.AL0038.severity = none
+
 [Test/**/*.cs]
 # CA1707: Test method naming convention uses underscores
 dotnet_diagnostic.CA1707.severity = none

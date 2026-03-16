@@ -59,19 +59,19 @@ public class SearchViewModelTests
     public async Task SearchToursAsync_NoHits_ShowsToast()
     {
         _viewModel.SearchText = "xyz";
-        _mockHttpService.Setup(h => h.GetListAsync<Tour>(It.IsAny<string>()))
+        _mockHttpService.Setup(static h => h.GetListAsync<Tour>(It.IsAny<string>()))
             .ReturnsAsync((IEnumerable<Tour>?)null);
 
         await _viewModel.SearchToursAsync();
 
-        _mockToastService.Verify(t => t.ShowSuccess("No tours found matching your search criteria."), Times.Once);
+        _mockToastService.Verify(static t => t.ShowSuccess("No tours found matching your search criteria."), Times.Once);
     }
 
     [Test]
     public async Task SearchToursAsync_Hits_FillsResults()
     {
         var tours = TestData.SampleTourList();
-        _mockHttpService.Setup(h => h.GetListAsync<Tour>("api/tour/search/a")).ReturnsAsync(tours);
+        _mockHttpService.Setup(static h => h.GetListAsync<Tour>("api/tour/search/a")).ReturnsAsync(tours);
 
         _viewModel.SearchText = "a";
         await _viewModel.SearchToursAsync();
@@ -108,7 +108,7 @@ public class SearchViewModelTests
         _viewModel.SearchText = "foo";
         await _viewModel.HandleKeyPress(new KeyboardEventArgs { Key = "Enter" });
 
-        _mockHttpService.Verify(h => h.GetListAsync<Tour>("api/tour/search/foo"), Times.Once);
+        _mockHttpService.Verify(static h => h.GetListAsync<Tour>("api/tour/search/foo"), Times.Once);
     }
 
     [Test]

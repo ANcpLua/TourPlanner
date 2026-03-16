@@ -54,6 +54,9 @@
         <NUnitAnalyzersVersion>4.9.1</NUnitAnalyzersVersion>
         <NUnit3TestAdapterVersion>6.1.0</NUnit3TestAdapterVersion>
 
+        <!-- HTTP Resilience -->
+        <MicrosoftExtensionsHttpResilienceVersion>10.4.0</MicrosoftExtensionsHttpResilienceVersion>
+
         <!-- Code Quality -->
         <ANcpLuaAnalyzersVersion>1.20.0</ANcpLuaAnalyzersVersion>
     </PropertyGroup>

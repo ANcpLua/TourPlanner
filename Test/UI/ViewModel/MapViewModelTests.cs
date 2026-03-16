@@ -125,7 +125,7 @@ public class MapViewModelTests
         await _viewModel.ShowMapAsync();
 
         _mockToastService.Verify(
-            t => t.ShowError("Map is not initialized yet."),
+            static t => t.ShowError("Map is not initialized yet."),
             Times.Once
         );
     }
@@ -153,7 +153,7 @@ public class MapViewModelTests
     public async Task ShowMapAsync_WithValidCities_ShouldDisplayRoute()
     {
         _mockJsRuntime
-            .Setup(js => js.InvokeAsync<IJSVoidResult>(
+            .Setup(static js => js.InvokeAsync<IJSVoidResult>(
                 "TourPlannerMap.setRoute",
                 It.IsAny<object[]>()))
             .ReturnsAsync(Mock.Of<IJSVoidResult>());
@@ -165,7 +165,7 @@ public class MapViewModelTests
         await _viewModel.ShowMapAsync();
 
         _mockJsRuntime.Verify(
-            js => js.InvokeAsync<IJSVoidResult>(
+            static js => js.InvokeAsync<IJSVoidResult>(
                 "TourPlannerMap.setRoute",
                 It.IsAny<object[]>()),
             Times.Once);
@@ -179,7 +179,7 @@ public class MapViewModelTests
         var toCityChanged = false;
 
         _mockJsRuntime
-            .Setup(js => js.InvokeAsync<IJSVoidResult>(
+            .Setup(static js => js.InvokeAsync<IJSVoidResult>(
                 It.IsAny<string>(),
                 It.IsAny<object[]>()))
             .Callback<string, object[]>((method, _) => invokedMethod = method)

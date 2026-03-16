@@ -40,30 +40,30 @@ public static class TestData
     public static Mock<IToastServiceWrapper> MockToastService()
     {
         var mock = new Mock<IToastServiceWrapper>();
-        mock.Setup(t => t.ShowSuccess(It.IsAny<string>()));
-        mock.Setup(t => t.ShowError(It.IsAny<string>()));
+        mock.Setup(static t => t.ShowSuccess(It.IsAny<string>()));
+        mock.Setup(static t => t.ShowError(It.IsAny<string>()));
         return mock;
     }
 
     public static Mock<IConfiguration> MockConfiguration()
     {
         var mock = new Mock<IConfiguration>();
-        mock.Setup(c => c["AppSettings:OpenRouteServiceApiKey"]).Returns("dummy-api-key");
-        mock.Setup(c => c["AppSettings:OpenRouteServiceApiBaseUrl"]).Returns("https://api.openrouteservice.org");
-        mock.Setup(c => c["AppSettings:ImageBasePath"]).Returns("/images/");
+        mock.Setup(static c => c["AppSettings:OpenRouteServiceApiKey"]).Returns("dummy-api-key");
+        mock.Setup(static c => c["AppSettings:OpenRouteServiceApiBaseUrl"]).Returns("https://api.openrouteservice.org");
+        mock.Setup(static c => c["AppSettings:ImageBasePath"]).Returns("/images/");
         return mock;
     }
 
     public static Mock<IHttpService> MockHttpService()
     {
         var mock = new Mock<IHttpService>();
-        mock.Setup(s => s.GetAsync<Tour>(It.IsAny<string>())).ReturnsAsync(SampleTour());
-        mock.Setup(s => s.GetListAsync<Tour>(It.IsAny<string>())).ReturnsAsync(SampleTourList());
-        mock.Setup(s => s.PostAsync<Tour>(It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync(SampleTour());
-        mock.Setup(s => s.PutAsync<Tour>(It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync(SampleTour());
-        mock.Setup(s => s.DeleteAsync(It.IsAny<string>())).Returns(Task.CompletedTask);
-        mock.Setup(s => s.GetStringAsync(It.IsAny<string>())).ReturnsAsync("Sample string response");
-        mock.Setup(s => s.GetByteArrayAsync(It.IsAny<string>())).ReturnsAsync([1, 2, 3, 4, 5]);
+        mock.Setup(static s => s.GetAsync<Tour>(It.IsAny<string>())).ReturnsAsync(SampleTour());
+        mock.Setup(static s => s.GetListAsync<Tour>(It.IsAny<string>())).ReturnsAsync(SampleTourList());
+        mock.Setup(static s => s.PostAsync<Tour>(It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync(SampleTour());
+        mock.Setup(static s => s.PutAsync<Tour>(It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync(SampleTour());
+        mock.Setup(static s => s.DeleteAsync(It.IsAny<string>())).Returns(Task.CompletedTask);
+        mock.Setup(static s => s.GetStringAsync(It.IsAny<string>())).ReturnsAsync("Sample string response");
+        mock.Setup(static s => s.GetByteArrayAsync(It.IsAny<string>())).ReturnsAsync([1, 2, 3, 4, 5]);
         return mock;
     }
 
@@ -99,7 +99,7 @@ public static class TestData
 
     public static List<Tour> SampleTourList(int count = 5)
     {
-        return [.. Enumerable.Range(1, count).Select(i => SampleTour($"Tour {i}", Guid.NewGuid()))];
+        return [.. Enumerable.Range(1, count).Select(static i => SampleTour($"Tour {i}", Guid.NewGuid()))];
     }
 
     public static TourLog SampleTourLog(double? rating = 4, double difficulty = 3, Guid? tourId = null, Guid? id = null)
@@ -144,7 +144,7 @@ public static class TestData
     {
         return
         [
-            .. Enumerable.Range(1, count).Select(i => new TourPersistence
+            .. Enumerable.Range(1, count).Select(static i => new TourPersistence
             {
                 Id = Guid.NewGuid(),
                 Name = $"Tour {i}",
@@ -178,7 +178,7 @@ public static class TestData
 
     public static List<TourLogPersistence> SampleTourLogPersistenceList(int count = 2)
     {
-        return [.. Enumerable.Range(0, count).Select(_ => SampleTourLogPersistence())];
+        return [.. Enumerable.Range(0, count).Select(static _ => SampleTourLogPersistence())];
     }
 
     public static TourDomain SampleTourDomain(string name = "Sample Tour Domain")
@@ -203,7 +203,7 @@ public static class TestData
     {
         return
         [
-            .. Enumerable.Range(1, count).Select(i => new TourDomain
+            .. Enumerable.Range(1, count).Select(static i => new TourDomain
             {
                 Id = Guid.NewGuid(),
                 Name = $"Tour Domain {i}",
@@ -247,13 +247,13 @@ public static class TestData
 
     public static List<TourLogDomain> SampleTourLogDomainList(int count = 2)
     {
-        return [.. Enumerable.Range(0, count).Select(_ => SampleTourLogDomain())];
+        return [.. Enumerable.Range(0, count).Select(static _ => SampleTourLogDomain())];
     }
 
     public static Mock<IBrowserFile> MockBrowserFile(string content)
     {
         var mock = new Mock<IBrowserFile>();
-        mock.Setup(f => f.OpenReadStream(It.IsAny<long>(), It.IsAny<CancellationToken>()))
+        mock.Setup(static f => f.OpenReadStream(It.IsAny<long>(), It.IsAny<CancellationToken>()))
             .Returns(new MemoryStream(Encoding.UTF8.GetBytes(content)));
         return mock;
     }
@@ -331,7 +331,7 @@ public static class TestData
                     req.Headers.Authorization != null &&
                     req.Headers.Authorization.Scheme == "Bearer" &&
                     req.Headers.Authorization.Parameter == expectedApiKey &&
-                    req.Headers.Accept.Any(h => h.MediaType == "application/json")),
+                    req.Headers.Accept.Any(static h => h.MediaType == "application/json")),
                 ItExpr.IsAny<CancellationToken>());
     }
 
@@ -342,7 +342,7 @@ public static class TestData
             .Verify(
                 "SendAsync",
                 Times.Once(),
-                ItExpr.Is<HttpRequestMessage>(req =>
+                ItExpr.Is<HttpRequestMessage>(static req =>
                     req.Content != null &&
                     req.Content.Headers.ContentType!.MediaType == "application/json"),
                 ItExpr.IsAny<CancellationToken>());

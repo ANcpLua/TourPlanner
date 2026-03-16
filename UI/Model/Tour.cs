@@ -50,10 +50,10 @@ public class Tour
     };
 
     [JsonIgnore]
-    public double? AverageRating => TourLogs.Average(x => x.Rating);
+    public double? AverageRating => TourLogs.Average(static x => x.Rating);
 
     [JsonIgnore]
     public bool IsChildFriendly =>
         TourLogs.Count > 0 &&
-        TourLogs.All(x => x is { Difficulty: <= 2, Rating: >= 3 });
+        TourLogs.All(static x => x is { Difficulty: <= 2, Rating: >= 3 });
 }

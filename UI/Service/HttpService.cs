@@ -56,7 +56,7 @@ public class HttpService : IHttpService
         return SendRequestAsync(
             HttpMethod.Get,
             uri,
-            responseHandler: response => response.Content.ReadAsStringAsync()
+            responseHandler: static response => response.Content.ReadAsStringAsync()
         );
     }
 
@@ -66,7 +66,7 @@ public class HttpService : IHttpService
         return SendRequestAsync(
             HttpMethod.Get,
             uri,
-            responseHandler: response => response.Content.ReadAsByteArrayAsync()
+            responseHandler: static response => response.Content.ReadAsByteArrayAsync()
         );
     }
 

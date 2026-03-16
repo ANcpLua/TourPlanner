@@ -43,7 +43,7 @@ public sealed class ReportViewModelTests
     [Test]
     public void CurrentReportUrl_Change_RaisesPropertyChanged()
     {
-        var raised = new List<string?>();
+        List<string?> raised = [];
         _reportViewModel.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
 
         _reportViewModel.CurrentReportUrl = "url";
@@ -57,7 +57,7 @@ public sealed class ReportViewModelTests
     [Test]
     public void SelectedDetailedTourId_Change_RaisesPropertyChanged()
     {
-        var raised = new List<string?>();
+        List<string?> raised = [];
         _reportViewModel.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
 
         var id = Guid.NewGuid();
@@ -79,7 +79,7 @@ public sealed class ReportViewModelTests
     public void ClearCurrentReport_ClearsFieldAndNotifies()
     {
         _reportViewModel.CurrentReportUrl = "dirty";
-        var raised = new List<string?>();
+        List<string?> raised = [];
         _reportViewModel.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
 
         _reportViewModel.ClearCurrentReport();
@@ -94,8 +94,8 @@ public sealed class ReportViewModelTests
     [Test]
     public async Task GenerateAndDownloadReport_NonNullBytes_DownloadsSuccessfully()
     {
-        var bytes = new byte[] { 1, 2, 3 };
-        _mockHttpService.Setup(h => h.GetByteArrayAsync("uri")).ReturnsAsync(bytes);
+        byte[] bytes = [1, 2, 3];
+        _mockHttpService.Setup(static h => h.GetByteArrayAsync("uri")).ReturnsAsync(bytes);
 
         await _reportViewModel.GenerateAndDownloadReport("uri", "Rpt");
 
@@ -103,25 +103,25 @@ public sealed class ReportViewModelTests
             It.IsRegex(@"Rpt_\d{8}_\d{6}\.pdf"),
             bytes,
             "application/pdf"), Times.Once);
-        _mockToastService.Verify(t => t.ShowSuccess("Rpt generated successfully."), Times.Once);
+        _mockToastService.Verify(static t => t.ShowSuccess("Rpt generated successfully."), Times.Once);
     }
 
     [Test]
     public async Task GenerateAndDownloadReport_NullBytes_ShowsError()
     {
-        _mockHttpService.Setup(h => h.GetByteArrayAsync("uri")).ReturnsAsync((byte[])null!);
+        _mockHttpService.Setup(static h => h.GetByteArrayAsync("uri")).ReturnsAsync((byte[])null!);
 
         await _reportViewModel.GenerateAndDownloadReport("uri", "Rpt");
 
         _mockDownloadFileService.VerifyNoOtherCalls();
-        _mockToastService.Verify(t => t.ShowError("Error generating Rpt: No data received."), Times.Once);
+        _mockToastService.Verify(static t => t.ShowError("Error generating Rpt: No data received."), Times.Once);
     }
 
     [Test]
     public Task GenerateAndDownloadReport_HttpServiceThrows_PropagatesException()
     {
         var expectedException = new HttpRequestException("Network error");
-        _mockHttpService.Setup(h => h.GetByteArrayAsync("failing-api")).ThrowsAsync(expectedException);
+        _mockHttpService.Setup(static h => h.GetByteArrayAsync("failing-api")).ThrowsAsync(expectedException);
 
         var actualException =
             Assert.ThrowsAsync<HttpRequestException>(() =>
@@ -136,12 +136,12 @@ public sealed class ReportViewModelTests
     [Test]
     public Task GenerateAndDownloadReport_DownloadFileThrows_PropagatesException()
     {
-        var bytes = new byte[] { 1, 2, 3 };
-        _mockHttpService.Setup(h => h.GetByteArrayAsync("api/test")).ReturnsAsync(bytes);
+        byte[] bytes = [1, 2, 3];
+        _mockHttpService.Setup(static h => h.GetByteArrayAsync("api/test")).ReturnsAsync(bytes);
 
         var expectedException = new InvalidOperationException("Download failed");
         _mockDownloadFileService
-            .Setup(f => f.DownloadFileAsync(It.IsAny<string>(), It.IsAny<byte[]>(), It.IsAny<string>()))
+            .Setup(static f => f.DownloadFileAsync(It.IsAny<string>(), It.IsAny<byte[]>(), It.IsAny<string>()))
             .ThrowsAsync(expectedException);
 
         var actualException =
@@ -176,13 +176,13 @@ public sealed class ReportViewModelTests
     public async Task GenerateSummaryReportAsync_CompleteFlow()
     {
         var bytes = new byte[] { 4, 5, 6 };
-        _mockHttpService.Setup(h => h.GetByteArrayAsync("api/reports/summary")).ReturnsAsync(bytes);
+        _mockHttpService.Setup(static h => h.GetByteArrayAsync("api/reports/summary")).ReturnsAsync(bytes);
 
         await _reportViewModel.GenerateSummaryReportAsync();
 
         _mockDownloadFileService.Verify(f => f.DownloadFileAsync(
             It.IsRegex(@"SummaryReport_\d{8}_\d{6}\.pdf"), bytes, "application/pdf"), Times.Once);
-        _mockToastService.Verify(t => t.ShowSuccess("SummaryReport generated successfully."), Times.Once);
+        _mockToastService.Verify(static t => t.ShowSuccess("SummaryReport generated successfully."), Times.Once);
     }
 
     [Test]
@@ -216,7 +216,7 @@ public sealed class ReportViewModelTests
 
         _mockDownloadFileService.Verify(f => f.DownloadFileAsync(
             It.IsRegex(@"DetailedReport_\d{8}_\d{6}\.pdf"), bytes, "application/pdf"), Times.Once);
-        _mockToastService.Verify(t => t.ShowSuccess("DetailedReport generated successfully."), Times.Once);
+        _mockToastService.Verify(static t => t.ShowSuccess("DetailedReport generated successfully."), Times.Once);
     }
 
     [Test]
@@ -235,7 +235,7 @@ public sealed class ReportViewModelTests
         Assert.That(tour.ImagePath, Is.Empty);
         _mockDownloadFileService.Verify(f => f.DownloadFileAsync(It.IsAny<string>(), bytes, "application/pdf"),
             Times.Once);
-        _mockToastService.Verify(t => t.ShowSuccess("DetailedReport generated successfully."), Times.Once);
+        _mockToastService.Verify(static t => t.ShowSuccess("DetailedReport generated successfully."), Times.Once);
     }
 
     [Test]
@@ -257,7 +257,7 @@ public sealed class ReportViewModelTests
             "application/pdf"
         ), Times.Once);
 
-        _mockToastService.Verify(t => t.ShowSuccess("DetailedReport generated successfully."), Times.Once);
+        _mockToastService.Verify(static t => t.ShowSuccess("DetailedReport generated successfully."), Times.Once);
     }
 
     [Test]
@@ -268,7 +268,7 @@ public sealed class ReportViewModelTests
         _mockTourViewModel.Object.Tours.Add(tour);
         _reportViewModel.SelectedDetailedTourId = tour.Id;
 
-        var bytes = new byte[] { 1, 2, 3 };
+        byte[] bytes = [1, 2, 3];
         _mockHttpService.Setup(h => h.GetByteArrayAsync($"api/reports/tour/{tour.Id}")).ReturnsAsync(bytes);
 
         await _reportViewModel.GenerateDetailedReportAsync();
@@ -291,7 +291,7 @@ public sealed class ReportViewModelTests
             It.IsRegex($@"Tour_{id}_\d{{8}}_\d{{6}}\.json"),
             It.Is<byte[]>(b => Encoding.UTF8.GetString(b) == json),
             "application/json"), Times.Once);
-        _mockToastService.Verify(t => t.ShowSuccess("Tour exported successfully."), Times.Once);
+        _mockToastService.Verify(static t => t.ShowSuccess("Tour exported successfully."), Times.Once);
     }
 
     [Test]
@@ -302,9 +302,9 @@ public sealed class ReportViewModelTests
 
         await _reportViewModel.ExportTourToJsonAsync(id);
 
-        _mockToastService.Verify(t => t.ShowError("Error exporting tour: Invalid tour data."), Times.Once);
+        _mockToastService.Verify(static t => t.ShowError("Error exporting tour: Invalid tour data."), Times.Once);
         _mockDownloadFileService.Verify(
-            f => f.DownloadFileAsync(It.IsAny<string>(), It.IsAny<byte[]>(), It.IsAny<string>()), Times.Never);
+            static f => f.DownloadFileAsync(It.IsAny<string>(), It.IsAny<byte[]>(), It.IsAny<string>()), Times.Never);
     }
 
     [Test]
@@ -312,9 +312,9 @@ public sealed class ReportViewModelTests
     {
         await _reportViewModel.ImportTourFromJsonAsync(TestData.MakeFile("{bad json"));
 
-        _mockToastService.Verify(t => t.ShowError(It.Is<string>(s => s.StartsWith("Error importing tour"))),
+        _mockToastService.Verify(static t => t.ShowError(It.Is<string>(static s => s.StartsWith("Error importing tour"))),
             Times.Once);
-        _mockHttpService.Verify(h => h.PostAsync(It.IsAny<string>(), It.IsAny<Tour>()), Times.Never);
+        _mockHttpService.Verify(static h => h.PostAsync(It.IsAny<string>(), It.IsAny<Tour>()), Times.Never);
     }
 
     [Test]
@@ -325,8 +325,8 @@ public sealed class ReportViewModelTests
 
         await _reportViewModel.ImportTourFromJsonAsync(TestData.MakeFile(JsonSerializer.Serialize(duplicate)));
 
-        _mockToastService.Verify(t => t.ShowError(It.Is<string>(s => s.Contains("already exists"))), Times.Once);
-        _mockHttpService.Verify(h => h.PostAsync(It.IsAny<string>(), It.IsAny<Tour>()), Times.Never);
+        _mockToastService.Verify(static t => t.ShowError(It.Is<string>(static s => s.Contains("already exists"))), Times.Once);
+        _mockHttpService.Verify(static h => h.PostAsync(It.IsAny<string>(), It.IsAny<Tour>()), Times.Never);
     }
 
     [Test]
@@ -336,13 +336,13 @@ public sealed class ReportViewModelTests
         var json = JsonSerializer.Serialize(newTour);
 
         _mockHttpService
-            .Setup(h => h.PostAsync("api/tour", It.IsAny<Tour>()))
+            .Setup(static h => h.PostAsync("api/tour", It.IsAny<Tour>()))
             .Returns(Task.FromResult(newTour));
 
         await _reportViewModel.ImportTourFromJsonAsync(TestData.MakeFile(json));
 
-        _mockHttpService.Verify(h => h.PostAsync("api/tour", It.IsAny<Tour>()), Times.Once);
-        _mockToastService.Verify(t => t.ShowSuccess("Tour imported successfully."), Times.Once);
+        _mockHttpService.Verify(static h => h.PostAsync("api/tour", It.IsAny<Tour>()), Times.Once);
+        _mockToastService.Verify(static t => t.ShowSuccess("Tour imported successfully."), Times.Once);
     }
 
     [TestCase(true)]
@@ -360,12 +360,12 @@ public sealed class ReportViewModelTests
         _mockTourViewModel.Object.Tours.Clear();
 
         _mockHttpService
-            .Setup(h => h.PostAsync("api/tour", It.IsAny<Tour>()))
+            .Setup(static h => h.PostAsync("api/tour", It.IsAny<Tour>()))
             .Returns(Task.FromResult(tour));
 
         await _reportViewModel.ImportTourFromJsonAsync(args);
 
-        _mockToastService.Verify(t => t.ShowSuccess("Tour imported successfully."), Times.Once);
+        _mockToastService.Verify(static t => t.ShowSuccess("Tour imported successfully."), Times.Once);
     }
 
     [Test]
@@ -373,7 +373,7 @@ public sealed class ReportViewModelTests
     {
         await _reportViewModel.ImportTourFromJsonAsync(TestData.MakeFile("null"));
 
-        _mockToastService.Verify(t => t.ShowError("Error importing tour: Invalid tour data."), Times.Once);
-        _mockHttpService.Verify(h => h.PostAsync(It.IsAny<string>(), It.IsAny<Tour>()), Times.Never);
+        _mockToastService.Verify(static t => t.ShowError("Error importing tour: Invalid tour data."), Times.Once);
+        _mockHttpService.Verify(static h => h.PostAsync(It.IsAny<string>(), It.IsAny<Tour>()), Times.Never);
     }
 }

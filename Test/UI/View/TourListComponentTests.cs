@@ -32,7 +32,7 @@ public sealed class TourListComponentTests : BunitTestBase
     public async Task DeleteTour_RespectsConfirmation(bool confirms)
     {
         var id = Services.FirstTourId();
-        JSInterop.Setup<bool>("confirm", _ => true).SetResult(confirms);
+        JSInterop.Setup<bool>("confirm", static _ => true).SetResult(confirms);
         if (confirms) Services.SetupMockDeleteTour(id);
         await Render().Find("button.btn-danger").ClickAsync(new MouseEventArgs());
         Services.VerifyMockDeleteTour(id, confirms ? Times.Once() : Times.Never());
@@ -43,14 +43,14 @@ public sealed class TourListComponentTests : BunitTestBase
     {
         Services.ViewModel<TourViewModel>().IsFormVisible = true;
         Services.ViewModel<TourViewModel>().SelectedTour = Services.ViewModel<TourViewModel>().Tours.First();
-        Assert.That(Render().FindAll("button").First(b => b.TextContent.Contains("Hide Edit Form")), Is.Not.Null);
+        Assert.That(Render().FindAll("button").First(static b => b.TextContent.Contains("Hide Edit Form")), Is.Not.Null);
     }
 
     [Test]
     public void EditButton_WhenNotEditing_ShowsEditText()
     {
         Services.ViewModel<TourViewModel>().IsFormVisible = false;
-        Assert.That(Render().FindAll("button").First(b => b.TextContent.Trim() == "Edit"), Is.Not.Null);
+        Assert.That(Render().FindAll("button").First(static b => b.TextContent.Trim() == "Edit"), Is.Not.Null);
     }
 
     [TestCase(true, "Exporting...")]

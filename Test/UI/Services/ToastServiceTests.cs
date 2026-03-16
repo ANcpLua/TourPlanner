@@ -23,7 +23,7 @@ public class ToastServiceTests
         _sut.ShowSuccess(message);
 
         _mockBlazorToastService.Verify(
-            t => t.ShowSuccess(message, null),
+            static t => t.ShowSuccess(message, null),
             Times.Once);
     }
 
@@ -35,7 +35,7 @@ public class ToastServiceTests
         _sut.ShowError(message);
 
         _mockBlazorToastService.Verify(
-            t => t.ShowError(message, null),
+            static t => t.ShowError(message, null),
             Times.Once);
     }
 
@@ -47,7 +47,7 @@ public class ToastServiceTests
         _sut.ShowSuccess(message);
 
         _mockBlazorToastService.Verify(
-            t => t.ShowSuccess(message, null),
+            static t => t.ShowSuccess(message, null),
             Times.Once);
     }
 
@@ -59,7 +59,7 @@ public class ToastServiceTests
         _sut.ShowError(message);
 
         _mockBlazorToastService.Verify(
-            t => t.ShowError(message, null),
+            static t => t.ShowError(message, null),
             Times.Once);
     }
 
@@ -71,7 +71,7 @@ public class ToastServiceTests
         _sut.ShowSuccess(message);
 
         _mockBlazorToastService.Verify(
-            t => t.ShowSuccess(message, null),
+            static t => t.ShowSuccess(message, null),
             Times.Once);
     }
 
@@ -83,7 +83,7 @@ public class ToastServiceTests
         _sut.ShowError(message);
 
         _mockBlazorToastService.Verify(
-            t => t.ShowError(message, null),
+            static t => t.ShowError(message, null),
             Times.Once);
     }
 }

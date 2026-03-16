@@ -65,7 +65,7 @@ public class TourServiceTests
     {
         var toursPersistence = TestData.SampleTourPersistenceList();
         var toursDomain = TestData.SampleTourDomainList();
-        _mockTourRepository.Setup(r => r.GetAllTours()).Returns(toursPersistence);
+        _mockTourRepository.Setup(static r => r.GetAllTours()).Returns(toursPersistence);
         _mockMapper
             .Setup(m => m.Map<IEnumerable<TourDomain>>(toursPersistence))
             .Returns(toursDomain);
@@ -74,18 +74,18 @@ public class TourServiceTests
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Has.Count.EqualTo(toursDomain.Count));
-        _mockTourRepository.Verify(r => r.GetAllTours(), Times.Once);
+        _mockTourRepository.Verify(static r => r.GetAllTours(), Times.Once);
     }
 
     [Test]
     public void GetAllToursAsync_NoToursExist_ReturnsEmptyList()
     {
         _mockTourRepository
-            .Setup(r => r.GetAllTours())
-            .Returns(new List<TourPersistence>());
+            .Setup(static r => r.GetAllTours())
+            .Returns([]);
         _mockMapper
-            .Setup(m => m.Map<IEnumerable<TourDomain>>(It.IsAny<IEnumerable<TourPersistence>>()))
-            .Returns(new List<TourDomain>());
+            .Setup(static m => m.Map<IEnumerable<TourDomain>>(It.IsAny<IEnumerable<TourPersistence>>()))
+            .Returns([]);
 
         var result = _tourService.GetAllTours();
 
@@ -173,8 +173,8 @@ public class TourServiceTests
         _mockTourRepository.Setup(r => r.SearchToursAsync(TestData.ValidSearchText))
             .Returns(tourPersistenceList.AsQueryable());
 
-        _mockMapper.Setup(m => m.Map<TourDomain>(It.IsAny<TourPersistence>()))
-            .Returns((TourPersistence source) =>
+        _mockMapper.Setup(static m => m.Map<TourDomain>(It.IsAny<TourPersistence>()))
+            .Returns(static (TourPersistence source) =>
             {
                 var domain = TestData.SampleTourDomain();
                 domain.Id = source.Id;
@@ -193,7 +193,7 @@ public class TourServiceTests
     public void SearchTours_NoMatchingTours_ReturnsEmptyQueryable()
     {
         _mockTourRepository
-            .Setup(r => r.SearchToursAsync(TestData.InvalidSearchText))
+            .Setup(static r => r.SearchToursAsync(TestData.InvalidSearchText))
             .Returns(new List<TourPersistence>().AsQueryable());
 
         var result = _tourService.SearchTours(TestData.InvalidSearchText);

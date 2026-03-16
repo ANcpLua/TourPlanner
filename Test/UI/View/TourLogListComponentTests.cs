@@ -44,7 +44,7 @@ public sealed class TourLogListComponentTests : BunitTestBase
     {
         Services.WithSingleTourLog();
         var logId = Services.FirstTourLogId();
-        JSInterop.Setup<bool>("confirm", _ => true).SetResult(confirms);
+        JSInterop.Setup<bool>("confirm", static _ => true).SetResult(confirms);
         if (confirms)
         {
             Services.SetupMockDeleteTourLog(logId);

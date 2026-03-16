@@ -25,7 +25,7 @@ public sealed class CustomFileInputTests : BunitTestBase
     public void UsesProvidedId()
     {
         const string customId = "custom-file-input-123";
-        var cut = RenderComponent<CustomFileInput>(p => p.Add(x => x.Id, customId));
+        var cut = RenderComponent<CustomFileInput>(static p => p.Add(static x => x.Id, customId));
         using (Assert.EnterMultipleScope())
         {
             Assert.That(cut.Find("input[type='file']").GetAttribute("id"), Is.EqualTo(customId));
@@ -38,7 +38,7 @@ public sealed class CustomFileInputTests : BunitTestBase
     {
         var called = false;
         var cut = RenderComponent<CustomFileInput>(p => p
-            .Add(x => x.OnChange, EventCallback.Factory.Create<InputFileChangeEventArgs>(this, _ => called = true)));
+            .Add(static x => x.OnChange, EventCallback.Factory.Create<InputFileChangeEventArgs>(this, _ => called = true)));
 
         var inputFile = cut.FindComponent<InputFile>();
         await cut.InvokeAsync(() => inputFile.Instance.OnChange.InvokeAsync(

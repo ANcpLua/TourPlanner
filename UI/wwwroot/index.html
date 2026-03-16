@@ -5,6 +5,7 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>TourPlanner</title>
     <base href="/"/>
+    <link id="webassembly" rel="preload"/>
 
     <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet"/>
     <link href="css/app.css" rel="stylesheet"/>
@@ -27,6 +28,7 @@
     <link href="manifest.webmanifest" rel="manifest"/>
 
     <link href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" rel="stylesheet"/>
+    <script type="importmap"></script>
 </head>
 <body class="tour-planner-app">
 <div id="app">
@@ -37,11 +39,11 @@
 </div>
 <div id="blazor-error-ui">
     An unhandled error has occurred.
-    <a class="reload" href="">Reload</a>
+    <a class="reload" href=".">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
 
-<script src="_framework/blazor.webassembly.js"></script>
+<script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
 <script crossorigin="anonymous"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -57,7 +59,7 @@
 <script src="js/tourplannermap.js"></script>
 
 <script>
-    navigator.serviceWorker.register('service-worker.published.js');
+    navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' });
 
     function showModal(modalId) {
         var modal = new bootstrap.Modal(document.getElementById(modalId));

@@ -151,11 +151,11 @@ public class TourLogRepositoryTests
     public async Task CreateTourLogAsync_WithFutureDate_SavesSuccessfully()
     {
         var tourLog = TestData.SampleTourLogPersistence();
-        tourLog.DateTime = DateTime.UtcNow.AddYears(1);
+        tourLog.DateTime = TimeProvider.System.GetUtcNow().UtcDateTime.AddYears(1);
 
         var result = await _repository.CreateTourLogAsync(tourLog);
 
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.DateTime, Is.GreaterThan(DateTime.UtcNow));
+        Assert.That(result.DateTime, Is.GreaterThan(TimeProvider.System.GetUtcNow().UtcDateTime));
     }
 }

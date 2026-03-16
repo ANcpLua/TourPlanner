@@ -41,8 +41,8 @@ public class ApiMethodDecoratorTests
     {
         var testObject = new TestApiClass();
         var mockMethod = new Mock<MethodInfo>();
-        mockMethod.Setup(m => m.Name).Returns("MockMethod");
-        mockMethod.Setup(m => m.DeclaringType).Returns((Type?)null);
+        mockMethod.Setup(static m => m.Name).Returns("MockMethod");
+        mockMethod.Setup(static m => m.DeclaringType).Returns((Type?)null);
         var args = new object[] { "test" };
 
         _decorator.Init(testObject, mockMethod.Object, args);
@@ -65,7 +65,7 @@ public class ApiMethodDecoratorTests
         _decorator.OnExit();
 
         _mockLogger.Verify(
-            l => l.Information(
+            static l => l.Information(
                 "Exiting {MethodName} after {Duration}ms",
                 It.IsAny<string>(),
                 It.IsAny<long>()),
@@ -116,21 +116,21 @@ public class ApiMethodDecoratorTests
         using (Assert.EnterMultipleScope())
         {
             _mockLogger.Verify(
-                l => l.Information(
+                static l => l.Information(
                     "Entering {MethodName} with arguments: {@Arguments}",
                     It.IsAny<string>(),
                     It.IsAny<object[]>()),
                 Times.Once);
 
             _mockLogger.Verify(
-                l => l.Information(
+                static l => l.Information(
                     "Exiting {MethodName} after {Duration}ms",
                     It.IsAny<string>(),
                     It.IsAny<long>()),
                 Times.Once);
 
             _mockLogger.Verify(
-                l => l.Error(
+                static l => l.Error(
                     It.IsAny<Exception>(),
                     "Exception in {MethodName} with arguments: {@Arguments} after {Duration}ms",
                     It.IsAny<string>(),

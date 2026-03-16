@@ -71,7 +71,7 @@ public class TourControllerTests
     public void GetAllTours_UnhappyPath_DatabaseError()
     {
         _mockTourService
-            .Setup(s => s.GetAllTours())
+            .Setup(static s => s.GetAllTours())
             .Throws(new Exception("Database connection error"));
 
         Assert.Throws<Exception>(() => _controller.GetAllTours());
@@ -165,9 +165,9 @@ public class TourControllerTests
         const string searchText = TestData.ValidSearchText;
         var toursDomain = TestData.SampleTourDomainList().AsQueryable();
         var toursDto = TestData.SampleTourList();
-        _mockTourService.Setup(s => s.SearchTours(searchText)).Returns(toursDomain);
+        _mockTourService.Setup(static s => s.SearchTours(searchText)).Returns(toursDomain);
         _mockMapper
-            .Setup(m => m.Map<IEnumerable<Tour>>(It.IsAny<IEnumerable<TourDomain>>()))
+            .Setup(static m => m.Map<IEnumerable<Tour>>(It.IsAny<IEnumerable<TourDomain>>()))
             .Returns(toursDto);
 
         var result = _controller.SearchTours(searchText);
@@ -182,11 +182,11 @@ public class TourControllerTests
     {
         const string searchText = TestData.InvalidSearchText;
         _mockTourService
-            .Setup(s => s.SearchTours(searchText))
+            .Setup(static s => s.SearchTours(searchText))
             .Returns(new List<TourDomain>().AsQueryable());
         _mockMapper
-            .Setup(m => m.Map<IEnumerable<Tour>>(It.IsAny<IEnumerable<TourDomain>>()))
-            .Returns(new List<Tour>());
+            .Setup(static m => m.Map<IEnumerable<Tour>>(It.IsAny<IEnumerable<TourDomain>>()))
+            .Returns([]);
 
         var result = _controller.SearchTours(searchText);
 

@@ -36,7 +36,7 @@ public class UiMethodDecoratorTests
         _decorator.OnException(new InvalidOperationException("Test exception"));
 
         _mockToastService.Verify(
-            ts => ts.ShowError(It.Is<string>(msg =>
+            static ts => ts.ShowError(It.Is<string>(static msg =>
                 msg.Contains("An error occurred in") &&
                 msg.Contains("Test exception"))),
             Times.Once);
@@ -103,7 +103,7 @@ public class UiMethodDecoratorTests
         _decorator.OnException(new ArgumentException("Test exception"));
 
         _mockToastService.Verify(
-            ts => ts.ShowError(It.IsAny<string>()),
+            static ts => ts.ShowError(It.IsAny<string>()),
             Times.Once);
     }
 
@@ -128,14 +128,14 @@ public class UiMethodDecoratorTests
         ) { CallBase = true };
 
         var mockMethod = new Mock<MethodInfo>();
-        mockMethod.Setup(m => m.Name).Returns("TestMethod");
-        mockMethod.Setup(m => m.DeclaringType).Returns(typeof(UiMethodDecoratorTests));
+        mockMethod.Setup(static m => m.Name).Returns("TestMethod");
+        mockMethod.Setup(static m => m.DeclaringType).Returns(typeof(UiMethodDecoratorTests));
 
         _decorator.Init(mockViewModel.Object, mockMethod.Object, []);
         _decorator.OnException(new Exception("test"));
 
         _mockToastService.Verify(
-            ts => ts.ShowError(It.Is<string>(msg =>
+            static ts => ts.ShowError(It.Is<string>(static msg =>
                 msg.Contains("UiMethodDecoratorTests.TestMethod") &&
                 !msg.Contains("null"))),
             Times.Once);
@@ -151,14 +151,14 @@ public class UiMethodDecoratorTests
         ) { CallBase = true };
 
         var mockMethod = new Mock<MethodInfo>();
-        mockMethod.Setup(m => m.Name).Returns("TestMethod");
-        mockMethod.Setup(m => m.DeclaringType).Returns((Type?)null);
+        mockMethod.Setup(static m => m.Name).Returns("TestMethod");
+        mockMethod.Setup(static m => m.DeclaringType).Returns((Type?)null);
 
         _decorator.Init(mockViewModel.Object, mockMethod.Object, []);
         _decorator.OnException(new Exception("test"));
 
         _mockToastService.Verify(
-            ts => ts.ShowError(It.Is<string>(msg =>
+            static ts => ts.ShowError(It.Is<string>(static msg =>
                 msg.Contains(".TestMethod") &&
                 !msg.Contains("null"))),
             Times.Once);
@@ -193,7 +193,7 @@ public class UiMethodDecoratorTests
             );
 
             _mockToastService.Verify(
-                t => t.ShowError(It.Is<string>(s => s.Contains("Test exception message"))),
+                static t => t.ShowError(It.Is<string>(static s => s.Contains("Test exception message"))),
                 Times.Once
             );
         }

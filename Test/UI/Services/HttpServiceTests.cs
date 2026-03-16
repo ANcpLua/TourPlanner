@@ -53,7 +53,7 @@ public class HttpServiceTests
         await _httpService.GetAsync<dynamic>("api/test");
 
         TestData.VerifyHttpRequest(_mockHttpMessageHandler, HttpMethod.Get, "api/test");
-        _mockToastService.Verify(t => t.ShowError(It.IsAny<string>()), Times.Once);
+        _mockToastService.Verify(static t => t.ShowError(It.IsAny<string>()), Times.Once);
     }
 
     [Test]
@@ -211,7 +211,7 @@ public class HttpServiceTests
 
         await _httpService.SendRequestAsync(HttpMethod.Get, "api/test");
 
-        _mockToastService.Verify(t => t.ShowError(It.IsAny<string>()), Times.Once);
+        _mockToastService.Verify(static t => t.ShowError(It.IsAny<string>()), Times.Once);
         TestData.VerifyHttpRequest(_mockHttpMessageHandler, HttpMethod.Get, "api/test");
     }
 }

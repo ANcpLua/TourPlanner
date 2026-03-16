@@ -70,7 +70,7 @@ public class ReportViewModel : BaseViewModel
                     if (SelectedDetailedTourId == Guid.Empty) return;
 
                     var tour = Tours.FirstOrDefault(t => t.Id == SelectedDetailedTourId);
-                    if (tour != null && !string.IsNullOrEmpty(tour.ImagePath))
+                    if (tour is not null && !string.IsNullOrEmpty(tour.ImagePath))
                         tour.ImagePath = Path.Combine(
                             Directory.GetCurrentDirectory(),
                             "wwwroot",
@@ -101,7 +101,7 @@ public class ReportViewModel : BaseViewModel
     {
         var reportBytes = await HttpService.GetByteArrayAsync(uri);
         var fileName = $"{reportType}_{TimeProvider.System.GetUtcNow().UtcDateTime:yyyyMMdd_HHmmss}.pdf";
-        if (reportBytes is null || reportBytes.Length == 0)
+        if (reportBytes is null || reportBytes.Length is 0)
         {
             ToastServiceWrapper.ShowError($"Error generating {reportType}: No data received.");
             return;

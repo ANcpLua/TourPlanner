@@ -64,7 +64,7 @@ public class TourLogViewModel : BaseViewModel
         return HandleApiRequestAsync(
             async () =>
             {
-                if (_selectedTourId == null || _selectedTourId == Guid.Empty)
+                if (_selectedTourId is null || _selectedTourId == Guid.Empty)
                     ClearTourData();
                 else
                     await LoadTourLogsAsync();
@@ -176,7 +176,7 @@ public class TourLogViewModel : BaseViewModel
             async () =>
             {
                 var log = await HttpService.GetAsync<TourLog>($"api/tourlog/{logId}");
-                if (log != null)
+                if (log is not null)
                 {
                     SelectedTourLog = log;
                     SelectedTourId = log.TourId;

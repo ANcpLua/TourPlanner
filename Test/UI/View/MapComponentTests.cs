@@ -9,7 +9,7 @@ namespace Test.UI.View;
 public sealed class MapComponentTests : BunitTestBase
 {
     private IRenderedComponent<MapComponent> Render() =>
-        RenderComponent<MapComponent>(p => p.Add(x => x.ViewModel, Services.ViewModel<MapViewModel>()));
+        RenderComponent<MapComponent>(p => p.Add(static x => x.ViewModel, Services.ViewModel<MapViewModel>()));
 
     [Test]
     public void RendersAllCityOptions()
@@ -34,7 +34,7 @@ public sealed class MapComponentTests : BunitTestBase
     {
         await Services.ViewModel<MapViewModel>().InitializeMapAsync(new ElementReference());
         await Render().Find("button.btn-primary").ClickAsync(new MouseEventArgs());
-        Services.Mock<IToastServiceWrapper>().Verify(t => t.ShowError("Please select both cities."), Times.Once);
+        Services.Mock<IToastServiceWrapper>().Verify(static t => t.ShowError("Please select both cities."), Times.Once);
     }
 
     [Test]

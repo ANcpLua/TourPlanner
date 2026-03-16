@@ -73,10 +73,9 @@ public class FileServiceTests
     [Test]
     public void GenerateSummaryReport_LargeTourList_HandlesLargeDataSet()
     {
-        var largeTourList = Enumerable
+        List<TourDomain> largeTourList = [.. Enumerable
             .Range(0, 1000)
-            .Select(_ => TestData.SampleTourDomain())
-            .ToList();
+            .Select(_ => TestData.SampleTourDomain())];
         var expectedPdfBytes = new byte[1024 * 1024];
 
         _mockPdfReportService
@@ -94,10 +93,9 @@ public class FileServiceTests
     {
         var tourId = TestData.TestGuid;
         var tourWithLargeLogs = TestData.SampleTourDomain();
-        tourWithLargeLogs.Logs = Enumerable
+        tourWithLargeLogs.Logs = [.. Enumerable
             .Range(0, 10000)
-            .Select(_ => TestData.SampleTourLogDomain())
-            .ToList();
+            .Select(_ => TestData.SampleTourLogDomain())];
 
         _mockTourService.Setup(s => s.GetTourById(tourId)).Returns(tourWithLargeLogs);
 

@@ -71,7 +71,7 @@ public class BaseViewModelTests
     {
         _viewModel.IsProcessing = true;
 
-        var result = _viewModel.Process(() => "test");
+        var result = _viewModel.Process(static () => "test");
 
         Assert.That(result, Is.Null);
     }
@@ -79,7 +79,7 @@ public class BaseViewModelTests
     [Test]
     public void Process_WhenNotProcessing_ExecutesAndReturnsResult()
     {
-        var result = _viewModel.Process(() => "success");
+        var result = _viewModel.Process(static () => "success");
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.EqualTo("success"));
@@ -91,7 +91,7 @@ public class BaseViewModelTests
     public void Process_Exception_ResetsIsProcessing()
     {
         Assert.Throws<InvalidOperationException>(() =>
-            _viewModel.Process<string>(() => throw new InvalidOperationException()));
+            _viewModel.Process<string>(static () => throw new InvalidOperationException()));
 
         Assert.That(_viewModel.IsProcessing, Is.False);
     }
@@ -113,7 +113,7 @@ public class BaseViewModelTests
     [Test]
     public async Task HandleApiRequestAsync_Success_ReturnsResult()
     {
-        _mockHttpService.Setup(h => h.GetAsync<string>("test"))
+        _mockHttpService.Setup(static h => h.GetAsync<string>("test"))
             .ReturnsAsync("result");
 
         var result = await _viewModel.HandleApiRequestAsync(

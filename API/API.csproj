@@ -11,6 +11,7 @@
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
         <PackageReference Include="MethodDecorator.Fody"/>
+        <PackageReference Include="Microsoft.Extensions.Http.Resilience"/>
         <PackageReference Include="Serilog.AspNetCore"/>
         <PackageReference Include="Autofac.Extras.DynamicProxy"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore"/>

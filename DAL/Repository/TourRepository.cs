@@ -17,10 +17,9 @@ public class TourRepository(TourPlannerContext dbContext) : ITourRepository
 
     public IEnumerable<TourPersistence> GetAllTours()
     {
-        return dbContext
+        return [.. dbContext
             .Set<TourPersistence>()
-            .Include(t => t.TourLogPersistence)
-            .ToList();
+            .Include(t => t.TourLogPersistence)];
     }
 
     public TourPersistence? GetTourById(Guid id)

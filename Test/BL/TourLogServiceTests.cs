@@ -77,8 +77,8 @@ public class TourLogServiceTests
             .Setup(r => r.GetTourLogById(tourLogPersistence.Id))
             .Returns(tourLogPersistence);
 
-        _mockMapper.Setup(m => m.Map<TourLogDomain>(It.IsAny<TourLogPersistence>()))
-            .Returns((TourLogPersistence source) =>
+        _mockMapper.Setup(static m => m.Map<TourLogDomain>(It.IsAny<TourLogPersistence>()))
+            .Returns(static (TourLogPersistence source) =>
             {
                 var domain = TestData.SampleTourLogDomain();
                 domain.Id = source.Id;
@@ -132,10 +132,10 @@ public class TourLogServiceTests
         _mockTourLogRepository
             .Setup(r => r.GetTourLogsByTourId(TestData.NonexistentGuid));
         _mockMapper
-            .Setup(m =>
+            .Setup(static m =>
                 m.Map<IEnumerable<TourLogDomain>>(It.IsAny<IEnumerable<TourLogPersistence>>())
             )
-            .Returns(new List<TourLogDomain>());
+            .Returns([]);
 
         var result = _tourLogService.GetTourLogsByTourId(TestData.NonexistentGuid);
 
@@ -239,15 +239,13 @@ public class TourLogServiceTests
     [Test]
     public void GetTourLogsByTourId_LargeTourLogCount_HandlesLargeDataSet()
     {
-        var largeTourLogList = Enumerable
+        List<TourLogPersistence> largeTourLogList = [.. Enumerable
             .Range(0, 10000)
-            .Select(_ => TestData.SampleTourLogPersistence())
-            .ToList();
+            .Select(static _ => TestData.SampleTourLogPersistence())];
 
-        var largeTourLogDomainList = Enumerable
+        List<TourLogDomain> largeTourLogDomainList = [.. Enumerable
             .Range(0, 10000)
-            .Select(_ => TestData.SampleTourLogDomainList().First())
-            .ToList();
+            .Select(static _ => TestData.SampleTourLogDomainList().First())];
 
         _mockTourLogRepository
             .Setup(r => r.GetTourLogsByTourId(TestData.TestGuid)).Returns(largeTourLogList);
