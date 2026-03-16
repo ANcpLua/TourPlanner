@@ -1,4 +1,4 @@
-﻿using BL.DomainModel;
+using BL.DomainModel;
 using DAL.PersistenceModel;
 using Mapster;
 using UI.Model;
@@ -9,7 +9,7 @@ public static class MappingConfiguration
 {
     public static TypeAdapterConfig RegisterMapping()
     {
-        var config = TypeAdapterConfig.GlobalSettings;
+        var config = new TypeAdapterConfig();
         ConfigureTourMappings(config);
         ConfigureTourLogMappings(config);
 
