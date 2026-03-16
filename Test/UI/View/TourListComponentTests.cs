@@ -13,8 +13,8 @@ public sealed class TourListComponentTests : BunitTestBase
 
     private IRenderedComponent<TourListComponent> Render() =>
         RenderComponent<TourListComponent>(p => p
-            .Add(x => x.ViewModel, Services.ViewModel<TourViewModel>())
-            .Add(x => x.ReportViewModel, Services.ViewModel<ReportViewModel>()));
+            .Add(static x => x.ViewModel, Services.ViewModel<TourViewModel>())
+            .Add(static x => x.ReportViewModel, Services.ViewModel<ReportViewModel>()));
 
     [Test]
     public void RendersTourCardPerTour() =>

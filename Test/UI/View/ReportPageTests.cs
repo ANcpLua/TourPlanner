@@ -30,10 +30,10 @@ public sealed class ReportPageTests : BunitTestBase
         Services.SetupMockReportBytes($"api/reports/tour/{tourId}");
         Services.SetupMockDownloadFile();
         var cut = RenderComponent<ReportPage>();
-        await cut.FindAll("button").First(b => b.TextContent.Contains("Generate Detailed Report"))
+        await cut.FindAll("button").First(static b => b.TextContent.Contains("Generate Detailed Report"))
             .ClickAsync(new MouseEventArgs());
         Services.Mock<IToastServiceWrapper>()
-            .Verify(t => t.ShowSuccess("DetailedReport generated successfully."), Times.Once);
+            .Verify(static t => t.ShowSuccess("DetailedReport generated successfully."), Times.Once);
     }
 
     [Test]
@@ -41,7 +41,7 @@ public sealed class ReportPageTests : BunitTestBase
     {
         Services.ViewModel<ReportViewModel>().SelectedDetailedTourId = Guid.Empty;
         var btn = RenderComponent<ReportPage>().FindAll("button")
-            .First(b => b.TextContent.Contains("Generate Detailed Report"));
+            .First(static b => b.TextContent.Contains("Generate Detailed Report"));
         Assert.That(btn.HasAttribute("disabled"), Is.True);
     }
 
@@ -51,10 +51,10 @@ public sealed class ReportPageTests : BunitTestBase
         Services.SetupMockReportBytes("api/reports/summary");
         Services.SetupMockDownloadFile();
         var cut = RenderComponent<ReportPage>();
-        await cut.FindAll("button").First(b => b.TextContent.Contains("Generate Summary"))
+        await cut.FindAll("button").First(static b => b.TextContent.Contains("Generate Summary"))
             .ClickAsync(new MouseEventArgs());
         Services.Mock<IToastServiceWrapper>()
-            .Verify(t => t.ShowSuccess("SummaryReport generated successfully."), Times.Once);
+            .Verify(static t => t.ShowSuccess("SummaryReport generated successfully."), Times.Once);
     }
 
     [Test]

@@ -26,7 +26,7 @@ public sealed class MapComponentTests : BunitTestBase
     public void FiltersDestinationWhenOriginSelected()
     {
         Services.ViewModel<MapViewModel>().FromCity = "Vienna";
-        Assert.That(Render().FindAll("#toCity option").Select(o => o.TextContent), Does.Not.Contain("Vienna"));
+        Assert.That(Render().FindAll("#toCity option").Select(static o => o.TextContent), Does.Not.Contain("Vienna"));
     }
 
     [Test]

@@ -11,7 +11,7 @@ public sealed class TourLogListComponentTests : BunitTestBase
 {
     private IRenderedComponent<TourLogListComponent> Render() =>
         RenderComponent<TourLogListComponent>(p =>
-            p.Add(x => x.ViewModel, Services.ViewModel<TourLogViewModel>()));
+            p.Add(static x => x.ViewModel, Services.ViewModel<TourLogViewModel>()));
 
     [Test]
     public void RendersAllTourLogs()

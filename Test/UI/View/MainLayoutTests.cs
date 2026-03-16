@@ -18,7 +18,7 @@ public sealed class MainLayoutTests : BunitTestBase
         var cut = RenderComponent<MainLayout>();
         var links = cut.FindAll("a.nav-link");
 
-        Assert.That(links.Select(l => l.GetAttribute("href")),
+        Assert.That(links.Select(static l => l.GetAttribute("href")),
             Is.EqualTo(new[] { "/", "/log/list", "/reports" }));
     }
 

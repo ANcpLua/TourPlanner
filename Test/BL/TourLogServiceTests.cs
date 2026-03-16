@@ -96,7 +96,7 @@ public class TourLogServiceTests
     public void GetTourLogById_NonExistingId_ReturnsNull()
     {
         _mockTourLogRepository
-            .Setup(r => r.GetTourLogById(TestData.NonexistentGuid))
+            .Setup(static r => r.GetTourLogById(TestData.NonexistentGuid))
             .Returns((TourLogPersistence)null!);
 
         var result = _tourLogService.GetTourLogById(TestData.NonexistentGuid);
@@ -130,7 +130,7 @@ public class TourLogServiceTests
     public void GetTourLogsByTourId_NonExistingTourId_ReturnsEmptyList()
     {
         _mockTourLogRepository
-            .Setup(r => r.GetTourLogsByTourId(TestData.NonexistentGuid));
+            .Setup(static r => r.GetTourLogsByTourId(TestData.NonexistentGuid));
         _mockMapper
             .Setup(static m =>
                 m.Map<IEnumerable<TourLogDomain>>(It.IsAny<IEnumerable<TourLogPersistence>>())
