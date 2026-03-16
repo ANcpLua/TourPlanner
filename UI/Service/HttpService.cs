@@ -21,41 +21,60 @@ public class HttpService : IHttpService
     }
 
     [UiMethodDecorator]
-    public Task<T?> GetAsync<T>(string uri) => SendRequestAsync<T>(HttpMethod.Get, uri);
+    public Task<T?> GetAsync<T>(string uri)
+    {
+        return SendRequestAsync<T>(HttpMethod.Get, uri);
+    }
 
     [UiMethodDecorator]
-    public Task<IEnumerable<T>?> GetListAsync<T>(string uri) =>
-        SendRequestAsync<IEnumerable<T>>(HttpMethod.Get, uri);
+    public Task<IEnumerable<T>?> GetListAsync<T>(string uri)
+    {
+        return SendRequestAsync<IEnumerable<T>>(HttpMethod.Get, uri);
+    }
 
     [UiMethodDecorator]
-    public Task<T?> PostAsync<T>(string uri, object? data) =>
-        SendRequestAsync<T>(HttpMethod.Post, uri, data);
+    public Task<T?> PostAsync<T>(string uri, object? data)
+    {
+        return SendRequestAsync<T>(HttpMethod.Post, uri, data);
+    }
 
     [UiMethodDecorator]
-    public Task<T?> PutAsync<T>(string uri, object? data) =>
-        SendRequestAsync<T>(HttpMethod.Put, uri, data);
+    public Task<T?> PutAsync<T>(string uri, object? data)
+    {
+        return SendRequestAsync<T>(HttpMethod.Put, uri, data);
+    }
 
     [UiMethodDecorator]
-    public Task DeleteAsync(string uri) => SendRequestAsync(HttpMethod.Delete, uri);
+    public Task DeleteAsync(string uri)
+    {
+        return SendRequestAsync(HttpMethod.Delete, uri);
+    }
 
     [UiMethodDecorator]
-    public Task<string?> GetStringAsync(string uri) =>
-        SendRequestAsync(
+    public Task<string?> GetStringAsync(string uri)
+    {
+        return SendRequestAsync(
             HttpMethod.Get,
             uri,
             responseHandler: response => response.Content.ReadAsStringAsync()
         );
+    }
 
     [UiMethodDecorator]
-    public Task<byte[]?> GetByteArrayAsync(string uri) =>
-        SendRequestAsync(
+    public Task<byte[]?> GetByteArrayAsync(string uri)
+    {
+        return SendRequestAsync(
             HttpMethod.Get,
             uri,
             responseHandler: response => response.Content.ReadAsByteArrayAsync()
         );
+    }
 
     [UiMethodDecorator]
-    public Task PostAsync(string uri, object? data) => SendRequestAsync(HttpMethod.Post, uri, data);
+    public Task PostAsync(string uri, object? data)
+    {
+        return SendRequestAsync(HttpMethod.Post, uri, data);
+    }
 
     private Task<T?> SendRequestAsync<T>(
         HttpMethod method,
@@ -63,11 +82,12 @@ public class HttpService : IHttpService
         object? data = null,
         Func<HttpResponseMessage, Task<T>>? responseHandler = null,
         Action<Exception>? errorHandler = null
-    ) =>
-        _tryCatchToastWrapper.ExecuteAsync(
+    )
+    {
+        return _tryCatchToastWrapper.ExecuteAsync(
             async () =>
             {
-                var request = new HttpRequestMessage(method, uri);
+                using var request = new HttpRequestMessage(method, uri);
                 if (data is not null && method is { Method: "POST" or "PUT" })
                     request.Content = JsonContent.Create(data);
 
@@ -81,12 +101,14 @@ public class HttpService : IHttpService
             $"Error {method} data {(method == HttpMethod.Get ? "from" : "to")} {uri}",
             errorHandler
         );
+    }
 
-    public Task SendRequestAsync(HttpMethod method, string uri, object? data = null) =>
-        _tryCatchToastWrapper.ExecuteAsync(
+    public Task SendRequestAsync(HttpMethod method, string uri, object? data = null)
+    {
+        return _tryCatchToastWrapper.ExecuteAsync(
             async () =>
             {
-                var request = new HttpRequestMessage(method, uri);
+                using var request = new HttpRequestMessage(method, uri);
                 if (data is not null && method is { Method: "POST" or "PUT" })
                     request.Content = JsonContent.Create(data);
 
@@ -95,4 +117,5 @@ public class HttpService : IHttpService
             },
             $"Error {method} data {(method == HttpMethod.Get ? "from" : "to")} {uri}"
         );
+    }
 }

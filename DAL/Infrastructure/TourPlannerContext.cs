@@ -55,7 +55,7 @@ public class TourPlannerContext(DbContextOptions<TourPlannerContext> options) : 
         modelBuilder.Entity<TourPersistence>().HasData(
             new TourPersistence
             {
-                Id = Guid.NewGuid(),
+                Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
                 Name = "Sample Tour",
                 Description = "A sample tour for testing",
                 From = "Vienna",

@@ -6,7 +6,8 @@ using ILogger = Serilog.ILogger;
 
 namespace API.AOP;
 
-[AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor | AttributeTargets.Assembly | AttributeTargets.Module)]
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor | AttributeTargets.Assembly |
+                AttributeTargets.Module)]
 public class ApiMethodDecorator : Attribute, IMethodDecorator
 {
     private object[] _args = [];

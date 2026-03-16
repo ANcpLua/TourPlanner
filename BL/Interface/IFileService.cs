@@ -7,5 +7,5 @@ public interface IFileService
     byte[] GenerateTourReport(Guid tourId);
     TourDomain ExportTourToJson(Guid tourId);
     byte[] GenerateSummaryReport(IEnumerable<TourDomain> tours);
-    Task ImportTourFromJsonAsync(string json);
+    Task ImportTourFromJsonAsync(string json, CancellationToken cancellationToken = default);
 }

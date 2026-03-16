@@ -30,7 +30,7 @@ public class RouteApiService(HttpClient httpClient, IConfiguration configuration
 
         var payload = new
         {
-            coordinates = (double[][]) [[from.Longitude, from.Latitude], [to.Longitude, to.Latitude]]
+            coordinates = (double[][])[[from.Longitude, from.Latitude], [to.Longitude, to.Latitude]]
         };
 
         StringContent content = new(
@@ -53,14 +53,16 @@ public class RouteApiService(HttpClient httpClient, IConfiguration configuration
         return ParseRouteData(jsonString);
     }
 
-    private static string GetEndpointForTransportType(string transportType) =>
-        transportType switch
+    private static string GetEndpointForTransportType(string transportType)
+    {
+        return transportType switch
         {
             "Car" => "driving-car",
             "Bike" => "cycling-regular",
             "Foot" => "foot-walking",
             _ => "driving-car"
         };
+    }
 
     private static (double Distance, double Duration) ParseRouteData(string jsonString)
     {

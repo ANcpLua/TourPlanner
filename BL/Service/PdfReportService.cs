@@ -88,14 +88,14 @@ public class PdfReportService : IPdfReportService
 
     private static string FormatDistance(double? distance)
     {
-        return distance?.ToString("N2", CultureInfo.CurrentCulture) is { } value
+        return distance?.ToString("N2", CultureInfo.InvariantCulture) is { } value
             ? $"{value} meters"
             : "N/A";
     }
 
     private static string FormatTime(double? time)
     {
-        return time?.ToString("N2", CultureInfo.CurrentCulture) is { } value
+        return time?.ToString("N2", CultureInfo.InvariantCulture) is { } value
             ? $"{value} minutes"
             : "N/A";
     }
@@ -130,13 +130,13 @@ public class PdfReportService : IPdfReportService
                     columns.RelativeColumn();
                 });
 
-                AddTableRow(table, "Date:", log.DateTime.ToString("dd.MM.yyyy HH:mm", CultureInfo.CurrentCulture));
+                AddTableRow(table, "Date:", log.DateTime.ToString("dd.MM.yyyy HH:mm", CultureInfo.InvariantCulture));
                 AddTableRow(table, "Comment:", log.Comment ?? "N/A");
                 AddTableRow(table, "Difficulty:", log.Difficulty.ToString(CultureInfo.InvariantCulture));
-                AddTableRow(table, "Rating:", log.Rating.ToString(CultureInfo.CurrentCulture));
+                AddTableRow(table, "Rating:", log.Rating.ToString(CultureInfo.InvariantCulture));
                 AddTableRow(table, "Distance:",
-                    $"{log.TotalDistance.ToString("N2", CultureInfo.CurrentCulture)} meters");
-                AddTableRow(table, "Time:", $"{log.TotalTime.ToString("N2", CultureInfo.CurrentCulture)} minutes");
+                    $"{log.TotalDistance.ToString("N2", CultureInfo.InvariantCulture)} meters");
+                AddTableRow(table, "Time:", $"{log.TotalTime.ToString("N2", CultureInfo.InvariantCulture)} minutes");
             });
     }
 }

@@ -38,6 +38,8 @@ public class TourLogService(ITourLogRepository tourLogRepository, IMapper mapper
         return mapper.Map<TourLogDomain>(updatedTourLogPersistence);
     }
 
-    public Task DeleteTourLogAsync(Guid id, CancellationToken cancellationToken = default) =>
-        tourLogRepository.DeleteTourLogAsync(id, cancellationToken);
+    public Task DeleteTourLogAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return tourLogRepository.DeleteTourLogAsync(id, cancellationToken);
+    }
 }

@@ -15,10 +15,12 @@ public class TourController(ITourService tourService, IMapper mapper) : Controll
     [ApiMethodDecorator]
     [HttpPost]
     [ProducesResponseType(typeof(Tour), (int)HttpStatusCode.OK)]
-    public async Task<ActionResult<Tour>> CreateTour([FromBody] Tour tourDto)
+    public async Task<ActionResult<Tour>> CreateTour(
+        [FromBody] Tour tourDto,
+        CancellationToken cancellationToken = default)
     {
         var tourDomain = mapper.Map<TourDomain>(tourDto);
-        var createdTour = await tourService.CreateTourAsync(tourDomain);
+        var createdTour = await tourService.CreateTourAsync(tourDomain, cancellationToken);
         return Ok(mapper.Map<Tour>(createdTour));
     }
 
@@ -37,26 +39,30 @@ public class TourController(ITourService tourService, IMapper mapper) : Controll
     public ActionResult<Tour> GetTourById(Guid id)
     {
         var tour = tourService.GetTourById(id);
+        if (tour is null) return NotFound();
         return Ok(mapper.Map<Tour>(tour));
     }
 
     [ApiMethodDecorator]
     [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(Tour), (int)HttpStatusCode.OK)]
-    public async Task<ActionResult<Tour>> UpdateTour(Guid id, [FromBody] Tour tourDto)
+    public async Task<ActionResult<Tour>> UpdateTour(
+        Guid id,
+        [FromBody] Tour tourDto,
+        CancellationToken cancellationToken = default)
     {
         if (id != tourDto.Id) return BadRequest("ID mismatch");
         var tourDomain = mapper.Map<TourDomain>(tourDto);
-        var updatedTour = await tourService.UpdateTourAsync(tourDomain);
+        var updatedTour = await tourService.UpdateTourAsync(tourDomain, cancellationToken);
         return Ok(mapper.Map<Tour>(updatedTour));
     }
 
     [ApiMethodDecorator]
     [HttpDelete("{id:guid}")]
     [ProducesResponseType((int)HttpStatusCode.NoContent)]
-    public async Task<ActionResult> DeleteTour(Guid id)
+    public async Task<ActionResult> DeleteTour(Guid id, CancellationToken cancellationToken = default)
     {
-        await tourService.DeleteTourAsync(id);
+        await tourService.DeleteTourAsync(id, cancellationToken);
         return NoContent();
     }
 

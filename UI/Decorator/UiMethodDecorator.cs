@@ -8,7 +8,8 @@ using ILogger = Serilog.ILogger;
 
 namespace UI.Decorator;
 
-[AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor | AttributeTargets.Assembly | AttributeTargets.Module)]
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor | AttributeTargets.Assembly |
+                AttributeTargets.Module)]
 public class UiMethodDecorator : Attribute, IMethodDecorator
 {
     private object[] _args = [];

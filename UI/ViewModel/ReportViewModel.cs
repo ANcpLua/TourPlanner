@@ -12,6 +12,12 @@ namespace UI.ViewModel;
 
 public class ReportViewModel : BaseViewModel
 {
+    private static readonly JsonSerializerOptions CamelCaseOptions = new()
+    {
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
     private readonly IBlazorDownloadFileService _blazorDownloadFile;
     private readonly TourViewModel _tourViewModel;
 
@@ -46,11 +52,6 @@ public class ReportViewModel : BaseViewModel
     public Task InitializeAsync()
     {
         return _tourViewModel.LoadToursAsync();
-    }
-
-    public void ResetCurrentReportUrl()
-    {
-        CurrentReportUrl = string.Empty;
     }
 
     public void ClearCurrentReport()
@@ -99,7 +100,7 @@ public class ReportViewModel : BaseViewModel
     public async Task GenerateAndDownloadReport(string uri, string reportType)
     {
         var reportBytes = await HttpService.GetByteArrayAsync(uri);
-        var fileName = $"{reportType}_{DateTime.UtcNow:yyyyMMdd_HHmmss}.pdf";
+        var fileName = $"{reportType}_{TimeProvider.System.GetUtcNow().UtcDateTime:yyyyMMdd_HHmmss}.pdf";
         if (reportBytes is null || reportBytes.Length == 0)
         {
             ToastServiceWrapper.ShowError($"Error generating {reportType}: No data received.");
@@ -131,7 +132,7 @@ public class ReportViewModel : BaseViewModel
                         return;
                     }
 
-                    var fileName = $"Tour_{tourId}_{DateTime.UtcNow:yyyyMMdd_HHmmss}.json";
+                    var fileName = $"Tour_{tourId}_{TimeProvider.System.GetUtcNow().UtcDateTime:yyyyMMdd_HHmmss}.json";
                     await _blazorDownloadFile.DownloadFileAsync(
                         fileName,
                         Encoding.UTF8.GetBytes(json),
@@ -154,14 +155,7 @@ public class ReportViewModel : BaseViewModel
                 using var reader = new StreamReader(stream);
                 var json = await reader.ReadToEndAsync();
 
-                var tour = JsonSerializer.Deserialize<Tour>(
-                    json,
-                    new JsonSerializerOptions
-                    {
-                        WriteIndented = true,
-                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                    }
-                );
+                var tour = JsonSerializer.Deserialize<Tour>(json, CamelCaseOptions);
 
                 if (tour is null)
                 {

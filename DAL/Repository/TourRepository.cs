@@ -7,39 +7,45 @@ namespace DAL.Repository;
 
 public class TourRepository(TourPlannerContext dbContext) : ITourRepository
 {
-    public async Task<TourPersistence> CreateTourAsync(TourPersistence tour)
+    public async Task<TourPersistence> CreateTourAsync(TourPersistence tour,
+        CancellationToken cancellationToken = default)
     {
         dbContext.Set<TourPersistence>().Add(tour);
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(cancellationToken);
         return tour;
     }
 
-    public IEnumerable<TourPersistence> GetAllTours() =>
-        dbContext
+    public IEnumerable<TourPersistence> GetAllTours()
+    {
+        return dbContext
             .Set<TourPersistence>()
             .Include(t => t.TourLogPersistence)
             .ToList();
+    }
 
-    public TourPersistence? GetTourById(Guid id) =>
-        dbContext
+    public TourPersistence? GetTourById(Guid id)
+    {
+        return dbContext
             .Set<TourPersistence>()
             .Include(t => t.TourLogPersistence)
             .FirstOrDefault(t => t.Id == id);
+    }
 
-    public async Task<TourPersistence> UpdateTourAsync(TourPersistence tour)
+    public async Task<TourPersistence> UpdateTourAsync(TourPersistence tour,
+        CancellationToken cancellationToken = default)
     {
         dbContext.Set<TourPersistence>().Update(tour);
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(cancellationToken);
         return tour;
     }
 
-    public async Task DeleteTourAsync(Guid id)
+    public async Task DeleteTourAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var tour = await dbContext.Set<TourPersistence>().FindAsync(id);
+        var tour = await dbContext.Set<TourPersistence>().FindAsync([id], cancellationToken);
         if (tour is not null)
         {
             dbContext.Set<TourPersistence>().Remove(tour);
-            await dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
     }
 

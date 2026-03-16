@@ -8,8 +8,6 @@ namespace UI.ViewModel.Base;
 
 public abstract class BaseViewModel : INotifyPropertyChanged
 {
-    public readonly IHttpService HttpService;
-    public readonly IToastServiceWrapper ToastServiceWrapper;
     private readonly TryCatchToastWrapper _tryCatchToastWrapper;
 
     protected BaseViewModel(
@@ -21,6 +19,9 @@ public abstract class BaseViewModel : INotifyPropertyChanged
         ToastServiceWrapper = toastServiceWrapper;
         _tryCatchToastWrapper = new TryCatchToastWrapper(toastServiceWrapper, logger);
     }
+
+    public IHttpService HttpService { get; }
+    public IToastServiceWrapper ToastServiceWrapper { get; }
 
     public bool IsProcessing
     {

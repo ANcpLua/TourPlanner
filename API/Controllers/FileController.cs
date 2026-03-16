@@ -48,9 +48,11 @@ public class FileController(IFileService fileService, ITourService tourService, 
     [ApiMethodDecorator]
     [HttpPost("import")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
-    public async Task<IActionResult> ImportTourFromJsonAsync([FromBody] string json)
+    public async Task<IActionResult> ImportTourFromJsonAsync(
+        [FromBody] string json,
+        CancellationToken cancellationToken = default)
     {
-        await fileService.ImportTourFromJsonAsync(json);
+        await fileService.ImportTourFromJsonAsync(json, cancellationToken);
         return Ok("Tour imported successfully");
     }
 }

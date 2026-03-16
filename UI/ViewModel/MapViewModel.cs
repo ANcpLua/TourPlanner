@@ -106,6 +106,8 @@ public class MapViewModel : BaseViewModel
         OnPropertyChanged(nameof(ToCity));
     }
 
-    public virtual (double Latitude, double Longitude)? GetCoordinates(string city) =>
-        Coordinates.TryGetValue(city, out var coords) ? coords : null;
+    public virtual (double Latitude, double Longitude)? GetCoordinates(string city)
+    {
+        return Coordinates.TryGetValue(city, out var coords) ? coords : null;
+    }
 }

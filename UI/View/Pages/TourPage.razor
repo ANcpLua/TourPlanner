@@ -54,6 +54,7 @@
 </div>
 
 @code {
+
     protected override async Task OnInitializedAsync()
     {
         await TourViewModel.LoadToursAsync();
@@ -76,4 +77,5 @@
     {
         InvokeAsync(StateHasChanged);
     }
+
 }

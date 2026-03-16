@@ -35,7 +35,10 @@ public class TourLogRepository(TourPlannerContext dbContext) : ITourLogRepositor
     {
         var tourLogPersistence =
             await dbContext.TourLogsPersistence.FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
-        dbContext.TourLogsPersistence.Remove(tourLogPersistence!);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        if (tourLogPersistence is not null)
+        {
+            dbContext.TourLogsPersistence.Remove(tourLogPersistence);
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
     }
 }

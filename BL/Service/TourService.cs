@@ -8,10 +8,10 @@ namespace BL.Service;
 
 public class TourService(ITourRepository tourRepository, IMapper mapper) : ITourService
 {
-    public async Task<TourDomain> CreateTourAsync(TourDomain tour)
+    public async Task<TourDomain> CreateTourAsync(TourDomain tour, CancellationToken cancellationToken = default)
     {
         var tourPersistence = mapper.Map<TourPersistence>(tour);
-        var createdTour = await tourRepository.CreateTourAsync(tourPersistence);
+        var createdTour = await tourRepository.CreateTourAsync(tourPersistence, cancellationToken);
         return mapper.Map<TourDomain>(createdTour);
     }
 
@@ -21,20 +21,23 @@ public class TourService(ITourRepository tourRepository, IMapper mapper) : ITour
         return mapper.Map<IEnumerable<TourDomain>>(tours);
     }
 
-    public TourDomain GetTourById(Guid id)
+    public TourDomain? GetTourById(Guid id)
     {
         var tourPersistence = tourRepository.GetTourById(id);
-        return (tourPersistence is null ? null : mapper.Map<TourDomain>(tourPersistence))!;
+        return tourPersistence is null ? null : mapper.Map<TourDomain>(tourPersistence);
     }
 
-    public async Task<TourDomain> UpdateTourAsync(TourDomain tour)
+    public async Task<TourDomain> UpdateTourAsync(TourDomain tour, CancellationToken cancellationToken = default)
     {
         var tourPersistence = mapper.Map<TourPersistence>(tour);
-        var updatedTour = await tourRepository.UpdateTourAsync(tourPersistence);
+        var updatedTour = await tourRepository.UpdateTourAsync(tourPersistence, cancellationToken);
         return mapper.Map<TourDomain>(updatedTour);
     }
 
-    public Task DeleteTourAsync(Guid id) => tourRepository.DeleteTourAsync(id);
+    public Task DeleteTourAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return tourRepository.DeleteTourAsync(id, cancellationToken);
+    }
 
     public IQueryable<TourDomain> SearchTours(string searchText)
     {
