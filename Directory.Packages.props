@@ -55,7 +55,6 @@
         <!-- Testing (MTP) -->
         <PackageVersion Include="bunit" Version="$(bunitVersion)"/>
         <PackageVersion Include="coverlet.MTP" Version="$(CoverletMTPVersion)"/>
-        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkVersion)"/>
         <PackageVersion Include="Moq" Version="$(MoqVersion)"/>
         <PackageVersion Include="NUnit" Version="$(NUnitVersion)"/>
         <PackageVersion Include="NUnit.Analyzers" Version="$(NUnitAnalyzersVersion)"/>

@@ -2,27 +2,27 @@
 
     <PropertyGroup>
         <!-- Autofac DI -->
-        <AutofacVersion>8.3.0</AutofacVersion>
+        <AutofacVersion>9.1.0</AutofacVersion>
         <AutofacExtensionsDependencyInjectionVersion>10.0.0</AutofacExtensionsDependencyInjectionVersion>
         <AutofacExtrasDynamicProxyVersion>7.1.0</AutofacExtrasDynamicProxyVersion>
 
         <!-- EF Core 10 -->
-        <MicrosoftEntityFrameworkCoreVersion>10.0.0</MicrosoftEntityFrameworkCoreVersion>
-        <MicrosoftEntityFrameworkCoreDesignVersion>10.0.0</MicrosoftEntityFrameworkCoreDesignVersion>
-        <MicrosoftEntityFrameworkCoreInMemoryVersion>10.0.0</MicrosoftEntityFrameworkCoreInMemoryVersion>
-        <MicrosoftEntityFrameworkCoreRelationalVersion>10.0.0</MicrosoftEntityFrameworkCoreRelationalVersion>
-        <MicrosoftEntityFrameworkCoreToolsVersion>10.0.0</MicrosoftEntityFrameworkCoreToolsVersion>
-        <NpgsqlEntityFrameworkCorePostgreSQLVersion>10.0.0</NpgsqlEntityFrameworkCorePostgreSQLVersion>
+        <MicrosoftEntityFrameworkCoreVersion>10.0.5</MicrosoftEntityFrameworkCoreVersion>
+        <MicrosoftEntityFrameworkCoreDesignVersion>10.0.5</MicrosoftEntityFrameworkCoreDesignVersion>
+        <MicrosoftEntityFrameworkCoreInMemoryVersion>10.0.5</MicrosoftEntityFrameworkCoreInMemoryVersion>
+        <MicrosoftEntityFrameworkCoreRelationalVersion>10.0.5</MicrosoftEntityFrameworkCoreRelationalVersion>
+        <MicrosoftEntityFrameworkCoreToolsVersion>10.0.5</MicrosoftEntityFrameworkCoreToolsVersion>
+        <NpgsqlEntityFrameworkCorePostgreSQLVersion>10.0.1</NpgsqlEntityFrameworkCorePostgreSQLVersion>
 
         <!-- ASP.NET Core 10 -->
-        <MicrosoftAspNetCoreComponentsWebAssemblyVersion>10.0.0</MicrosoftAspNetCoreComponentsWebAssemblyVersion>
-        <MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion>10.0.0</MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion>
-        <MicrosoftExtensionsConfigurationAbstractionsVersion>10.0.1</MicrosoftExtensionsConfigurationAbstractionsVersion>
-        <MicrosoftNETILLinkTasksVersion>10.0.0</MicrosoftNETILLinkTasksVersion>
-        <MicrosoftNETSdkWebAssemblyPackVersion>10.0.0</MicrosoftNETSdkWebAssemblyPackVersion>
+        <MicrosoftAspNetCoreComponentsWebAssemblyVersion>10.0.5</MicrosoftAspNetCoreComponentsWebAssemblyVersion>
+        <MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion>10.0.5</MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion>
+        <MicrosoftExtensionsConfigurationAbstractionsVersion>10.0.5</MicrosoftExtensionsConfigurationAbstractionsVersion>
+        <MicrosoftNETILLinkTasksVersion>10.0.5</MicrosoftNETILLinkTasksVersion>
+        <MicrosoftNETSdkWebAssemblyPackVersion>10.0.5</MicrosoftNETSdkWebAssemblyPackVersion>
 
         <!-- Serilog -->
-        <SerilogVersion>4.3.0</SerilogVersion>
+        <SerilogVersion>4.3.1</SerilogVersion>
         <SerilogAspNetCoreVersion>9.0.0</SerilogAspNetCoreVersion>
         <SerilogExtensionsHostingVersion>9.0.0</SerilogExtensionsHostingVersion>
         <SerilogExtensionsLoggingVersion>9.0.2</SerilogExtensionsLoggingVersion>
@@ -35,10 +35,10 @@
         <MapsterVersion>7.4.0</MapsterVersion>
 
         <!-- PDF -->
-        <QuestPDFVersion>2025.5.1</QuestPDFVersion>
+        <QuestPDFVersion>2026.2.0</QuestPDFVersion>
 
         <!-- AOP / Fody -->
-        <FodyVersion>6.8.2</FodyVersion>
+        <FodyVersion>6.9.3</FodyVersion>
         <MethodDecoratorFodyVersion>1.1.1</MethodDecoratorFodyVersion>
 
         <!-- Blazor UI -->
@@ -49,14 +49,13 @@
         <!-- Testing (MTP) -->
         <bunitVersion>2.6.2</bunitVersion>
         <CoverletMTPVersion>8.0.0</CoverletMTPVersion>
-        <MicrosoftNETTestSdkVersion>17.14.1</MicrosoftNETTestSdkVersion>
         <MoqVersion>4.20.72</MoqVersion>
-        <NUnitVersion>4.3.2</NUnitVersion>
+        <NUnitVersion>4.4.0</NUnitVersion>
         <NUnitAnalyzersVersion>4.9.1</NUnitAnalyzersVersion>
         <NUnit3TestAdapterVersion>6.1.0</NUnit3TestAdapterVersion>
 
         <!-- JSON -->
-        <SystemTextJsonVersion>10.0.0</SystemTextJsonVersion>
+        <SystemTextJsonVersion>10.0.5</SystemTextJsonVersion>
     </PropertyGroup>
 
 </Project>
