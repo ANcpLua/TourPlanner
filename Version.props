@@ -44,7 +44,7 @@
         <!-- Blazor UI -->
         <BlazoredToastVersion>4.2.1</BlazoredToastVersion>
         <BlazorDownloadFileFastVersion>1.0.0.1</BlazorDownloadFileFastVersion>
-        <SixLaborsImageSharpVersion>3.1.10</SixLaborsImageSharpVersion>
+        <SixLaborsImageSharpVersion>3.1.11</SixLaborsImageSharpVersion>
 
         <!-- Testing (MTP) -->
         <bunitVersion>2.6.2</bunitVersion>
@@ -56,6 +56,9 @@
 
         <!-- JSON -->
         <SystemTextJsonVersion>10.0.5</SystemTextJsonVersion>
+
+        <!-- Code Quality -->
+        <ANcpLuaAnalyzersVersion>1.20.0</ANcpLuaAnalyzersVersion>
     </PropertyGroup>
 
 </Project>

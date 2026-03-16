@@ -62,6 +62,9 @@
 
         <!-- JSON -->
         <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonVersion)"/>
+
+        <!-- Code Quality -->
+        <PackageVersion Include="ANcpLua.Analyzers" Version="$(ANcpLuaAnalyzersVersion)"/>
     </ItemGroup>
 
 </Project>
