@@ -90,8 +90,8 @@ public class TourViewModel : BaseViewModel
         else
         {
             SelectedTour = new Tour();
-            _mapViewModel.FromCity = string.Empty;
-            _mapViewModel.ToCity = string.Empty;
+            _mapViewModel.FromCity = "";
+            _mapViewModel.ToCity = "";
             IsFormVisible = true;
         }
     }
@@ -99,8 +99,8 @@ public class TourViewModel : BaseViewModel
     public void ResetForm()
     {
         SelectedTour = new Tour();
-        _mapViewModel.FromCity = string.Empty;
-        _mapViewModel.ToCity = string.Empty;
+        _mapViewModel.FromCity = "";
+        _mapViewModel.ToCity = "";
         IsFormVisible = false;
     }
 

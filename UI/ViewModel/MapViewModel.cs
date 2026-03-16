@@ -23,7 +23,7 @@ public class MapViewModel : BaseViewModel
     private readonly IJSRuntime _jsRuntime;
 
     private bool _isMapInitialized;
-    private string _toCity = string.Empty;
+    private string _toCity = "";
 
     public MapViewModel(
         IJSRuntime jsRuntime,
@@ -46,9 +46,9 @@ public class MapViewModel : BaseViewModel
         {
             if (!SetProperty(ref field, value)) return;
             OnPropertyChanged(nameof(FilteredToCities));
-            if (_toCity == field) ToCity = string.Empty;
+            if (_toCity == field) ToCity = "";
         }
-    } = string.Empty;
+    } = "";
 
     public string ToCity
     {
@@ -100,8 +100,8 @@ public class MapViewModel : BaseViewModel
     public async Task ClearMapAsync()
     {
         await _jsRuntime.InvokeVoidAsync("TourPlannerMap.clearMap");
-        FromCity = string.Empty;
-        ToCity = string.Empty;
+        FromCity = "";
+        ToCity = "";
         OnPropertyChanged(nameof(FromCity));
         OnPropertyChanged(nameof(ToCity));
     }

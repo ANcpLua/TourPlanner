@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace UI.Model;
@@ -9,19 +9,19 @@ public class Tour
 
     [Required(ErrorMessage = "Name is required")]
     [JsonPropertyName("name")]
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; set; } = "";
 
     [Required(ErrorMessage = "Description is required")]
     [JsonPropertyName("description")]
-    public string Description { get; set; } = string.Empty;
+    public string Description { get; set; } = "";
 
     [Required(ErrorMessage = "From city is required")]
     [JsonPropertyName("from")]
-    public string From { get; set; } = string.Empty;
+    public string From { get; set; } = "";
 
     [Required(ErrorMessage = "To city is required")]
     [JsonPropertyName("to")]
-    public string To { get; set; } = string.Empty;
+    public string To { get; set; } = "";
 
     [JsonPropertyName("imagePath")] public string? ImagePath { get; set; }
 
@@ -33,7 +33,7 @@ public class Tour
 
     [Required(ErrorMessage = "Transport type is required")]
     [JsonPropertyName("transportType")]
-    public string TransportType { get; set; } = string.Empty;
+    public string TransportType { get; set; } = "";
 
     public List<TourLog> TourLogs { get; set; } = [];
 
@@ -49,8 +49,8 @@ public class Tour
 
     [JsonIgnore]
     public double AverageRating => TourLogs
-        .Where(x => x.Rating is not null)
-        .Select(x => x.Rating!.Value)
+        .Select(x => x.Rating)
+        .OfType<double>()
         .DefaultIfEmpty()
         .Average();
 

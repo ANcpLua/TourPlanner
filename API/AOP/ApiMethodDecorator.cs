@@ -12,7 +12,7 @@ public class ApiMethodDecorator : Attribute, IMethodDecorator
 {
     private object[] _args = [];
     private ILogger _logger = Log.Logger;
-    private string _methodName = string.Empty;
+    private string _methodName = "";
     private Stopwatch _stopwatch = new();
 
     public void Init(object instance, MethodBase method, object[] args)

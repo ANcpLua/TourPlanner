@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DAL.PersistenceModel;
@@ -11,7 +11,7 @@ public class TourLogPersistence
 
     public DateTime DateTime { get; set; } = TimeProvider.System.GetUtcNow().UtcDateTime;
 
-    [Required] public string Comment { get; set; } = null!;
+    [Required] public string Comment { get; set; } = "";
 
     public double? Difficulty { get; set; }
     public double? TotalDistance { get; set; }
@@ -19,5 +19,6 @@ public class TourLogPersistence
     public double? Rating { get; set; }
     public Guid TourPersistenceId { get; set; }
 
-    [ForeignKey("TourPersistenceId")] public TourPersistence TourPersistence { get; set; } = null!;
+    [ForeignKey("TourPersistenceId")]
+    public TourPersistence? TourPersistence { get; set; }
 }

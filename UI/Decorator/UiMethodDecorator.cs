@@ -14,7 +14,7 @@ public class UiMethodDecorator : Attribute, IMethodDecorator
 {
     private object[] _args = [];
     private ILogger _logger = Log.Logger;
-    private string _methodName = string.Empty;
+    private string _methodName = "";
     private Stopwatch _stopwatch = new();
     private IToastServiceWrapper? _toastService;
 

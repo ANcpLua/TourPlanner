@@ -38,7 +38,7 @@ public class ReportViewModel : BaseViewModel
     {
         get;
         set => SetProperty(ref field, value);
-    } = string.Empty;
+    } = "";
 
     public Guid SelectedDetailedTourId
     {
@@ -56,7 +56,7 @@ public class ReportViewModel : BaseViewModel
 
     public void ClearCurrentReport()
     {
-        CurrentReportUrl = string.Empty;
+        CurrentReportUrl = "";
     }
 
     [UiMethodDecorator]

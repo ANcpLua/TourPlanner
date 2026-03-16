@@ -28,7 +28,7 @@ public class SearchViewModel : BaseViewModel
     {
         get;
         set => SetProperty(ref field, value);
-    } = string.Empty;
+    } = "";
 
     public ObservableCollection<Tour> SearchResults
     {
@@ -73,7 +73,7 @@ public class SearchViewModel : BaseViewModel
 
     public void ClearSearch()
     {
-        SearchText = string.Empty;
+        SearchText = "";
         SearchResults.Clear();
     }
 

@@ -18,7 +18,7 @@ public class BusinessLogicModule(IConfiguration configuration) : Autofac.Module
             .As<IPdfReportService>()
             .WithParameter(
                 "imageBasePath",
-                configuration["AppSettings:ImageBasePath"] ?? string.Empty
+                configuration["AppSettings:ImageBasePath"] ?? ""
             )
             .InstancePerLifetimeScope();
     }
