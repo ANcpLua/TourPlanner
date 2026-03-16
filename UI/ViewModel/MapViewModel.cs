@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.Frozen;
+using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using UI.Service.Interface;
@@ -9,25 +10,15 @@ namespace UI.ViewModel;
 
 public class MapViewModel : BaseViewModel
 {
-    public static readonly Dictionary<string, (double Latitude, double Longitude)> Coordinates =
-        new()
+    public static readonly FrozenDictionary<string, (double Latitude, double Longitude)> Coordinates =
+        new Dictionary<string, (double Latitude, double Longitude)>
         {
-            {
-                "Vienna", (48.2082, 16.3738)
-            },
-            {
-                "Paris", (48.8566, 2.3522)
-            },
-            {
-                "Berlin", (52.5200, 13.4050)
-            },
-            {
-                "Budapest", (47.4979, 19.0402)
-            },
-            {
-                "Warsaw", (52.2297, 21.0122)
-            }
-        };
+            ["Vienna"] = (48.2082, 16.3738),
+            ["Paris"] = (48.8566, 2.3522),
+            ["Berlin"] = (52.5200, 13.4050),
+            ["Budapest"] = (47.4979, 19.0402),
+            ["Warsaw"] = (52.2297, 21.0122)
+        }.ToFrozenDictionary();
 
     private readonly IJSRuntime _jsRuntime;
 
@@ -43,7 +34,7 @@ public class MapViewModel : BaseViewModel
         : base(httpService, toastServiceWrapper, logger)
     {
         _jsRuntime = jsRuntime;
-        CityNames = new ObservableCollection<string>(GetCityNames());
+        CityNames = new ObservableCollection<string>(Coordinates.Keys);
     }
 
     public ObservableCollection<string> CityNames { get; }
@@ -115,13 +106,6 @@ public class MapViewModel : BaseViewModel
         OnPropertyChanged(nameof(ToCity));
     }
 
-    public virtual (double Latitude, double Longitude)? GetCoordinates(string city)
-    {
-        return Coordinates.TryGetValue(city, out var coords) ? coords : null;
-    }
-
-    private static List<string> GetCityNames()
-    {
-        return Coordinates.Keys.ToList();
-    }
+    public virtual (double Latitude, double Longitude)? GetCoordinates(string city) =>
+        Coordinates.TryGetValue(city, out var coords) ? coords : null;
 }

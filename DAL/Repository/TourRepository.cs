@@ -1,64 +1,53 @@
-﻿using DAL.Infrastructure;
+using DAL.Infrastructure;
 using DAL.Interface;
 using DAL.PersistenceModel;
 using Microsoft.EntityFrameworkCore;
 
 namespace DAL.Repository;
 
-public class TourRepository : ITourRepository
+public class TourRepository(TourPlannerContext dbContext) : ITourRepository
 {
-    private readonly TourPlannerContext _dbContext;
-
-    public TourRepository(TourPlannerContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
-
     public async Task<TourPersistence> CreateTourAsync(TourPersistence tour)
     {
-        _dbContext.Set<TourPersistence>().Add(tour);
-        await _dbContext.SaveChangesAsync();
+        dbContext.Set<TourPersistence>().Add(tour);
+        await dbContext.SaveChangesAsync();
         return tour;
     }
 
-    public IEnumerable<TourPersistence> GetAllTours()
-    {
-        return _dbContext
+    public IEnumerable<TourPersistence> GetAllTours() =>
+        dbContext
             .Set<TourPersistence>()
             .Include(t => t.TourLogPersistence)
             .ToList();
-    }
 
-    public TourPersistence? GetTourById(Guid id)
-    {
-        return _dbContext
+    public TourPersistence? GetTourById(Guid id) =>
+        dbContext
             .Set<TourPersistence>()
             .Include(t => t.TourLogPersistence)
             .FirstOrDefault(t => t.Id == id);
-    }
 
     public async Task<TourPersistence> UpdateTourAsync(TourPersistence tour)
     {
-        _dbContext.Set<TourPersistence>().Update(tour);
-        await _dbContext.SaveChangesAsync();
+        dbContext.Set<TourPersistence>().Update(tour);
+        await dbContext.SaveChangesAsync();
         return tour;
     }
 
     public async Task DeleteTourAsync(Guid id)
     {
-        var tour = await _dbContext.Set<TourPersistence>().FindAsync(id);
-        if (tour != null)
+        var tour = await dbContext.Set<TourPersistence>().FindAsync(id);
+        if (tour is not null)
         {
-            _dbContext.Set<TourPersistence>().Remove(tour);
-            await _dbContext.SaveChangesAsync();
+            dbContext.Set<TourPersistence>().Remove(tour);
+            await dbContext.SaveChangesAsync();
         }
     }
 
     public IQueryable<TourPersistence> SearchToursAsync(string searchText)
     {
-        if (string.IsNullOrWhiteSpace(searchText)) return _dbContext.ToursPersistence;
+        if (string.IsNullOrWhiteSpace(searchText)) return dbContext.ToursPersistence;
 
-        return _dbContext
+        return dbContext
             .ToursPersistence.Include(t => t.TourLogPersistence)
             .Where(t =>
                 t.Name.Contains(searchText) ||

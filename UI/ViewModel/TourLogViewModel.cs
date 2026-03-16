@@ -86,7 +86,7 @@ public class TourLogViewModel : BaseViewModel
         SelectedTourLog = new TourLog
         {
             TourId = SelectedTourId.Value,
-            DateTime = DateTime.Now,
+            DateTime = TimeProvider.System.GetUtcNow().UtcDateTime,
             Difficulty = 1,
             Rating = 1
         };
@@ -99,7 +99,7 @@ public class TourLogViewModel : BaseViewModel
         SelectedTourLog = new TourLog
         {
             TourId = SelectedTourId ?? Guid.Empty,
-            DateTime = DateTime.Now,
+            DateTime = TimeProvider.System.GetUtcNow().UtcDateTime,
             Difficulty = 1,
             Rating = 1
         };

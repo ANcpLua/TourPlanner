@@ -1,15 +1,10 @@
-﻿using DAL.PersistenceModel;
+using DAL.PersistenceModel;
 using Microsoft.EntityFrameworkCore;
 
 namespace DAL.Infrastructure;
 
-public class TourPlannerContext : DbContext
+public class TourPlannerContext(DbContextOptions<TourPlannerContext> options) : DbContext(options)
 {
-    public TourPlannerContext(DbContextOptions<TourPlannerContext> options)
-        : base(options)
-    {
-    }
-
     public DbSet<TourPersistence> ToursPersistence { get; set; } = null!;
     public DbSet<TourLogPersistence> TourLogsPersistence { get; set; } = null!;
 

@@ -1,0 +1,68 @@
+<Project>
+
+    <Import Project="Version.props"/>
+
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Autofac DI -->
+        <PackageVersion Include="Autofac" Version="$(AutofacVersion)"/>
+        <PackageVersion Include="Autofac.Extensions.DependencyInjection" Version="$(AutofacExtensionsDependencyInjectionVersion)"/>
+        <PackageVersion Include="Autofac.Extras.DynamicProxy" Version="$(AutofacExtrasDynamicProxyVersion)"/>
+
+        <!-- EF Core 10 -->
+        <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="$(MicrosoftEntityFrameworkCoreVersion)"/>
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="$(MicrosoftEntityFrameworkCoreDesignVersion)"/>
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(MicrosoftEntityFrameworkCoreInMemoryVersion)"/>
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="$(MicrosoftEntityFrameworkCoreRelationalVersion)"/>
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="$(MicrosoftEntityFrameworkCoreToolsVersion)"/>
+        <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion)"/>
+
+        <!-- ASP.NET Core 10 -->
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="$(MicrosoftAspNetCoreComponentsWebAssemblyVersion)"/>
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="$(MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion)"/>
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(MicrosoftExtensionsConfigurationAbstractionsVersion)"/>
+        <PackageVersion Include="Microsoft.NET.ILLink.Tasks" Version="$(MicrosoftNETILLinkTasksVersion)"/>
+        <PackageVersion Include="Microsoft.NET.Sdk.WebAssembly.Pack" Version="$(MicrosoftNETSdkWebAssemblyPackVersion)"/>
+
+        <!-- Serilog -->
+        <PackageVersion Include="Serilog" Version="$(SerilogVersion)"/>
+        <PackageVersion Include="Serilog.AspNetCore" Version="$(SerilogAspNetCoreVersion)"/>
+        <PackageVersion Include="Serilog.Extensions.Hosting" Version="$(SerilogExtensionsHostingVersion)"/>
+        <PackageVersion Include="Serilog.Extensions.Logging" Version="$(SerilogExtensionsLoggingVersion)"/>
+        <PackageVersion Include="Serilog.Sinks.Async" Version="$(SerilogSinksAsyncVersion)"/>
+        <PackageVersion Include="Serilog.Sinks.BrowserConsole" Version="$(SerilogSinksBrowserConsoleVersion)"/>
+        <PackageVersion Include="Serilog.Sinks.Console" Version="$(SerilogSinksConsoleVersion)"/>
+        <PackageVersion Include="Serilog.Sinks.File" Version="$(SerilogSinksFileVersion)"/>
+
+        <!-- Mapping -->
+        <PackageVersion Include="Mapster" Version="$(MapsterVersion)"/>
+
+        <!-- PDF -->
+        <PackageVersion Include="QuestPDF" Version="$(QuestPDFVersion)"/>
+
+        <!-- AOP / Fody -->
+        <PackageVersion Include="Fody" Version="$(FodyVersion)"/>
+        <PackageVersion Include="MethodDecorator.Fody" Version="$(MethodDecoratorFodyVersion)"/>
+
+        <!-- Blazor UI -->
+        <PackageVersion Include="Blazored.Toast" Version="$(BlazoredToastVersion)"/>
+        <PackageVersion Include="BlazorDownloadFileFast" Version="$(BlazorDownloadFileFastVersion)"/>
+        <PackageVersion Include="SixLabors.ImageSharp" Version="$(SixLaborsImageSharpVersion)"/>
+
+        <!-- Testing -->
+        <PackageVersion Include="bunit" Version="$(bunitVersion)"/>
+        <PackageVersion Include="coverlet.collector" Version="$(CoverletCollectorVersion)"/>
+        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkVersion)"/>
+        <PackageVersion Include="Moq" Version="$(MoqVersion)"/>
+        <PackageVersion Include="NUnit" Version="$(NUnitVersion)"/>
+        <PackageVersion Include="NUnit.Analyzers" Version="$(NUnitAnalyzersVersion)"/>
+        <PackageVersion Include="NUnit3TestAdapter" Version="$(NUnit3TestAdapterVersion)"/>
+
+        <!-- JSON -->
+        <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonVersion)"/>
+    </ItemGroup>
+
+</Project>

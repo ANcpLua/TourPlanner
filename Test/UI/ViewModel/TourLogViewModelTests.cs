@@ -425,7 +425,7 @@ public class TourLogViewModelTests
         {
             Assert.That(_viewModel.SelectedTourLog, Is.Not.Null);
             Assert.That(_viewModel.SelectedTourLog.TourId, Is.EqualTo(tourId));
-            Assert.That(_viewModel.SelectedTourLog.DateTime, Is.EqualTo(DateTime.Now).Within(1).Seconds);
+            Assert.That(_viewModel.SelectedTourLog.DateTime, Is.EqualTo(TimeProvider.System.GetUtcNow().UtcDateTime).Within(1).Seconds);
             Assert.That(_viewModel.SelectedTourLog.Difficulty, Is.EqualTo(1));
             Assert.That(_viewModel.SelectedTourLog.Rating, Is.EqualTo(1));
             Assert.That(_viewModel.IsLogFormVisible, Is.True);

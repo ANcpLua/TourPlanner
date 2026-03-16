@@ -1,4 +1,4 @@
-﻿using Autofac;
+using Autofac;
 using DAL.Infrastructure;
 using DAL.Interface;
 using DAL.Repository;
@@ -7,23 +7,14 @@ using Microsoft.Extensions.Configuration;
 
 namespace DAL.Module;
 
-public class PostgreContextModule : Autofac.Module
+public class PostgreContextModule(IConfiguration configuration) : Autofac.Module
 {
-    private readonly IConfiguration _configuration;
-
-    public PostgreContextModule(IConfiguration configuration)
-    {
-        _configuration = configuration;
-    }
-
     protected override void Load(ContainerBuilder builder)
     {
         builder
             .Register(_ =>
             {
-                var connectionString = _configuration.GetConnectionString(
-                    "TourPlannerDatabase"
-                );
+                var connectionString = configuration.GetConnectionString("TourPlannerDatabase");
                 var dbOptions = new DbContextOptionsBuilder<TourPlannerContext>()
                     .UseNpgsql(connectionString)
                     .Options;

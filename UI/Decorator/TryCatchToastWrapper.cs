@@ -3,17 +3,8 @@ using ILogger = Serilog.ILogger;
 
 namespace UI.Decorator;
 
-public class TryCatchToastWrapper
+public class TryCatchToastWrapper(IToastServiceWrapper toastServiceWrapper, ILogger logger)
 {
-    private readonly ILogger _logger;
-    private readonly IToastServiceWrapper _toastServiceWrapper;
-
-    public TryCatchToastWrapper(IToastServiceWrapper toastServiceWrapper, ILogger logger)
-    {
-        _toastServiceWrapper = toastServiceWrapper;
-        _logger = logger;
-    }
-
     public async Task<T?> ExecuteAsync<T>(
         Func<Task<T>> action,
         string errorMessage,
@@ -27,8 +18,8 @@ public class TryCatchToastWrapper
         catch (Exception ex)
         {
             errorHandler?.Invoke(ex);
-            _logger.Error(ex, "Operation failed: {ErrorContext}", errorMessage);
-            _toastServiceWrapper.ShowError($"{errorMessage}: {ex.Message}");
+            logger.Error(ex, "Operation failed: {ErrorContext}", errorMessage);
+            toastServiceWrapper.ShowError($"{errorMessage}: {ex.Message}");
             return default;
         }
     }
@@ -46,8 +37,8 @@ public class TryCatchToastWrapper
         catch (Exception ex)
         {
             errorHandler?.Invoke(ex);
-            _logger.Error(ex, "Operation failed: {ErrorContext}", errorMessage);
-            _toastServiceWrapper.ShowError($"{errorMessage}: {ex.Message}");
+            logger.Error(ex, "Operation failed: {ErrorContext}", errorMessage);
+            toastServiceWrapper.ShowError($"{errorMessage}: {ex.Message}");
         }
     }
 }

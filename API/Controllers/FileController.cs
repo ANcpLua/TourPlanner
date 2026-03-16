@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Text.Json;
 using API.AOP;
 using BL.Interface;
@@ -10,26 +10,15 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("api/reports")]
-public class FileController : ControllerBase
+public class FileController(IFileService fileService, ITourService tourService, IMapper mapper) : ControllerBase
 {
-    private readonly IFileService _fileService;
-    private readonly IMapper _mapper;
-    private readonly ITourService _tourService;
-
-    public FileController(IFileService fileService, ITourService tourService, IMapper mapper)
-    {
-        _fileService = fileService;
-        _tourService = tourService;
-        _mapper = mapper;
-    }
-
     [ApiMethodDecorator]
     [HttpGet("summary")]
     [ProducesResponseType(typeof(FileResult), (int)HttpStatusCode.OK)]
     public FileResult GetSummaryReport()
     {
-        var tours = _tourService.GetAllTours();
-        var report = _fileService.GenerateSummaryReport(tours);
+        var tours = tourService.GetAllTours();
+        var report = fileService.GenerateSummaryReport(tours);
         return File(report, "application/pdf", "SummaryReport.pdf");
     }
 
@@ -38,7 +27,7 @@ public class FileController : ControllerBase
     [ProducesResponseType(typeof(FileResult), (int)HttpStatusCode.OK)]
     public FileResult GetTourReport(Guid tourId)
     {
-        var report = _fileService.GenerateTourReport(tourId);
+        var report = fileService.GenerateTourReport(tourId);
         return File(report, "application/pdf", $"TourReport_{tourId}.pdf");
     }
 
@@ -47,8 +36,8 @@ public class FileController : ControllerBase
     [ProducesResponseType(typeof(Tour), (int)HttpStatusCode.OK)]
     public ActionResult ExportTourToJson(Guid tourId)
     {
-        var tourDomain = _fileService.ExportTourToJson(tourId);
-        var tourDto = _mapper.Map<Tour>(tourDomain);
+        var tourDomain = fileService.ExportTourToJson(tourId);
+        var tourDto = mapper.Map<Tour>(tourDomain);
         return new JsonResult(tourDto,
             new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase })
         {
@@ -61,7 +50,7 @@ public class FileController : ControllerBase
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<IActionResult> ImportTourFromJsonAsync([FromBody] string json)
     {
-        await _fileService.ImportTourFromJsonAsync(json);
+        await fileService.ImportTourFromJsonAsync(json);
         return Ok("Tour imported successfully");
     }
 }

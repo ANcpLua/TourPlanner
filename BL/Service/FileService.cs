@@ -1,40 +1,25 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using BL.DomainModel;
 using BL.Interface;
 
 namespace BL.Service;
 
-public class FileService : IFileService
+public class FileService(ITourService tourService, IPdfReportService pdfReportService) : IFileService
 {
-    private readonly IPdfReportService _pdfReportService;
-    private readonly ITourService _tourService;
-
-    public FileService(ITourService tourService, IPdfReportService pdfReportService)
-    {
-        _tourService = tourService;
-        _pdfReportService = pdfReportService;
-    }
-
     public byte[] GenerateTourReport(Guid tourId)
     {
-        var tour = _tourService.GetTourById(tourId);
-        return _pdfReportService.GenerateTourReport(tour);
+        var tour = tourService.GetTourById(tourId);
+        return pdfReportService.GenerateTourReport(tour);
     }
 
-    public byte[] GenerateSummaryReport(IEnumerable<TourDomain> tours)
-    {
-        return _pdfReportService.GenerateSummaryReport(tours);
-    }
+    public byte[] GenerateSummaryReport(IEnumerable<TourDomain> tours) =>
+        pdfReportService.GenerateSummaryReport(tours);
 
-    public TourDomain ExportTourToJson(Guid tourId)
-    {
-        var tour = _tourService.GetTourById(tourId);
-        return tour;
-    }
+    public TourDomain ExportTourToJson(Guid tourId) => tourService.GetTourById(tourId);
 
     public async Task ImportTourFromJsonAsync(string json)
     {
         var tour = JsonSerializer.Deserialize<TourDomain>(json);
-        if (tour != null) await _tourService.CreateTourAsync(tour);
+        if (tour is not null) await tourService.CreateTourAsync(tour);
     }
 }

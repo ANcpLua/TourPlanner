@@ -9,7 +9,7 @@ public class TourLog
 
     [JsonPropertyName("tourId")] public Guid TourId { get; set; }
 
-    [JsonPropertyName("dateTime")] public DateTime DateTime { get; set; } = DateTime.Now;
+    [JsonPropertyName("dateTime")] public DateTime DateTime { get; set; } = TimeProvider.System.GetUtcNow().UtcDateTime;
 
     [JsonPropertyName("comment")] public string? Comment { get; set; }
 

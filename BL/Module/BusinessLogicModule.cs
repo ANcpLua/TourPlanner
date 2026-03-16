@@ -1,19 +1,12 @@
-﻿using Autofac;
+using Autofac;
 using BL.Interface;
 using BL.Service;
 using Microsoft.Extensions.Configuration;
 
 namespace BL.Module;
 
-public class BusinessLogicModule : Autofac.Module
+public class BusinessLogicModule(IConfiguration configuration) : Autofac.Module
 {
-    private readonly IConfiguration _configuration;
-
-    public BusinessLogicModule(IConfiguration configuration)
-    {
-        _configuration = configuration;
-    }
-
     protected override void Load(ContainerBuilder builder)
     {
         builder.RegisterType<TourService>().As<ITourService>().InstancePerLifetimeScope();
@@ -25,7 +18,7 @@ public class BusinessLogicModule : Autofac.Module
             .As<IPdfReportService>()
             .WithParameter(
                 "imageBasePath",
-                _configuration["AppSettings:ImageBasePath"] ?? string.Empty
+                configuration["AppSettings:ImageBasePath"] ?? string.Empty
             )
             .InstancePerLifetimeScope();
     }

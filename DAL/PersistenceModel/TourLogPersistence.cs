@@ -9,7 +9,7 @@ public class TourLogPersistence
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
 
-    public DateTime DateTime { get; set; } = DateTime.Now;
+    public DateTime DateTime { get; set; } = TimeProvider.System.GetUtcNow().UtcDateTime;
 
     [Required] public string Comment { get; set; } = null!;
 
