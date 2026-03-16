@@ -109,7 +109,7 @@ public class TourViewModelTests
     [Test]
     public void FilteredToCities_ShouldExcludeSelectedFromCity()
     {
-        _viewModel.SelectedTour = new Tour { From = "Vienna" };
+        _viewModel.SelectedTour = new Tour { Name = "", Description = "", From = "Vienna", To = "", TransportType = "" };
 
         var filteredCities = _viewModel.FilteredToCities.ToList();
         using (Assert.EnterMultipleScope())

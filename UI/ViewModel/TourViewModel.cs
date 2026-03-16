@@ -53,13 +53,13 @@ public class TourViewModel : BaseViewModel
             _mapViewModel.ToCity = value.To;
             OnPropertyChanged(nameof(FilteredToCities));
         }
-    } = new();
+    } = Tour.Empty;
 
     public Tour ModalTour
     {
         get;
         set => SetProperty(ref field, value);
-    } = new();
+    } = Tour.Empty;
 
     public bool IsMapVisible
     {
@@ -89,7 +89,7 @@ public class TourViewModel : BaseViewModel
         }
         else
         {
-            SelectedTour = new Tour();
+            SelectedTour = Tour.Empty;
             _mapViewModel.FromCity = "";
             _mapViewModel.ToCity = "";
             IsFormVisible = true;
@@ -98,7 +98,7 @@ public class TourViewModel : BaseViewModel
 
     public void ResetForm()
     {
-        SelectedTour = new Tour();
+        SelectedTour = Tour.Empty;
         _mapViewModel.FromCity = "";
         _mapViewModel.ToCity = "";
         IsFormVisible = false;
@@ -204,7 +204,7 @@ public class TourViewModel : BaseViewModel
             await HandleApiRequestAsync(
                 async () =>
                 {
-                    ModalTour = await HttpService.GetAsync<Tour>($"api/tour/{id}") ?? new Tour();
+                    ModalTour = await HttpService.GetAsync<Tour>($"api/tour/{id}") ?? Tour.Empty;
                     await _jsRuntime.InvokeVoidAsync("showModal", "tourDetailsModal");
                 },
                 "Error loading tour details"
@@ -226,7 +226,7 @@ public class TourViewModel : BaseViewModel
                     }
                     else
                     {
-                        SelectedTour = await HttpService.GetAsync<Tour>($"api/tour/{id}") ?? new Tour();
+                        SelectedTour = await HttpService.GetAsync<Tour>($"api/tour/{id}") ?? Tour.Empty;
                         IsFormVisible = true;
                     }
                 },

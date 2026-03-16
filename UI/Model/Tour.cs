@@ -5,35 +5,37 @@ namespace UI.Model;
 
 public class Tour
 {
+    public static Tour Empty => new()
+    {
+        Name = "", Description = "", From = "", To = "", TransportType = ""
+    };
+
     [JsonPropertyName("id")] public Guid Id { get; set; }
 
     [Required(ErrorMessage = "Name is required")]
     [JsonPropertyName("name")]
-    public string Name { get; set; } = "";
+    public required string Name { get; set; }
 
     [Required(ErrorMessage = "Description is required")]
     [JsonPropertyName("description")]
-    public string Description { get; set; } = "";
+    public required string Description { get; set; }
 
     [Required(ErrorMessage = "From city is required")]
     [JsonPropertyName("from")]
-    public string From { get; set; } = "";
+    public required string From { get; set; }
 
     [Required(ErrorMessage = "To city is required")]
     [JsonPropertyName("to")]
-    public string To { get; set; } = "";
+    public required string To { get; set; }
 
     [JsonPropertyName("imagePath")] public string? ImagePath { get; set; }
-
     [JsonPropertyName("routeInformation")] public string? RouteInformation { get; set; }
-
     [JsonPropertyName("distance")] public double? Distance { get; set; }
-
     [JsonPropertyName("estimatedTime")] public double? EstimatedTime { get; set; }
 
     [Required(ErrorMessage = "Transport type is required")]
     [JsonPropertyName("transportType")]
-    public string TransportType { get; set; } = "";
+    public required string TransportType { get; set; }
 
     public List<TourLog> TourLogs { get; set; } = [];
 
@@ -48,11 +50,7 @@ public class Tour
     };
 
     [JsonIgnore]
-    public double AverageRating => TourLogs
-        .Select(x => x.Rating)
-        .OfType<double>()
-        .DefaultIfEmpty()
-        .Average();
+    public double? AverageRating => TourLogs.Average(x => x.Rating);
 
     [JsonIgnore]
     public bool IsChildFriendly =>

@@ -11,18 +11,14 @@ public class TourPersistence
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
 
-    [Required] public string Name { get; set; } = "";
-
-    [Required] public string Description { get; set; } = "";
-
-    [Required] public string From { get; set; } = "";
-
-    [Required] public string To { get; set; } = "";
+    [Required] public required string Name { get; set; }
+    [Required] public required string Description { get; set; }
+    [Required] public required string From { get; set; }
+    [Required] public required string To { get; set; }
+    [Required] public required string TransportType { get; set; }
 
     public string? ImagePath { get; set; }
     public string? RouteInformation { get; set; }
     public double? Distance { get; set; }
     public double? EstimatedTime { get; set; }
-
-    [Required] public string TransportType { get; set; } = "";
 }

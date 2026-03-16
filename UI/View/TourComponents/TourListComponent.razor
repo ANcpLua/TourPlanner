@@ -35,7 +35,7 @@
                             <strong>Popularity:</strong> @tour.Popularity
                         </p>
                         <p>
-                            <strong>Average Rating:</strong> @tour.AverageRating.ToString("F1")
+                            <strong>Average Rating:</strong> @(tour.AverageRating?.ToString("F1") ?? "N/A")
                         </p>
                         <p>
                             <strong>Child Friendly:</strong> @(tour.IsChildFriendly ? "Yes" : "No")

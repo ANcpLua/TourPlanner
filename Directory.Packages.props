@@ -60,8 +60,6 @@
         <PackageVersion Include="NUnit.Analyzers" Version="$(NUnitAnalyzersVersion)"/>
         <PackageVersion Include="NUnit3TestAdapter" Version="$(NUnit3TestAdapterVersion)"/>
 
-        <!-- JSON -->
-        <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonVersion)"/>
 
         <!-- Code Quality -->
         <PackageVersion Include="ANcpLua.Analyzers" Version="$(ANcpLuaAnalyzersVersion)"/>

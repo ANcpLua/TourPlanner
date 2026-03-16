@@ -37,7 +37,7 @@ public class PdfReportServiceTests
         [
             new TourLogDomain
             {
-                DateTime = DateTime.Now,
+                DateTime = TimeProvider.System.GetUtcNow().UtcDateTime,
                 Comment = null,
                 Difficulty = 3,
                 Rating = 4,
@@ -60,17 +60,16 @@ public class PdfReportServiceTests
         tour.Description = new string('A', 1000);
         tour.From = specialChars;
         tour.To = specialChars;
-        tour.Logs = Enumerable.Range(0, 50)
+        tour.Logs = [.. Enumerable.Range(0, 50)
             .Select(_ => new TourLogDomain
             {
-                DateTime = DateTime.Now,
+                DateTime = TimeProvider.System.GetUtcNow().UtcDateTime,
                 Comment = specialChars,
                 Difficulty = 5,
                 Rating = 4,
                 TotalDistance = 123.45,
                 TotalTime = 68.90
-            })
-            .ToList();
+            })];
 
         var result = _pdfReportService.GenerateTourReport(tour);
         TestData.AssertValidPdf(result);

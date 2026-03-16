@@ -122,15 +122,15 @@ public class TourLogRepositoryTests
     }
 
     [Test]
-    public async Task CreateTourLogAsync_WithLocalDateTime_SavesAsUtc()
+    public async Task CreateTourLogAsync_WithUtcDateTime_PreservesUtcKind()
     {
         var tourLog = TestData.SampleTourLogPersistence();
-        tourLog.DateTime = DateTime.Now;
+        tourLog.DateTime = TimeProvider.System.GetUtcNow().UtcDateTime;
 
         var result = await _repository.CreateTourLogAsync(tourLog);
 
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.DateTime.Kind, Is.EqualTo(DateTimeKind.Local));
+        Assert.That(result.DateTime.Kind, Is.EqualTo(DateTimeKind.Utc));
     }
 
     [Test]

@@ -44,12 +44,12 @@ public class TourComputedPropertiesTests
     }
 
     [Test]
-    public void AverageRating_EmptyLogs_ReturnsZero()
+    public void AverageRating_EmptyLogs_ReturnsNull()
     {
         var tour = TestData.SampleTour();
         tour.TourLogs.Clear();
 
-        Assert.That(tour.AverageRating, Is.Zero);
+        Assert.That(tour.AverageRating, Is.Null);
     }
 
     [Test]
@@ -66,14 +66,14 @@ public class TourComputedPropertiesTests
     }
 
     [Test]
-    public void AverageRating_OnlyNullRatings_ReturnsZero()
+    public void AverageRating_OnlyNullRatings_ReturnsNull()
     {
         var tour = TestData.SampleTour();
         tour.TourLogs.Clear();
         tour.TourLogs.Add(new TourLog { Rating = null });
         tour.TourLogs.Add(new TourLog { Rating = null });
 
-        Assert.That(tour.AverageRating, Is.Zero);
+        Assert.That(tour.AverageRating, Is.Null);
     }
 
     [TestCaseSource(nameof(ChildFriendlyCases))]

@@ -2,15 +2,15 @@ namespace BL.DomainModel;
 
 public class TourDomain
 {
-    public List<TourLogDomain> Logs { get; set; } = [];
     public Guid Id { get; set; }
-    public string Name { get; set; } = "";
-    public string Description { get; set; } = "";
-    public string From { get; set; } = "";
-    public string To { get; set; } = "";
+    public required string Name { get; set; }
+    public required string Description { get; set; }
+    public required string From { get; set; }
+    public required string To { get; set; }
+    public required string TransportType { get; set; }
     public string? ImagePath { get; set; }
     public string? RouteInformation { get; set; }
     public double? Distance { get; set; }
     public double? EstimatedTime { get; set; }
-    public string TransportType { get; set; } = "";
+    public List<TourLogDomain> Logs { get; set; } = [];
 }

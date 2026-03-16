@@ -115,14 +115,14 @@ public static class ViewTestExtensions
     }
 
     public static void WithEmptyTourForm(this IServiceProvider s) =>
-        s.ViewModel<TourViewModel>().SelectedTour = new Tour { Name = "" };
+        s.ViewModel<TourViewModel>().SelectedTour = Tour.Empty;
 
     public static void WithModalTour(this IServiceProvider s, string name = "Test Tour") =>
         s.ViewModel<TourViewModel>().ModalTour = TestData.SampleTour(name);
 
     public static void WithMinimalModalTour(this IServiceProvider s) =>
         s.ViewModel<TourViewModel>().ModalTour = new Tour
-            { Name = "Tour", From = "A", To = "B", TransportType = "Walk" };
+            { Name = "Tour", Description = "", From = "A", To = "B", TransportType = "Walk" };
 
     // ── TourLog ViewModel setup ──
 

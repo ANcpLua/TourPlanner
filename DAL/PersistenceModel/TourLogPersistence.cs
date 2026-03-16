@@ -11,7 +11,7 @@ public class TourLogPersistence
 
     public DateTime DateTime { get; set; } = TimeProvider.System.GetUtcNow().UtcDateTime;
 
-    [Required] public string Comment { get; set; } = "";
+    [Required] public required string Comment { get; set; }
 
     public double? Difficulty { get; set; }
     public double? TotalDistance { get; set; }
