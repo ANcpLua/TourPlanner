@@ -1,4 +1,3 @@
-using UI.Model;
 using UI.Service.Interface;
 using UI.View.Pages;
 using UI.ViewModel;
@@ -10,12 +9,7 @@ namespace Test.UI.View;
 [FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public sealed class TourLogPageTests : BunitTestBase
 {
-    protected override void OnSetup()
-    {
-        var tours = TestData.SampleTourList(2);
-        Services.Mock<IHttpService>().Setup(s => s.GetListAsync<Tour>("api/tour")).ReturnsAsync(tours);
-        Services.ViewModel<TourViewModel>().Tours = new ObservableCollection<Tour>(tours);
-    }
+    protected override void OnSetup() => Services.WithTours(2);
 
     [Test]
     public void RendersInitialStructure()
@@ -32,13 +26,10 @@ public sealed class TourLogPageTests : BunitTestBase
     [Test]
     public void TourSelection_LoadsTourLogs()
     {
-        var tourId = Services.ViewModel<TourViewModel>().Tours.First().Id;
-        Services.Mock<IHttpService>().Setup(x => x.GetListAsync<TourLog>($"api/tourlog/bytour/{tourId}"))
-            .ReturnsAsync(TestData.SampleTourLogList(3, tourId));
-
+        var tourId = Services.FirstTourId();
+        Services.SetupMockGetTourLogs(tourId);
         var cut = RenderComponent<TourLogPage>();
         cut.Find("select").Change(tourId.ToString());
-
         cut.WaitForAssertion(() =>
             Assert.That(Services.ViewModel<TourLogViewModel>().TourLogs, Has.Count.EqualTo(3)));
     }
@@ -46,27 +37,15 @@ public sealed class TourLogPageTests : BunitTestBase
     [Test]
     public void FormHeader_NewLog_ShowsAddText()
     {
-        var tourId = Services.ViewModel<TourViewModel>().Tours.First().Id;
-        Services.ViewModel<TourLogViewModel>().SelectedTourId = tourId;
-        Services.ViewModel<TourLogViewModel>().IsLogFormVisible = true;
-        Services.ViewModel<TourLogViewModel>().SelectedTourLog = new TourLog { Id = Guid.Empty };
-
-        var cut = RenderComponent<TourLogPage>();
-
-        Assert.That(cut.Find(".tour-log-form-section h5").TextContent, Is.EqualTo("Add New Log"));
+        Services.WithTourLogFormVisible(newLog: true);
+        Assert.That(RenderComponent<TourLogPage>().Find(".tour-log-form-section h5").TextContent, Is.EqualTo("Add New Log"));
     }
 
     [Test]
     public void FormHeader_ExistingLog_ShowsEditText()
     {
-        var tourId = Services.ViewModel<TourViewModel>().Tours.First().Id;
-        Services.ViewModel<TourLogViewModel>().SelectedTourId = tourId;
-        Services.ViewModel<TourLogViewModel>().IsLogFormVisible = true;
-        Services.ViewModel<TourLogViewModel>().SelectedTourLog = new TourLog { Id = Guid.NewGuid() };
-
-        var cut = RenderComponent<TourLogPage>();
-
-        Assert.That(cut.Find(".tour-log-form-section h5").TextContent, Is.EqualTo("Edit Log"));
+        Services.WithTourLogFormVisible(newLog: false);
+        Assert.That(RenderComponent<TourLogPage>().Find(".tour-log-form-section h5").TextContent, Is.EqualTo("Edit Log"));
     }
 
     [Test]
@@ -74,14 +53,12 @@ public sealed class TourLogPageTests : BunitTestBase
     {
         var cut = RenderComponent<TourLogPage>();
         var initial = cut.RenderCount;
-
         await cut.InvokeAsync(() =>
         {
             var vm = Services.ViewModel<TourViewModel>();
-            vm.Tours = new ObservableCollection<Tour>(TestData.SampleTourList());
+            Services.WithTours();
             vm.OnPropertyChanged(nameof(TourViewModel.Tours));
         });
-
         Assert.That(cut.RenderCount, Is.GreaterThan(initial));
     }
 
@@ -90,14 +67,12 @@ public sealed class TourLogPageTests : BunitTestBase
     {
         var cut = RenderComponent<TourLogPage>();
         var initial = cut.RenderCount;
-
         await cut.InvokeAsync(() =>
         {
             var vm = Services.ViewModel<TourViewModel>();
             vm.IsMapVisible = !vm.IsMapVisible;
             vm.OnPropertyChanged(nameof(TourViewModel.IsMapVisible));
         });
-
         Assert.That(cut.RenderCount, Is.EqualTo(initial));
     }
 }

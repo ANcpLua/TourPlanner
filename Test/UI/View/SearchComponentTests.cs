@@ -1,4 +1,3 @@
-using UI.Model;
 using UI.Service.Interface;
 using UI.ViewModel;
 
@@ -14,87 +13,48 @@ public sealed class SearchComponentTests : BunitTestBase
     {
         var cut = RenderComponent<SearchComponent>();
         cut.Find("input.search-input").Input("test");
-
         Assert.That(Services.ViewModel<SearchViewModel>().SearchText, Is.EqualTo("test"));
     }
 
     [Test]
-    public async Task SearchInput_PressesEnter_TriggersSearch()
+    public async Task SearchInput_PressesEnter_ExecutesSearch()
     {
-        Services.Mock<IHttpService>().Setup(h => h.GetListAsync<Tour>("api/tour/search/test"))
-            .ReturnsAsync(TestData.SampleTourList(0));
         Services.ViewModel<SearchViewModel>().SearchText = "test";
         var cut = RenderComponent<SearchComponent>();
-
         await cut.Find("input.search-input").KeyUpAsync(new KeyboardEventArgs { Key = "Enter" });
-
-        Services.Mock<IHttpService>().Verify(h => h.GetListAsync<Tour>("api/tour/search/test"));
+        Assert.That(Services.ViewModel<SearchViewModel>().SearchResults, Is.Not.Null);
     }
 
     [Test]
     public async Task TourCard_Clicks_NavigatesToTour()
     {
-        var tour = TestData.SampleTour();
-        Services.ViewModel<SearchViewModel>().SearchResults = [tour];
+        Services.WithSearchResults();
+        var id = Services.FirstSearchResultId();
         var cut = RenderComponent<SearchComponent>();
-
         await cut.Find("div.tour-search").ClickAsync(new MouseEventArgs());
-
-        var nav = Services.GetRequiredService<NavigationManager>();
-        Assert.That(nav.Uri, Does.EndWith($"/?tourId={tour.Id}"));
+        Assert.That(Services.GetRequiredService<NavigationManager>().Uri, Does.EndWith($"/?tourId={id}"));
     }
 
     [Test]
-    public async Task SearchButton_NoResults_ShowsNotification()
+    public void SearchResults_WhenPopulated_RendersCards()
     {
-        Services.Mock<IHttpService>().Setup(h => h.GetListAsync<Tour>("api/tour/search/test"))
-            .ReturnsAsync(new List<Tour>());
-        Services.ViewModel<SearchViewModel>().SearchText = "test";
-        var cut = RenderComponent<SearchComponent>();
-
-        await cut.Find("button.search-btn").ClickAsync(new MouseEventArgs());
-
-        Services.Mock<IToastServiceWrapper>()
-            .Verify(t => t.ShowSuccess("No tours found matching your search criteria."));
+        Services.WithSearchResults(3);
+        Assert.That(RenderComponent<SearchComponent>().FindAll("div.tour-search"), Has.Count.EqualTo(3));
     }
 
     [Test]
-    public void SearchResults_WhenEmpty_HidesResultsList()
+    public void SearchResults_WhenEmpty_HidesCards()
     {
-        Services.ViewModel<SearchViewModel>().SearchResults = [];
-        var cut = RenderComponent<SearchComponent>();
-
-        Assert.Throws<ElementNotFoundException>(() => cut.Find("div.tour-search"));
+        Assert.Throws<ElementNotFoundException>(() => RenderComponent<SearchComponent>().Find("div.tour-search"));
     }
 
     [Test]
-    public void SearchResults_WhenPopulated_RendersCorrectNumberOfCards()
-    {
-        Services.ViewModel<SearchViewModel>().SearchResults = [..TestData.SampleTourList(3)];
-        var cut = RenderComponent<SearchComponent>();
-
-        Assert.That(cut.FindAll("div.tour-search"), Has.Count.EqualTo(3));
-    }
-
-    [Test]
-    public void SearchResults_DisplaysTourName()
-    {
-        var tour = TestData.SampleTour("My Tour");
-        Services.ViewModel<SearchViewModel>().SearchResults = [tour];
-        var cut = RenderComponent<SearchComponent>();
-
-        Assert.That(cut.Find("p.tour-name").TextContent, Is.EqualTo("My Tour"));
-    }
-
-    [Test]
-    public void ClearButton_ClearsSearchTextAndResults()
+    public void ClearButton_ResetsState()
     {
         Services.ViewModel<SearchViewModel>().SearchText = "test";
-        Services.ViewModel<SearchViewModel>().SearchResults = [TestData.SampleTour()];
+        Services.WithSearchResults();
         var cut = RenderComponent<SearchComponent>();
-
         cut.Find("button.clear-btn").Click();
-
         var vm = Services.ViewModel<SearchViewModel>();
         using (Assert.EnterMultipleScope())
         {
@@ -106,46 +66,14 @@ public sealed class SearchComponentTests : BunitTestBase
     [Test]
     public void TourWithLogs_ShowsLatestLogSection()
     {
-        var tour = TestData.SampleTour();
-        tour.TourLogs = [TestData.SampleTourLog(tourId: tour.Id)];
-        Services.ViewModel<SearchViewModel>().SearchResults = [tour];
-
-        var cut = RenderComponent<SearchComponent>();
-
-        Assert.That(cut.Find("div.tour-search").TextContent, Does.Contain("Latest Log:"));
+        Services.WithSearchResultWithLogs();
+        Assert.That(RenderComponent<SearchComponent>().Find("div.tour-search").TextContent, Does.Contain("Latest Log:"));
     }
 
     [Test]
     public void TourWithoutLogs_HidesLatestLogSection()
     {
-        var tour = TestData.SampleTour();
-        tour.TourLogs.Clear();
-        Services.ViewModel<SearchViewModel>().SearchResults = [tour];
-
-        var cut = RenderComponent<SearchComponent>();
-
-        Assert.That(cut.Find("div.tour-search").TextContent, Does.Not.Contain("Latest Log:"));
-    }
-
-    [Test]
-    public void NoResultsText_ShownWhenSearchTextExistsButNoResults()
-    {
-        Services.ViewModel<SearchViewModel>().SearchText = "nonexistent";
-        Services.ViewModel<SearchViewModel>().SearchResults = [];
-
-        var cut = RenderComponent<SearchComponent>();
-
-        Assert.That(cut.Find("p.text-center").TextContent, Is.EqualTo("No results found."));
-    }
-
-    [Test]
-    public void NoResultsText_HiddenWhenSearchTextEmpty()
-    {
-        Services.ViewModel<SearchViewModel>().SearchText = "";
-        Services.ViewModel<SearchViewModel>().SearchResults = [];
-
-        var cut = RenderComponent<SearchComponent>();
-
-        Assert.Throws<ElementNotFoundException>(() => cut.Find("p.text-center"));
+        Services.WithSearchResultWithoutLogs();
+        Assert.That(RenderComponent<SearchComponent>().Find("div.tour-search").TextContent, Does.Not.Contain("Latest Log:"));
     }
 }

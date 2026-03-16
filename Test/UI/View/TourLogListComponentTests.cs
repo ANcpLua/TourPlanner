@@ -1,4 +1,3 @@
-﻿using UI.Model;
 using UI.Service.Interface;
 using UI.View.TourLogComponents;
 using UI.ViewModel;
@@ -10,38 +9,28 @@ namespace Test.UI.View;
 [FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public sealed class TourLogListComponentTests : BunitTestBase
 {
+    private IRenderedComponent<TourLogListComponent> Render() =>
+        RenderComponent<TourLogListComponent>(p =>
+            p.Add(x => x.ViewModel, Services.ViewModel<TourLogViewModel>()));
+
     [Test]
     public void RendersAllTourLogs()
     {
-        Services.ViewModel<TourLogViewModel>().TourLogs =
-            new ObservableCollection<TourLog>(TestData.SampleTourLogList());
-
-        var cut = RenderComponent<TourLogListComponent>(p =>
-            p.Add(x => x.ViewModel, Services.ViewModel<TourLogViewModel>()));
-
-        Assert.That(cut.FindAll(".tour-card"), Has.Count.EqualTo(2));
+        Services.WithTourLogs();
+        Assert.That(Render().FindAll(".tour-card"), Has.Count.EqualTo(2));
     }
 
     [Test]
-    public void ShowsEmptyMessageWhenNoLogs()
-    {
-        var cut = RenderComponent<TourLogListComponent>(p =>
-            p.Add(x => x.ViewModel, Services.ViewModel<TourLogViewModel>()));
-
-        Assert.That(cut.Find(".text-center").TextContent, Is.EqualTo("No logs available for this tour."));
-    }
+    public void ShowsEmptyMessageWhenNoLogs() =>
+        Assert.That(Render().Find(".text-center").TextContent, Is.EqualTo("No logs available for this tour."));
 
     [Test]
     public async Task EditButton_LoadsLogForEditing()
     {
-        var log = TestData.SampleTourLog();
-        Services.ViewModel<TourLogViewModel>().TourLogs = [log];
-        Services.Mock<IHttpService>().Setup(s => s.GetAsync<TourLog>($"api/tourlog/{log.Id}"))
-            .ReturnsAsync(log);
-
-        var cut = RenderComponent<TourLogListComponent>(p =>
-            p.Add(x => x.ViewModel, Services.ViewModel<TourLogViewModel>()));
-        await cut.Find(".btn-success").ClickAsync(new MouseEventArgs());
+        Services.WithSingleTourLog();
+        var logId = Services.FirstTourLogId();
+        Services.SetupMockGetTourLog(logId);
+        await Render().Find(".btn-success").ClickAsync(new MouseEventArgs());
         using (Assert.EnterMultipleScope())
         {
             Assert.That(Services.ViewModel<TourLogViewModel>().IsLogFormVisible, Is.True);
@@ -51,27 +40,18 @@ public sealed class TourLogListComponentTests : BunitTestBase
 
     [TestCase(true)]
     [TestCase(false)]
-    public async Task DeleteButton_RespectsUserConfirmation(bool userConfirms)
+    public async Task DeleteButton_RespectsUserConfirmation(bool confirms)
     {
-        var log = TestData.SampleTourLog();
-        Services.ViewModel<TourLogViewModel>().TourLogs = [log];
-
-        JSInterop.Setup<bool>("confirm", _ => true).SetResult(userConfirms);
-
-        if (userConfirms)
+        Services.WithSingleTourLog();
+        var logId = Services.FirstTourLogId();
+        JSInterop.Setup<bool>("confirm", _ => true).SetResult(confirms);
+        if (confirms)
         {
-            Services.Mock<IHttpService>().Setup(s => s.DeleteAsync($"api/tourlog/{log.Id}"))
-                .Returns(Task.CompletedTask);
-            Services.Mock<IHttpService>().Setup(s => s.GetListAsync<TourLog>($"api/tourlog/bytour/{log.TourId}"))
-                .ReturnsAsync(new List<TourLog>());
+            Services.SetupMockDeleteTourLog(logId);
+            Services.SetupMockGetTourLogs(Services.ViewModel<TourLogViewModel>().TourLogs.First().TourId, 0);
         }
 
-        var cut = RenderComponent<TourLogListComponent>(p =>
-            p.Add(x => x.ViewModel, Services.ViewModel<TourLogViewModel>()));
-        await cut.Find(".btn-danger").ClickAsync(new MouseEventArgs());
-
-        Services.Mock<IHttpService>().Verify(
-            s => s.DeleteAsync($"api/tourlog/{log.Id}"),
-            userConfirms ? Times.Once : Times.Never);
+        await Render().Find(".btn-danger").ClickAsync(new MouseEventArgs());
+        Services.VerifyMockDeleteTourLog(logId, confirms ? Times.Once() : Times.Never());
     }
 }

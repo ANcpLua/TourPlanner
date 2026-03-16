@@ -1,4 +1,4 @@
-﻿using UI.Service.Interface;
+using UI.Service.Interface;
 using UI.ViewModel;
 
 namespace Test.UI.View;
@@ -8,11 +8,13 @@ namespace Test.UI.View;
 [FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public sealed class MapComponentTests : BunitTestBase
 {
+    private IRenderedComponent<MapComponent> Render() =>
+        RenderComponent<MapComponent>(p => p.Add(x => x.ViewModel, Services.ViewModel<MapViewModel>()));
+
     [Test]
     public void RendersAllCityOptions()
     {
-        var vm = Services.ViewModel<MapViewModel>();
-        var cut = RenderComponent<MapComponent>(p => p.Add(x => x.ViewModel, vm));
+        var cut = Render();
         using (Assert.EnterMultipleScope())
         {
             Assert.That(cut.FindAll("#fromCity option"), Has.Count.EqualTo(6));
@@ -23,26 +25,15 @@ public sealed class MapComponentTests : BunitTestBase
     [Test]
     public void FiltersDestinationWhenOriginSelected()
     {
-        var vm = Services.ViewModel<MapViewModel>();
-        vm.FromCity = "Vienna";
-
-        var cut = RenderComponent<MapComponent>(p => p.Add(x => x.ViewModel, vm));
-        var toOptions = cut.FindAll("#toCity option").Select(o => o.TextContent);
-
-        Assert.That(toOptions, Does.Not.Contain("Vienna"));
+        Services.ViewModel<MapViewModel>().FromCity = "Vienna";
+        Assert.That(Render().FindAll("#toCity option").Select(o => o.TextContent), Does.Not.Contain("Vienna"));
     }
 
     [Test]
     public async Task UpdateMapRequiresBothCities()
     {
-        var vm = Services.ViewModel<MapViewModel>();
-        Services.Mock<IToastServiceWrapper>().Setup(t => t.ShowError("Please select both cities."));
-
-        await vm.InitializeMapAsync(new ElementReference());
-        var cut = RenderComponent<MapComponent>(p => p.Add(x => x.ViewModel, vm));
-
-        await cut.Find("button.btn-primary").ClickAsync(new MouseEventArgs());
-
+        await Services.ViewModel<MapViewModel>().InitializeMapAsync(new ElementReference());
+        await Render().Find("button.btn-primary").ClickAsync(new MouseEventArgs());
         Services.Mock<IToastServiceWrapper>().Verify(t => t.ShowError("Please select both cities."), Times.Once);
     }
 
@@ -52,9 +43,7 @@ public sealed class MapComponentTests : BunitTestBase
         var vm = Services.ViewModel<MapViewModel>();
         vm.FromCity = "Vienna";
         vm.ToCity = "Paris";
-
-        var cut = RenderComponent<MapComponent>(p => p.Add(x => x.ViewModel, vm));
-        await cut.Find("button.btn-secondary").ClickAsync(new MouseEventArgs());
+        await Render().Find("button.btn-secondary").ClickAsync(new MouseEventArgs());
         using (Assert.EnterMultipleScope())
         {
             Assert.That(vm.FromCity, Is.Empty);

@@ -1,5 +1,3 @@
-﻿using UI.Model;
-using UI.Service.Interface;
 using UI.View.TourLogComponents;
 using UI.ViewModel;
 
@@ -10,18 +8,16 @@ namespace Test.UI.View;
 [FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public sealed class TourLogFormComponentTests : BunitTestBase
 {
-    protected override void OnSetup()
-    {
-        var log = TestData.SampleTourLog();
-        Services.ViewModel<TourLogViewModel>().SelectedTourLog = log;
-        Services.ViewModel<TourLogViewModel>().SelectedTourId = log.TourId;
-    }
+    protected override void OnSetup() => Services.WithValidTourLogForm();
+
+    private IRenderedComponent<TourLogFormComponent> Render() =>
+        RenderComponent<TourLogFormComponent>(p =>
+            p.Add(x => x.ViewModel, Services.ViewModel<TourLogViewModel>()));
 
     [Test]
     public void RendersAllFields()
     {
-        var cut = RenderComponent<TourLogFormComponent>(p =>
-            p.Add(x => x.ViewModel, Services.ViewModel<TourLogViewModel>()));
+        var cut = Render();
         using (Assert.EnterMultipleScope())
         {
             Assert.That(cut.Find("#comment"), Is.Not.Null);
@@ -36,44 +32,30 @@ public sealed class TourLogFormComponentTests : BunitTestBase
     [TestCase("")]
     public void BindsComment(string text)
     {
-        var cut = RenderComponent<TourLogFormComponent>(p =>
-            p.Add(x => x.ViewModel, Services.ViewModel<TourLogViewModel>()));
-        cut.Find("#comment").Change(text);
+        Render().Find("#comment").Change(text);
         Assert.That(Services.ViewModel<TourLogViewModel>().SelectedTourLog.Comment, Is.EqualTo(text));
     }
 
     [Test]
     public void DisablesSaveWhenInvalid()
     {
-        Services.ViewModel<TourLogViewModel>().SelectedTourLog = new TourLog();
-        var cut = RenderComponent<TourLogFormComponent>(p =>
-            p.Add(x => x.ViewModel, Services.ViewModel<TourLogViewModel>()));
-
-        Assert.That(cut.Find("button[type='submit']").HasAttribute("disabled"), Is.True);
+        Services.WithEmptyTourLogForm();
+        Assert.That(Render().Find("button[type='submit']").HasAttribute("disabled"), Is.True);
     }
 
     [Test]
     public async Task SavesWhenValid()
     {
+        Services.WithValidTourLogForm();
         var vm = Services.ViewModel<TourLogViewModel>();
+        vm.SelectedTourLog.Id = Guid.Empty;
+        vm.SelectedTourLog.TourId = TestData.TestGuid;
         vm.SelectedTourId = TestData.TestGuid;
-        var newLog = TestData.SampleTourLog(tourId: TestData.TestGuid);
-        newLog.Id = Guid.Empty;
-        vm.SelectedTourLog = newLog;
-
-        Services.Mock<IHttpService>()
-            .Setup(s => s.PostAsync<TourLog>("api/tourlog", It.IsAny<TourLog>()))
-            .ReturnsAsync(TestData.SampleTourLog());
-        Services.Mock<IHttpService>()
-            .Setup(s => s.GetListAsync<TourLog>($"api/tourlog/bytour/{TestData.TestGuid}"))
-            .ReturnsAsync(TestData.SampleTourLogList(1, TestData.TestGuid));
-
-        var cut = RenderComponent<TourLogFormComponent>(p => p.Add(x => x.ViewModel, vm));
+        Services.SetupMockPostTourLog();
+        Services.SetupMockGetTourLogs(TestData.TestGuid, 1);
+        var cut = Render();
+        Assert.That(vm.IsFormValid, Is.True, "Form should be valid before submit");
         await cut.Find("button[type='submit']").ClickAsync(new MouseEventArgs());
-
-        Services.Mock<IHttpService>().Verify(
-            s => s.PostAsync<TourLog>("api/tourlog", It.IsAny<TourLog>()),
-            Times.Once
-        );
+        Services.VerifyMockPostTourLog(Times.Once());
     }
 }
