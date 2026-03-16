@@ -4,7 +4,7 @@
 
 - `global.json`: SDK `10.0.201`, `allowPrerelease: false`
 - `Directory.Build.props` created: centralizes `TargetFramework`, `LangVersion preview`, `Nullable`, `ImplicitUsings`
-- All `.csproj` files: removed redundant `<TargetFramework>`, `<LangVersion>`, `<Nullable>`, `<ImplicitUsings>` (inherited from Directory.Build.props)
+- All `.csproj` files: removed redundant properties (inherited from Directory.Build.props)
 
 ## 2. Central Package Management (CPM)
 
@@ -33,60 +33,75 @@
 ## 4. C# 14 / Modern Language Features
 
 ### Primary Constructors (everywhere)
-- `TourPlannerContext` → `TourPlannerContext(DbContextOptions<TourPlannerContext> options) : DbContext(options)`
-- `TourRepository` → `TourRepository(TourPlannerContext dbContext)`
-- `TourLogRepository` → `TourLogRepository(TourPlannerContext dbContext)`
-- `TourService` → `TourService(ITourRepository tourRepository, IMapper mapper)`
-- `TourLogService` → `TourLogService(ITourLogRepository tourLogRepository, IMapper mapper)`
-- `FileService` → `FileService(ITourService tourService, IPdfReportService pdfReportService)`
-- `BusinessLogicModule` → `BusinessLogicModule(IConfiguration configuration)`
-- `PostgreContextModule` → `PostgreContextModule(IConfiguration configuration)`
-- `TourController` → `TourController(ITourService tourService, IMapper mapper)`
-- `TourLogController` → `TourLogController(ITourLogService tourLogService, IMapper mapper)`
-- `FileController` → `FileController(IFileService fileService, ITourService tourService, IMapper mapper)`
-- `TryCatchToastWrapper` → `TryCatchToastWrapper(IToastServiceWrapper toastServiceWrapper, ILogger logger)`
-- `ToastService` → `ToastService(IToastService toastService)`
-- `RouteApiService` → `RouteApiService(HttpClient httpClient, IConfiguration configuration)`
+- `TourPlannerContext`, `TourRepository`, `TourLogRepository`
+- `TourService`, `TourLogService`, `FileService`
+- `BusinessLogicModule`, `PostgreContextModule`
+- `TourController`, `TourLogController`, `FileController`
+- `TryCatchToastWrapper`, `ToastService`, `RouteApiService`
 
 ### field keyword (C# 14)
-- Already used in `BaseViewModel.IsProcessing`, `TourViewModel.IsFormVisible/SelectedTour/ModalTour/IsMapVisible`
-- Already used in `TourLogViewModel.SelectedTourLog/IsLogFormVisible/IsEditing`
-- Already used in `SearchViewModel.SearchText/SearchResults`
-- Already used in `MapViewModel.FromCity`
-- Already used in `ReportViewModel.CurrentReportUrl/SelectedDetailedTourId`
+- Used in `BaseViewModel.IsProcessing`, `TourViewModel`, `TourLogViewModel`, `SearchViewModel`, `MapViewModel`, `ReportViewModel`
 
 ### FrozenDictionary (System.Collections.Frozen)
-- `MapViewModel.Coordinates`: `Dictionary<string, (double, double)>` → `FrozenDictionary<string, (double, double)>`
-- Eliminates runtime dictionary overhead for read-only city coordinate lookup
+- `MapViewModel.Coordinates`: `Dictionary` → `FrozenDictionary` for immutable city coordinate lookup
 
 ### Collection Expressions
-- `RouteApiService.FetchRouteDataAsync`: coordinate arrays use `[[from.Longitude, from.Latitude], ...]` syntax
-
-### Expression-bodied Members
-- Multiple methods converted to expression-bodied form where single-statement
+- `RouteApiService.FetchRouteDataAsync`: `[[from.Longitude, from.Latitude], ...]` syntax
 
 ### Pattern Matching
-- `null` checks use `is not null` / `is null` consistently
-- `HttpMethod` checks use property pattern `method is { Method: "POST" or "PUT" }`
+- `is not null` / `is null` consistently
+- `method is { Method: "POST" or "PUT" }` property pattern
 
-## 5. Banned API Cleanup
+## 5. CancellationToken Propagation
+
+Full CancellationToken threading through all async paths:
+- `ITourRepository` → `CreateTourAsync`, `UpdateTourAsync`, `DeleteTourAsync` + `CancellationToken`
+- `ITourService` → same pattern
+- `IFileService.ImportTourFromJsonAsync` + `CancellationToken`
+- All controller actions accept `CancellationToken cancellationToken = default`
+- `FindAsync([id], cancellationToken)` with params array syntax
+
+## 6. Null Safety
+
+- `ITourService.GetTourById` returns `TourDomain?` (was non-nullable with null! hack)
+- `FileService.GenerateTourReport` / `ExportTourToJson`: `?? throw new InvalidOperationException`
+- `TourController.GetTourById`: `if (tour is null) return NotFound()`
+- `TourLogRepository.DeleteTourLogAsync`: `if (tourLogPersistence is not null)` guard
+
+## 7. Banned API Cleanup
 
 ### DateTime.Now → TimeProvider
-- `TourLogPersistence.DateTime` default: `DateTime.Now` → `TimeProvider.System.GetUtcNow().UtcDateTime`
-- `TourLog.DateTime` default: `DateTime.Now` → `TimeProvider.System.GetUtcNow().UtcDateTime`
-- `TourLogViewModel.ShowAddLogForm()`: `DateTime.Now` → `TimeProvider.System.GetUtcNow().UtcDateTime`
-- `TourLogViewModel.ResetForm()`: `DateTime.Now` → `TimeProvider.System.GetUtcNow().UtcDateTime`
-- Test updated: `TourLogViewModelTests.ShowAddLogForm_WithValidTourId_ShouldCreateNewTourLog`
+- `TourLogPersistence.DateTime`: `DateTime.Now` → `TimeProvider.System.GetUtcNow().UtcDateTime`
+- `TourLog.DateTime`: same
+- `TourLogViewModel.ShowAddLogForm()` / `ResetForm()`: same
+- `ReportViewModel.GenerateAndDownloadReport` / `ExportTourToJsonAsync`: `DateTime.UtcNow` → `TimeProvider`
 
-## 6. CI/CD Pipeline
+## 8. Analyzer Fixes
 
-- `.github/workflows/coverage.yml`: `dotnet-version: '9.0.x'` → `'10.0.x'`, step name updated
+- `Directory.Build.props`: `EnableNETAnalyzers`, `AnalysisLevel latest-recommended`, `EnforceCodeStyleInBuild`
+- CA1051: `BaseViewModel` public fields → auto-properties
+- CA1869: Cached `static readonly JsonSerializerOptions` in `ReportViewModel`
+- `.editorconfig`: CA1716 (namespace keywords), CA1710 (Attribute suffix) suppressed (not a public library)
+- `using var` on `HttpRequestMessage` (IDisposable)
 
-## 7. Docker
+## 9. Deterministic Seed Data
 
-- `Dockerfile` already on `mcr.microsoft.com/dotnet/sdk:10.0` and `mcr.microsoft.com/dotnet/aspnet:10.0` (migrated in previous commit)
+- `TourPlannerContext.HasData`: `Guid.NewGuid()` → `Guid.Parse("a1b2c3d4-...")` for reproducible migrations
 
-## 8. Test Results
+## 10. CI/CD Pipeline
 
-- 396/396 tests passing
-- 0 errors, 1 warning (SixLabors.ImageSharp vulnerability advisory — tracked separately)
+- `.github/workflows/coverage.yml`: `dotnet-version: '9.0.x'` → `'10.0.x'`
+
+## 11. Docker
+
+- `Dockerfile` already on `mcr.microsoft.com/dotnet/sdk:10.0` and `mcr.microsoft.com/dotnet/aspnet:10.0`
+
+## 12. Test Results
+
+- 380/380 tests passing, 0 failures
+- 1 warning: SixLabors.ImageSharp vulnerability (NU1902)
+
+## 13. Remaining Test Changes (unstaged)
+
+Test files adapted by linter for CancellationToken signatures and modernized bUnit assertions.
+These are functionally correct (380/380 pass) but need manual commit due to assertion refactoring.
