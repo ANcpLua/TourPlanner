@@ -17,7 +17,7 @@
         <!-- ASP.NET Core 10 -->
         <MicrosoftAspNetCoreComponentsWebAssemblyVersion>10.0.0</MicrosoftAspNetCoreComponentsWebAssemblyVersion>
         <MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion>10.0.0</MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion>
-        <MicrosoftExtensionsConfigurationAbstractionsVersion>10.0.0</MicrosoftExtensionsConfigurationAbstractionsVersion>
+        <MicrosoftExtensionsConfigurationAbstractionsVersion>10.0.1</MicrosoftExtensionsConfigurationAbstractionsVersion>
         <MicrosoftNETILLinkTasksVersion>10.0.0</MicrosoftNETILLinkTasksVersion>
         <MicrosoftNETSdkWebAssemblyPackVersion>10.0.0</MicrosoftNETSdkWebAssemblyPackVersion>
 
@@ -46,14 +46,14 @@
         <BlazorDownloadFileFastVersion>1.0.0.1</BlazorDownloadFileFastVersion>
         <SixLaborsImageSharpVersion>3.1.10</SixLaborsImageSharpVersion>
 
-        <!-- Testing -->
-        <bunitVersion>1.40.0</bunitVersion>
-        <CoverletCollectorVersion>6.0.4</CoverletCollectorVersion>
+        <!-- Testing (MTP) -->
+        <bunitVersion>2.6.2</bunitVersion>
+        <CoverletMTPVersion>8.0.0</CoverletMTPVersion>
         <MicrosoftNETTestSdkVersion>17.14.1</MicrosoftNETTestSdkVersion>
         <MoqVersion>4.20.72</MoqVersion>
         <NUnitVersion>4.3.2</NUnitVersion>
         <NUnitAnalyzersVersion>4.9.1</NUnitAnalyzersVersion>
-        <NUnit3TestAdapterVersion>5.0.0</NUnit3TestAdapterVersion>
+        <NUnit3TestAdapterVersion>6.1.0</NUnit3TestAdapterVersion>
 
         <!-- JSON -->
         <SystemTextJsonVersion>10.0.0</SystemTextJsonVersion>

@@ -9,7 +9,7 @@ public sealed class MainLayoutTests : BunitTestBase
 {
     protected override void OnSetup()
     {
-        TestContext?.ComponentFactories.AddStub<SearchComponent>();
+        Context.ComponentFactories.AddStub<SearchComponent>();
     }
 
     [Test]

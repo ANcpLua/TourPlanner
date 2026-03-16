@@ -52,9 +52,9 @@
         <PackageVersion Include="BlazorDownloadFileFast" Version="$(BlazorDownloadFileFastVersion)"/>
         <PackageVersion Include="SixLabors.ImageSharp" Version="$(SixLaborsImageSharpVersion)"/>
 
-        <!-- Testing -->
+        <!-- Testing (MTP) -->
         <PackageVersion Include="bunit" Version="$(bunitVersion)"/>
-        <PackageVersion Include="coverlet.collector" Version="$(CoverletCollectorVersion)"/>
+        <PackageVersion Include="coverlet.MTP" Version="$(CoverletMTPVersion)"/>
         <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkVersion)"/>
         <PackageVersion Include="Moq" Version="$(MoqVersion)"/>
         <PackageVersion Include="NUnit" Version="$(NUnitVersion)"/>
