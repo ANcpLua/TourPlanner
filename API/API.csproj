@@ -5,12 +5,18 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="Test"/>
+    </ItemGroup>
+
+
+    <ItemGroup>
         <PackageReference Include="Autofac"/>
         <PackageReference Include="Fody">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
         <PackageReference Include="MethodDecorator.Fody"/>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi"/>
         <PackageReference Include="Microsoft.Extensions.Http.Resilience"/>
         <PackageReference Include="Serilog.AspNetCore"/>
         <PackageReference Include="Autofac.Extras.DynamicProxy"/>
@@ -33,6 +39,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\BL\BL.csproj"/>
+        <ProjectReference Include="..\Contracts\Contracts.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

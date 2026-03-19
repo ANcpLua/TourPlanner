@@ -17,7 +17,9 @@
         <!-- ASP.NET Core 10 -->
         <MicrosoftAspNetCoreComponentsWebAssemblyVersion>10.0.5</MicrosoftAspNetCoreComponentsWebAssemblyVersion>
         <MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion>10.0.5</MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion>
+        <MicrosoftAspNetCoreOpenApiVersion>10.0.4</MicrosoftAspNetCoreOpenApiVersion>
         <MicrosoftExtensionsConfigurationAbstractionsVersion>10.0.5</MicrosoftExtensionsConfigurationAbstractionsVersion>
+        <MicrosoftExtensionsHttpVersion>10.0.5</MicrosoftExtensionsHttpVersion>
         <MicrosoftNETILLinkTasksVersion>10.0.5</MicrosoftNETILLinkTasksVersion>
         <MicrosoftNETSdkWebAssemblyPackVersion>10.0.5</MicrosoftNETSdkWebAssemblyPackVersion>
 

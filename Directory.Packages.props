@@ -21,9 +21,11 @@
         <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion)"/>
 
         <!-- ASP.NET Core 10 -->
+        <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="$(MicrosoftAspNetCoreOpenApiVersion)"/>
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="$(MicrosoftAspNetCoreComponentsWebAssemblyVersion)"/>
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="$(MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion)"/>
         <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(MicrosoftExtensionsConfigurationAbstractionsVersion)"/>
+        <PackageVersion Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsHttpVersion)"/>
         <PackageVersion Include="Microsoft.NET.ILLink.Tasks" Version="$(MicrosoftNETILLinkTasksVersion)"/>
         <PackageVersion Include="Microsoft.NET.Sdk.WebAssembly.Pack" Version="$(MicrosoftNETSdkWebAssemblyPackVersion)"/>
 

@@ -21,8 +21,8 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Contracts\Contracts.csproj"/>
         <ProjectReference Include="..\DAL\DAL.csproj"/>
-        <ProjectReference Include="..\UI\UI.csproj"/>
     </ItemGroup>
 
 </Project>

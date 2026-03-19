@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <PropertyGroup>
+        <AssemblyName>UI</AssemblyName>
+        <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+        <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <RootNamespace>UI</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Autofac"/>
+        <PackageReference Include="Autofac.Extensions.DependencyInjection"/>
+        <PackageReference Include="BlazorDownloadFileFast"/>
+        <PackageReference Include="Blazored.Toast"/>
+        <PackageReference Include="Fody">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="MethodDecorator.Fody"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.NET.ILLink.Tasks"/>
+        <PackageReference Include="Microsoft.NET.Sdk.WebAssembly.Pack"/>
+        <PackageReference Include="Serilog"/>
+        <PackageReference Include="Serilog.Extensions.Logging"/>
+        <PackageReference Include="Serilog.Sinks.BrowserConsole"/>
+        <PackageReference Include="Serilog.Sinks.File"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Contracts\Contracts.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="View\Pages\FilePage.razor.css">
+            <DependentUpon>FilePage.razor</DependentUpon>
+        </None>
+        <None Update="View\Pages\TourPage.razor.css">
+            <DependentUpon>TourPage.razor</DependentUpon>
+        </None>
+        <Content Update="wwwroot\appsettings.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ServiceWorker Include="wwwroot\service-worker.js">
+            <PublishedContent>wwwroot\service-worker.published.js</PublishedContent>
+        </ServiceWorker>
+    </ItemGroup>
+</Project>

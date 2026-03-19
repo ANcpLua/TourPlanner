@@ -1,7 +1,8 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using API.Endpoints;
+using API.Infrastructure;
 using BL.Module;
-using DAL.Infrastructure;
 using DAL.Module;
 using Serilog;
 
@@ -32,23 +33,23 @@ builder.Services.AddCors(options =>
             .AllowCredentials()
     );
 });
+builder.Services.AddProblemDetails();
+builder.Services.AddValidation();
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddHttpClient("default").AddStandardResilienceHandler();
-builder.Services.AddHealthChecks();
+builder.Services.AddOpenApi();
+builder.Services.AddHttpClient("OpenRouteService").AddStandardResilienceHandler();
+builder.Services.AddHealthChecks().AddCheck<PostgreSqlHealthCheck>("postgres");
 var app = builder.Build();
-await using var scope = app.Services.CreateAsyncScope();
-await scope.ServiceProvider.GetRequiredService<TourPlannerContext>().Database.EnsureCreatedAsync();
+
 app.UseRouting();
 app.UseCors("AllowUI");
 app.UseStaticFiles();
 app.UseAuthorization();
 app.UseSerilogRequestLogging();
+app.UseExceptionHandler();
 app.MapControllers();
+app.MapRouteEndpoints();
+app.MapReportEndpoints();
 app.MapHealthChecks("/health");
-app.UseExceptionHandler(new ExceptionHandlerOptions
-{
-    ExceptionHandlingPath = "/Error",
-    AllowStatusCode404Response = true
-});
+app.MapOpenApi("/openapi/{documentName}.json");
 app.Run();

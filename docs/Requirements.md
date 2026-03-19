@@ -86,7 +86,4 @@ It is intended to help students work with AI in a way that resembles professiona
 
 ## Definition of Done
 
-- [ ] Logging is available across the application
-- [ ] Automated tests cover core behavior
-- [ ] Setup and run instructions exist
-- [ ] Build, test, and release pipeline is documented
+See [DEFINITION_OF_DONE.md](../DEFINITION_OF_DONE.md).

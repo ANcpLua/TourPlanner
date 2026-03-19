@@ -1,13 +1,13 @@
 services:
   postgres:
-    container_name: tourplanner-postgres
+    container_name: ${COMPOSE_PROJECT_NAME:-tourplanner}-postgres
     image: postgres:17.2
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -21,7 +21,7 @@ services:
       - tourplanner-network
 
   pgadmin:
-    container_name: tourplanner-pgadmin
+    container_name: ${COMPOSE_PROJECT_NAME:-tourplanner}-pgadmin
     image: dpage/pgadmin4:8.3
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
@@ -31,7 +31,7 @@ services:
       PGADMIN_CONFIG_WTF_CSRF_CHECK_DEFAULT: "False"
       GUNICORN_TIMEOUT: "300"
     ports:
-      - "5050:80"
+      - "${PGADMIN_PORT:-5050}:80"
     depends_on:
       - postgres
     restart: unless-stopped
@@ -39,7 +39,7 @@ services:
       - tourplanner-network
 
   api:
-    container_name: tourplanner-api
+    container_name: ${COMPOSE_PROJECT_NAME:-tourplanner}-api
     build:
       context: .
       dockerfile: Dockerfile
@@ -48,7 +48,7 @@ services:
       postgres:
         condition: service_healthy
     ports:
-      - "7102:80"
+      - "${API_PORT:-7102}:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:80
@@ -61,7 +61,7 @@ services:
       - tourplanner-network
 
   ui:
-    container_name: tourplanner-ui
+    container_name: ${COMPOSE_PROJECT_NAME:-tourplanner}-ui
     build:
       context: .
       dockerfile: Dockerfile
@@ -69,7 +69,7 @@ services:
     depends_on:
       - api
     ports:
-      - "7226:80"
+      - "${UI_PORT:-7226}:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - AppSettings__ApiBaseUrl=http://localhost:7102

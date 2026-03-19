@@ -9,6 +9,7 @@ public class BusinessLogicModule(IConfiguration configuration) : Autofac.Module
 {
     protected override void Load(ContainerBuilder builder)
     {
+        builder.RegisterType<RouteService>().As<IRouteService>().InstancePerLifetimeScope();
         builder.RegisterType<TourService>().As<ITourService>().InstancePerLifetimeScope();
         builder.RegisterType<TourLogService>().As<ITourLogService>().InstancePerLifetimeScope();
         builder.RegisterType<FileService>().As<IFileService>().InstancePerLifetimeScope();

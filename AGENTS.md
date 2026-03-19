@@ -1,0 +1,33 @@
+- The solution must be split into exactly these projects: `UI.Client`, `API`, `BL`, `DAL`, `Contracts`, `Tests`.
+- `UI.Client` must be implemented as a standalone Blazor WebAssembly app.
+- `UI.Client` must use the current `.NET 10` PWA host conventions.
+- `UI.Client` owns UI state, components, pages, navigation, and ViewModels.
+- `UI.Client` must not reference `BL` or `DAL`.
+- `API` owns HTTP endpoints, transport validation, and API documentation.
+- `API` must not use models from `UI.Client`.
+- `API` must expose an OpenAPI document using modern `.NET 10` APIs.
+- `API` must use `.NET 10` validation support at the HTTP boundary.
+- `BL` owns business rules and orchestration logic.
+- `BL` must not depend on `UI.Client`.
+- `DAL` owns persistence and external system access.
+- `DAL` must not expose persistence entities to `UI.Client`.
+- `Contracts` owns shared transport models only.
+- `Contracts` must not contain UI logic, persistence logic, or business orchestration.
+- Secrets must not be stored in the client.
+- External services requiring secrets must be accessed through the backend.
+- JSON handling must use `System.Text.Json`.
+- Time access must use `TimeProvider`.
+- The frontend must communicate only with the backend and never directly with protected third-party services.
+- The application must support tour CRUD.
+- The application must support tour log CRUD.
+- The application must support route calculation.
+- The application must support route visualization on a map.
+- The application must support PDF report generation.
+- The application must support import and export.
+- Tests must be present for the main behaviors of each relevant layer.
+- The repository must include setup instructions.
+- The repository must include build and test instructions.
+- Students must be able to explain which project owns which responsibility.
+- Students must be able to justify why a model belongs to `UI.Client`, `Contracts`, `BL`, or `DAL`.
+- Review must explicitly check ownership violations between layers.
+- Review must explicitly check whether `.NET 10` features were adopted correctly instead of older scaffolding patterns.

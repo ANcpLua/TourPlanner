@@ -1,7 +1,8 @@
 using BL.DomainModel;
+using Contracts.TourLogs;
+using Contracts.Tours;
 using DAL.PersistenceModel;
 using Mapster;
-using UI.Model;
 
 namespace BL.Mapper;
 
@@ -26,9 +27,9 @@ public static class MappingConfiguration
             .NewConfig<TourDomain, TourPersistence>()
             .Map(static dest => dest.TourLogPersistence, static src => src.Logs);
 
-        config.NewConfig<TourDomain, Tour>().Map(static dest => dest.TourLogs, static src => src.Logs);
+        config.NewConfig<TourDomain, TourDto>().Map(static dest => dest.TourLogs, static src => src.Logs);
 
-        config.NewConfig<Tour, TourDomain>().Map(static dest => dest.Logs, static src => src.TourLogs);
+        config.NewConfig<TourDto, TourDomain>().Map(static dest => dest.Logs, static src => src.TourLogs);
     }
 
     private static void ConfigureTourLogMappings(TypeAdapterConfig config)
@@ -42,11 +43,11 @@ public static class MappingConfiguration
             .Map(static dest => dest.TourDomainId, static src => src.TourPersistenceId);
 
         config
-            .NewConfig<TourLogDomain, TourLog>()
+            .NewConfig<TourLogDomain, TourLogDto>()
             .Map(static dest => dest.TourId, static src => src.TourDomainId);
 
         config
-            .NewConfig<TourLog, TourLogDomain>()
+            .NewConfig<TourLogDto, TourLogDomain>()
             .Map(static dest => dest.TourDomainId, static src => src.TourId);
     }
 }

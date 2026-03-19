@@ -1,4 +1,5 @@
 using Autofac;
+using DAL.Adapter;
 using DAL.Infrastructure;
 using DAL.Interface;
 using DAL.Repository;
@@ -16,7 +17,7 @@ public class PostgreContextModule(IConfiguration configuration) : Autofac.Module
             {
                 var connectionString = configuration.GetConnectionString("TourPlannerDatabase");
                 var dbOptions = new DbContextOptionsBuilder<TourPlannerContext>()
-                    .UseNpgsql(connectionString)
+                    .UseNpgsql(connectionString, npgsqlOptions => npgsqlOptions.EnableRetryOnFailure())
                     .Options;
                 return new TourPlannerContext(dbOptions);
             })
@@ -27,5 +28,6 @@ public class PostgreContextModule(IConfiguration configuration) : Autofac.Module
             .RegisterType<TourLogRepository>()
             .As<ITourLogRepository>()
             .InstancePerLifetimeScope();
+        builder.RegisterType<OpenRouteServiceRepository>().As<IRouteRepository>().InstancePerLifetimeScope();
     }
 }
