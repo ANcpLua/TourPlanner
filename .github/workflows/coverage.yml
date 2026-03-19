@@ -32,7 +32,7 @@ jobs:
 
       - name: Run tests with coverage (MTP + coverlet)
         run: |
-          ./Test/bin/Release/net10.0/Test \
+          ./Tests/bin/Release/net10.0/Test \
             --coverlet --coverlet-output-format cobertura \
             --coverlet-output TestResults/coverage.cobertura.xml
 
