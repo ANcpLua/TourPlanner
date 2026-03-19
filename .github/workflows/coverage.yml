@@ -37,7 +37,7 @@ jobs:
             --coverlet-output TestResults/coverage.cobertura.xml
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5.5
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./TestResults/coverage.cobertura.xml
