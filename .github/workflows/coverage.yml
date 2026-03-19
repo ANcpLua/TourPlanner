@@ -12,10 +12,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.0.x'
 
@@ -37,7 +37,7 @@ jobs:
             --coverlet-output TestResults/coverage.cobertura.xml
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v5.5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./TestResults/coverage.cobertura.xml
