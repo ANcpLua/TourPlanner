@@ -34,6 +34,11 @@ jobs:
         run: |
           ./Tests/bin/Release/net10.0/Tests \
             --coverlet --coverlet-output-format cobertura \
+            --coverlet-include "[API]*" \
+            --coverlet-include "[BL]*" \
+            --coverlet-include "[DAL]*" \
+            --coverlet-include "[Contracts]*" \
+            --coverlet-include "[UI]*" \
             --coverlet-exclude-by-file "**/Program.cs" \
             --coverlet-exclude-by-file "**/*.g.cs" \
             --coverlet-exclude-by-file "**/*.g.i.cs" \
@@ -44,6 +49,11 @@ jobs:
             --coverlet-exclude-by-attribute GeneratedCodeAttribute \
             --coverlet-exclude-by-attribute CompilerGeneratedAttribute \
             --results-directory TestResults
+
+      - name: Fix coverage paths for Codecov
+        run: |
+          sed -i 's|<source>/</source>|<source>${{ github.workspace }}</source>|' TestResults/coverage.cobertura.xml
+          sed -i 's|filename="home/runner/work/TourPlanner/TourPlanner/|filename="|g' TestResults/coverage.cobertura.xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
