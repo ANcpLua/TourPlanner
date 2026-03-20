@@ -1,7 +1,7 @@
 using UI.View.TourComponents;
 using UI.ViewModel;
 
-namespace Test.UI.View;
+namespace Tests.UI.View;
 
 [TestFixture]
 [Parallelizable(ParallelScope.All)]

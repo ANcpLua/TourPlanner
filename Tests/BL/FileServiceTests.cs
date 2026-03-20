@@ -2,7 +2,7 @@
 using BL.Interface;
 using BL.Service;
 
-namespace Test.BL;
+namespace Tests.BL;
 
 [TestFixture]
 public class FileServiceTests

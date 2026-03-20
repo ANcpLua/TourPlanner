@@ -54,6 +54,7 @@
         <MoqVersion>4.20.72</MoqVersion>
         <NUnitVersion>4.4.0</NUnitVersion>
         <NUnitAnalyzersVersion>4.9.1</NUnitAnalyzersVersion>
+
         <NUnit3TestAdapterVersion>6.1.0</NUnit3TestAdapterVersion>
 
         <!-- HTTP Resilience -->

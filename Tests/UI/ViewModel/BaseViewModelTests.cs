@@ -1,7 +1,7 @@
 ﻿using UI.Service.Interface;
 using UI.ViewModel.Base;
 
-namespace Test.UI.ViewModel;
+namespace Tests.UI.ViewModel;
 
 [TestFixture]
 public class BaseViewModelTests

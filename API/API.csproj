@@ -5,7 +5,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="Test"/>
+        <InternalsVisibleTo Include="Tests"/>
     </ItemGroup>
 
 

@@ -4,7 +4,7 @@ using DAL.Interface;
 using DAL.Module;
 using DAL.Repository;
 
-namespace Test.DAL;
+namespace Tests.DAL;
 
 [TestFixture]
 public class PostgreContextModuleTests

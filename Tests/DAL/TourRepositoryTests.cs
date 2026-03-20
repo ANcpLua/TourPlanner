@@ -2,7 +2,7 @@
 using DAL.Repository;
 using Microsoft.EntityFrameworkCore;
 
-namespace Test.DAL;
+namespace Tests.DAL;
 
 [TestFixture]
 public class TourRepositoryTests

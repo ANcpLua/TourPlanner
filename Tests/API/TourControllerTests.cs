@@ -5,7 +5,7 @@ using Contracts.Tours;
 using MapsterMapper;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Test.API;
+namespace Tests.API;
 
 [TestFixture]
 public class TourControllerTests

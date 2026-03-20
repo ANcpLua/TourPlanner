@@ -4,7 +4,7 @@ using DAL.Interface;
 using DAL.PersistenceModel;
 using MapsterMapper;
 
-namespace Test.BL;
+namespace Tests.BL;
 
 [TestFixture]
 public class TourServiceTests

@@ -6,7 +6,7 @@ using MapsterMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Test.API;
+namespace Tests.API;
 
 [TestFixture]
 public class TourLogControllerTests

@@ -4,7 +4,7 @@ using Contracts.Tours;
 using MapsterMapper;
 using Microsoft.AspNetCore.Http.HttpResults;
 
-namespace Test.API;
+namespace Tests.API;
 
 [TestFixture]
 public class ReportEndpointsTests

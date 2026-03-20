@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <AssemblyName>Test</AssemblyName>
+        <AssemblyName>Tests</AssemblyName>
         <IsTestProject>true</IsTestProject>
         <OutputType>Exe</OutputType>
-        <RootNamespace>Test</RootNamespace>
+        <RootNamespace>Tests</RootNamespace>
         <EnableNUnitRunner>true</EnableNUnitRunner>
         <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
         <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
@@ -21,8 +21,8 @@
         <PackageReference Include="BlazorDownloadFileFast"/>
         <PackageReference Include="bunit"/>
         <PackageReference Include="Moq"/>
-        <PackageReference Include="NUnit3TestAdapter"/>
         <PackageReference Include="NUnit"/>
+        <PackageReference Include="NUnit3TestAdapter"/>
         <PackageReference Include="NUnit.Analyzers">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

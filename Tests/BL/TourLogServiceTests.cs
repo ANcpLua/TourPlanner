@@ -5,7 +5,7 @@ using DAL.PersistenceModel;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 
-namespace Test.BL;
+namespace Tests.BL;
 
 [TestFixture]
 public class TourLogServiceTests

@@ -5,7 +5,7 @@ using Contracts.Tours;
 using DAL.PersistenceModel;
 using MapsterMapper;
 
-namespace Test.BL;
+namespace Tests.BL;
 
 [TestFixture]
 public class MappingConfigurationTests

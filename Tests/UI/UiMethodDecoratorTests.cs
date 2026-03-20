@@ -3,7 +3,7 @@ using UI.Decorator;
 using UI.Service.Interface;
 using UI.ViewModel.Base;
 
-namespace Test.UI;
+namespace Tests.UI;
 
 [TestFixture]
 public class UiMethodDecoratorTests

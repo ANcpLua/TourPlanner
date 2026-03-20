@@ -2,7 +2,7 @@
 using UI.Service.Interface;
 using UI.ViewModel;
 
-namespace Test.UI.ViewModel;
+namespace Tests.UI.ViewModel;
 
 [TestFixture]
 public class TourLogViewModelTests

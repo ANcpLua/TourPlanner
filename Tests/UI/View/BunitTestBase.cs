@@ -3,7 +3,7 @@ using UI.Service.Interface;
 using UI.ViewModel;
 using IComponent = Microsoft.AspNetCore.Components.IComponent;
 
-namespace Test.UI.View;
+namespace Tests.UI.View;
 
 public abstract class BunitTestBase : IDisposable
 {

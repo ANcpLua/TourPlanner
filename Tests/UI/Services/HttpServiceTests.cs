@@ -2,7 +2,7 @@
 using UI.Service;
 using UI.Service.Interface;
 
-namespace Test.UI.Services;
+namespace Tests.UI.Services;
 
 [TestFixture]
 public class HttpServiceTests

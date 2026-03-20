@@ -4,7 +4,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace Test.BL;
+namespace Tests.BL;
 
 [TestFixture]
 public class PdfReportServiceTests

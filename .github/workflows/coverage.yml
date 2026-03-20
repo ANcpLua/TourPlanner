@@ -32,13 +32,13 @@ jobs:
 
       - name: Run tests with coverage (MTP + coverlet)
         run: |
-          ./Tests/bin/Release/net10.0/Test \
+          ./Tests/bin/Release/net10.0/Tests \
             --coverlet --coverlet-output-format cobertura \
-            --coverlet-output TestResults/coverage.cobertura.xml
+            --results-directory TestResults
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./TestResults/coverage.cobertura.xml
+          directory: ./TestResults
           fail_ci_if_error: true

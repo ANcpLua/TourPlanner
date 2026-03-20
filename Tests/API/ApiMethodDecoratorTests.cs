@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using API.AOP;
 
-namespace Test.API;
+namespace Tests.API;
 
 [TestFixture]
 public class ApiMethodDecoratorTests

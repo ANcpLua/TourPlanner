@@ -3,7 +3,7 @@ using UI.View.Pages;
 using UI.View.TourComponents;
 using UI.ViewModel;
 
-namespace Test.UI.View;
+namespace Tests.UI.View;
 
 [TestFixture]
 [FixtureLifeCycle(LifeCycle.InstancePerTestCase)]

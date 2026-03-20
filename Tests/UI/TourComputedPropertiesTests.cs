@@ -1,6 +1,6 @@
 ﻿using UI.Model;
 
-namespace Test.UI;
+namespace Tests.UI;
 
 [TestFixture]
 public class TourComputedPropertiesTests

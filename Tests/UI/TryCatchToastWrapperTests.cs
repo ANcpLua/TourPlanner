@@ -1,7 +1,7 @@
 ﻿using UI.Decorator;
 using UI.Service.Interface;
 
-namespace Test.UI;
+namespace Tests.UI;
 
 [TestFixture]
 public class TryCatchToastWrapperTests

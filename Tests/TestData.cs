@@ -7,7 +7,7 @@ using UI.Model;
 using UI.Service.Interface;
 using UI.ViewModel;
 
-namespace Test;
+namespace Tests;
 
 public static class TestData
 {

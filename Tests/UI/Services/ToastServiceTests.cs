@@ -1,6 +1,6 @@
 ﻿using ToastService = UI.Service.ToastService;
 
-namespace Test.UI.Services;
+namespace Tests.UI.Services;
 
 [TestFixture]
 public class ToastServiceTests

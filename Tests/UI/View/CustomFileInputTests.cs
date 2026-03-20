@@ -1,4 +1,4 @@
-﻿namespace Test.UI.View;
+﻿namespace Tests.UI.View;
 
 [TestFixture]
 [Parallelizable(ParallelScope.All)]

@@ -4,7 +4,7 @@ using BL.Module;
 using DAL.Interface;
 using MapsterMapper;
 
-namespace Test.BL;
+namespace Tests.BL;
 
 [TestFixture]
 public class BusinessLogicModuleTests

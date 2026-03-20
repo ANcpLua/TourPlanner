@@ -2,7 +2,7 @@
 using Contracts.Routes;
 using UI.Service;
 
-namespace Test.UI.Services;
+namespace Tests.UI.Services;
 
 [TestFixture]
 public class RouteApiServiceTests
