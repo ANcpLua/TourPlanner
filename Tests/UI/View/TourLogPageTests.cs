@@ -1,4 +1,3 @@
-using UI.Service.Interface;
 using UI.View.Pages;
 using UI.ViewModel;
 
@@ -9,7 +8,7 @@ namespace Tests.UI.View;
 [FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public sealed class TourLogPageTests : BunitTestBase
 {
-    protected override void OnSetup() => Services.WithTours(2);
+    protected override void OnSetup() => Services.WithTours();
 
     [Test]
     public void RendersInitialStructure()

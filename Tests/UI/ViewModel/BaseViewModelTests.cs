@@ -1,4 +1,4 @@
-﻿using UI.Decorator;
+using UI.Decorator;
 using UI.Service.Interface;
 using UI.ViewModel.Base;
 
@@ -10,17 +10,15 @@ public class BaseViewModelTests
     [SetUp]
     public void Setup()
     {
-        _mockHttpService = new Mock<IHttpService>();
         _mockToastService = new Mock<IToastServiceWrapper>();
         _viewModel = new TestViewModel(
-            _mockHttpService.Object, _mockToastService.Object, TestData.MockTryCatchToastWrapper());
+            new HttpClient(), _mockToastService.Object, TestData.MockTryCatchToastWrapper());
     }
 
-    private Mock<IHttpService> _mockHttpService = null!;
     private Mock<IToastServiceWrapper> _mockToastService = null!;
     private TestViewModel _viewModel = null!;
 
-    private class TestViewModel(IHttpService http, IToastServiceWrapper toast, TryCatchToastWrapper wrapper)
+    private sealed class TestViewModel(HttpClient http, IToastServiceWrapper toast, TryCatchToastWrapper wrapper)
         : BaseViewModel(http, toast, wrapper)
     {
         public new void OnPropertyChanged(string? propertyName = null)
@@ -34,7 +32,6 @@ public class BaseViewModelTests
     {
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(_viewModel.HttpService, Is.Not.Null);
             Assert.That(_viewModel.ToastServiceWrapper, Is.Not.Null);
             Assert.That(_viewModel.IsProcessing, Is.False);
         }
@@ -63,36 +60,6 @@ public class BaseViewModelTests
     }
 
     [Test]
-    public void Process_WhenAlreadyProcessing_ReturnsDefault()
-    {
-        _viewModel.IsProcessing = true;
-
-        var result = _viewModel.Process(static () => "test");
-
-        Assert.That(result, Is.Null);
-    }
-
-    [Test]
-    public void Process_WhenNotProcessing_ExecutesAndReturnsResult()
-    {
-        var result = _viewModel.Process(static () => "success");
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(result, Is.EqualTo("success"));
-            Assert.That(_viewModel.IsProcessing, Is.False);
-        }
-    }
-
-    [Test]
-    public void Process_Exception_ResetsIsProcessing()
-    {
-        Assert.Throws<InvalidOperationException>(() =>
-            _viewModel.Process<string>(static () => throw new InvalidOperationException()));
-
-        Assert.That(_viewModel.IsProcessing, Is.False);
-    }
-
-    [Test]
     public void SetProperty_WhenValueChanges_UpdatesAndReturnsTrue()
     {
         var propertyName = string.Empty;
@@ -106,17 +73,4 @@ public class BaseViewModelTests
         }
     }
 
-    [Test]
-    public async Task HandleApiRequestAsync_Success_ReturnsResult()
-    {
-        _mockHttpService.Setup(static h => h.GetAsync<string>("test"))
-            .ReturnsAsync("result");
-
-        var result = await _viewModel.HandleApiRequestAsync(
-            async () => await _viewModel.HttpService.GetAsync<string>("test"),
-            "Error message"
-        );
-
-        Assert.That(result, Is.EqualTo("result"));
-    }
 }

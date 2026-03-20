@@ -13,13 +13,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{437B2A5D-ED8D-4D67-9392-89FB31E6A265}"
 	ProjectSection(SolutionItems) = preProject
 		compose.yaml = compose.yaml
-		init.sql = init.sql
 		Dockerfile = Dockerfile
 		nginx.conf = nginx.conf
-		AGENTS.md = AGENTS.md
 		ARCHITECTURE.md = ARCHITECTURE.md
 		CLAUDE.md = CLAUDE.md
-		POLICY.md = POLICY.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contracts", "Contracts\Contracts.csproj", "{EAF0814F-9AC7-477E-A69C-73D09B2F4A55}"

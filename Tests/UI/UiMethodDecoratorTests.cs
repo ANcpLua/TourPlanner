@@ -8,7 +8,7 @@ namespace Tests.UI;
 [TestFixture]
 public class UiMethodDecoratorTests
 {
-    [SetUp]
+    [SetUp] 
     public void SetUp()
     {
         _decorator = new UiMethodDecorator();
@@ -27,7 +27,7 @@ public class UiMethodDecoratorTests
     public void Init_WithBaseViewModelHavingToastService_SetsToastService()
     {
         var mockViewModel = new Mock<BaseViewModel>(
-            Mock.Of<IHttpService>(),
+            new HttpClient(),
             _mockToastService.Object,
             TestData.MockTryCatchToastWrapper()
         ) { CallBase = true };
@@ -47,13 +47,13 @@ public class UiMethodDecoratorTests
     {
         IToastServiceWrapper? nullToastService = null;
         var mockViewModel = new Mock<BaseViewModel>(
-            Mock.Of<IHttpService>(),
+            new HttpClient(),
             nullToastService!,
             TestData.MockTryCatchToastWrapper()
         ) { CallBase = true };
 
         _decorator.Init(mockViewModel.Object, _testMethod, []);
-        _decorator.OnException(new Exception("test"));
+        _decorator.OnException(new InvalidOperationException("test"));
     }
 
     [Test]
@@ -62,7 +62,7 @@ public class UiMethodDecoratorTests
         var regularObject = new object();
 
         _decorator.Init(regularObject, _testMethod, []);
-        _decorator.OnException(new Exception("test"));
+        _decorator.OnException(new InvalidOperationException("test"));
     }
 
     [Test]
@@ -92,7 +92,7 @@ public class UiMethodDecoratorTests
     public void CompleteLifecycle_WithBaseViewModel_ExecutesAllMethods()
     {
         var mockViewModel = new Mock<BaseViewModel>(
-            Mock.Of<IHttpService>(),
+            new HttpClient(),
             _mockToastService.Object,
             TestData.MockTryCatchToastWrapper()
         ) { CallBase = true };
@@ -122,7 +122,7 @@ public class UiMethodDecoratorTests
     public void Init_WithMethodHavingDeclaringType_SetsMethodNameWithFullTypeName()
     {
         var mockViewModel = new Mock<BaseViewModel>(
-            Mock.Of<IHttpService>(),
+            new HttpClient(),
             _mockToastService.Object,
             TestData.MockTryCatchToastWrapper()
         ) { CallBase = true };
@@ -132,7 +132,7 @@ public class UiMethodDecoratorTests
         mockMethod.Setup(static m => m.DeclaringType).Returns(typeof(UiMethodDecoratorTests));
 
         _decorator.Init(mockViewModel.Object, mockMethod.Object, []);
-        _decorator.OnException(new Exception("test"));
+        _decorator.OnException(new InvalidOperationException("test"));
 
         _mockToastService.Verify(
             static ts => ts.ShowError(It.Is<string>(static msg =>
@@ -145,7 +145,7 @@ public class UiMethodDecoratorTests
     public void Init_WithMethodHavingNullDeclaringType_HandlesNullGracefully()
     {
         var mockViewModel = new Mock<BaseViewModel>(
-            Mock.Of<IHttpService>(),
+            new HttpClient(),
             _mockToastService.Object,
             TestData.MockTryCatchToastWrapper()
         ) { CallBase = true };
@@ -155,7 +155,7 @@ public class UiMethodDecoratorTests
         mockMethod.Setup(static m => m.DeclaringType).Returns((Type?)null);
 
         _decorator.Init(mockViewModel.Object, mockMethod.Object, []);
-        _decorator.OnException(new Exception("test"));
+        _decorator.OnException(new InvalidOperationException("test"));
 
         _mockToastService.Verify(
             static ts => ts.ShowError(It.Is<string>(static msg =>
@@ -172,7 +172,7 @@ public class UiMethodDecoratorTests
         var exception = new InvalidOperationException("Test exception message");
 
         var mockViewModel = new Mock<BaseViewModel>(
-            Mock.Of<IHttpService>(),
+            new HttpClient(),
             _mockToastService.Object,
             TestData.MockTryCatchToastWrapper()
         ) { CallBase = true };
@@ -184,9 +184,9 @@ public class UiMethodDecoratorTests
             _mockLogger.Verify(
                 l => l.Error(
                     exception,
-                    "Exception in {MethodName} with arguments: {@Arguments} after {Duration}ms",
+                    "Exception in {MethodName} ({ArgCount} args) after {Duration}ms",
                     It.Is<string>(s => s.Contains("OnPropertyChanged")),
-                    args,
+                    args.Length,
                     It.IsAny<long>()
                 ),
                 Times.Once

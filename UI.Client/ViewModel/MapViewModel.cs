@@ -10,10 +10,10 @@ namespace UI.ViewModel;
 
 public class MapViewModel(
     IJSRuntime jsRuntime,
-    IHttpService httpService,
+    HttpClient httpClient,
     IToastServiceWrapper toastServiceWrapper,
     TryCatchToastWrapper tryCatchToastWrapper)
-    : BaseViewModel(httpService, toastServiceWrapper, tryCatchToastWrapper)
+    : BaseViewModel(httpClient, toastServiceWrapper, tryCatchToastWrapper)
 {
     public static readonly FrozenDictionary<string, (double Latitude, double Longitude)> Coordinates =
         new Dictionary<string, (double Latitude, double Longitude)>
@@ -57,7 +57,7 @@ public class MapViewModel(
 
     public Task ShowMapAsync()
     {
-        return Process(async () =>
+        return ExecuteAsync(async () =>
         {
             if (!_isMapInitialized)
             {
@@ -76,7 +76,6 @@ public class MapViewModel(
 
             if (fromCoords.HasValue && toCoords.HasValue)
             {
-                await Task.Delay(500);
                 await jsRuntime.InvokeVoidAsync(
                     "TourPlannerMap.setRoute",
                     fromCoords.Value.Latitude,
@@ -85,7 +84,7 @@ public class MapViewModel(
                     toCoords.Value.Longitude
                 );
             }
-        });
+        }, "Error showing map");
     }
 
     public async Task ClearMapAsync()

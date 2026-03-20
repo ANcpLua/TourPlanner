@@ -101,32 +101,35 @@ public class FileServiceTests
 
         var result = _fileService.ExportTourToJson(tourId);
 
-        Assert.That(result, Is.EqualTo(tourWithLargeLogs));
-        Assert.That(result.Logs, Has.Count.EqualTo(10000));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.Not.Null.And.EqualTo(tourWithLargeLogs));
+            Assert.That(result?.Logs, Has.Count.EqualTo(10000));
+        }
         _mockTourService.Verify(s => s.GetTourById(tourId), Times.Once);
     }
 
     [Test]
-    public void ExportTourToJson_InvalidTourId_ThrowsInvalidOperationException()
+    public void ExportTourToJson_InvalidTourId_ReturnsNull()
     {
         var invalidTourId = TestData.NonexistentGuid;
         _mockTourService.Setup(s => s.GetTourById(invalidTourId)).Returns((TourDomain?)null);
 
-        Assert.That(
-            () => _fileService.ExportTourToJson(invalidTourId),
-            Throws.TypeOf<InvalidOperationException>());
+        var result = _fileService.ExportTourToJson(invalidTourId);
+
+        Assert.That(result, Is.Null);
         _mockTourService.Verify(s => s.GetTourById(invalidTourId), Times.Once);
     }
 
     [Test]
-    public void GenerateTourReport_InvalidTourId_ThrowsInvalidOperationException()
+    public void GenerateTourReport_InvalidTourId_ReturnsNull()
     {
         var invalidTourId = TestData.NonexistentGuid;
         _mockTourService.Setup(s => s.GetTourById(invalidTourId)).Returns((TourDomain?)null);
 
-        Assert.That(
-            () => _fileService.GenerateTourReport(invalidTourId),
-            Throws.TypeOf<InvalidOperationException>());
+        var result = _fileService.GenerateTourReport(invalidTourId);
+
+        Assert.That(result, Is.Null);
         _mockTourService.Verify(s => s.GetTourById(invalidTourId), Times.Once);
     }
 
@@ -149,17 +152,15 @@ public class FileServiceTests
     }
 
     [Test]
-    public void ImportTourFromJsonAsync_InvalidJson_DoesNotCreateTour()
+    public async Task ImportTourFromJsonAsync_InvalidJson_ReturnsFalse()
     {
         const string invalidJson = "{invalid json}";
-        _mockTourService
-            .Setup(s => s.CreateTourAsync(It.IsAny<TourDomain>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((TourDomain)null!);
 
-        Assert.That(
-            () => _fileService.ImportTourFromJsonAsync(invalidJson),
-            Throws.TypeOf<JsonException>());
-        _mockTourService.Verify(s => s.CreateTourAsync(It.IsAny<TourDomain>(), It.IsAny<CancellationToken>()),
+        var result = await _fileService.ImportTourFromJsonAsync(invalidJson);
+
+        Assert.That(result, Is.False);
+        _mockTourService.Verify(
+            static s => s.CreateTourAsync(It.IsAny<TourDomain>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 }

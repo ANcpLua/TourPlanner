@@ -10,7 +10,7 @@ public class CookieAuthStateProviderTests
     [Test]
     public async Task GetAuthenticationStateAsync_SuccessfulResponse_ReturnsAuthenticatedState()
     {
-        var json = """{"userId":"test-id","email":"test@example.com"}""";
+        const string json = """{"userId":"test-id","email":"test@example.com"}""";
         var handler = new Mock<HttpMessageHandler>();
         TestData.SetupHttpMessageHandlerSuccess(handler, json);
         var httpClient = new HttpClient(handler.Object) { BaseAddress = new Uri("http://localhost") };
@@ -42,7 +42,7 @@ public class CookieAuthStateProviderTests
     [Test]
     public void NotifyAuthStateChanged_RaisesEvent()
     {
-        var json = """{"userId":"test-id","email":"test@example.com"}""";
+        const string json = """{"userId":"test-id","email":"test@example.com"}""";
         var handler = new Mock<HttpMessageHandler>();
         TestData.SetupHttpMessageHandlerSuccess(handler, json);
         var httpClient = new HttpClient(handler.Object) { BaseAddress = new Uri("http://localhost") };

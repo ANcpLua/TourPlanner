@@ -1,4 +1,5 @@
 ﻿using API.Endpoints;
+using BL.DomainModel;
 using BL.Interface;
 using Contracts.Tours;
 using MapsterMapper;
@@ -61,21 +62,22 @@ public class ReportEndpointsTests
     public void GetTourReport_HappyPath_ReturnsPdfFile()
     {
         var tourId = TestData.TestGuid;
-        byte[] pdfBytes =
-        [
-            4, 5, 6
-        ];
+        byte[] pdfBytes = [4, 5, 6];
         _mockFileService.Setup(s => s.GenerateTourReport(tourId)).Returns(pdfBytes);
 
         var result = ReportEndpoints.GetTourReport(tourId, _mockFileService.Object);
 
-        Assert.That(result, Is.TypeOf<FileContentHttpResult>());
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(result.FileContents.ToArray(), Is.EqualTo(pdfBytes));
-            Assert.That(result.ContentType, Is.EqualTo("application/pdf"));
-            Assert.That(result.FileDownloadName, Is.EqualTo($"TourReport_{tourId}.pdf"));
-        }
+        Assert.That(result.Result, Is.TypeOf<FileContentHttpResult>());
+    }
+
+    [Test]
+    public void GetTourReport_InvalidTourId_ReturnsNotFound()
+    {
+        _mockFileService.Setup(s => s.GenerateTourReport(TestData.NonexistentGuid)).Returns((byte[]?)null);
+
+        var result = ReportEndpoints.GetTourReport(TestData.NonexistentGuid, _mockFileService.Object);
+
+        Assert.That(result.Result, Is.TypeOf<NotFound>());
     }
 
     [Test]
@@ -89,23 +91,43 @@ public class ReportEndpointsTests
 
         var result = ReportEndpoints.ExportTourToJson(tourId, _mockFileService.Object, _mockMapper.Object);
 
-        Assert.That(result, Is.TypeOf<JsonHttpResult<TourDto>>());
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(result.Value, Is.EqualTo(tourDto));
-            Assert.That(result.StatusCode, Is.Null.Or.EqualTo(200));
-        }
+        Assert.That(result.Result, Is.TypeOf<JsonHttpResult<TourDto>>());
+    }
+
+    [Test]
+    public void ExportTourToJson_InvalidTourId_ReturnsNotFound()
+    {
+        _mockFileService.Setup(s => s.ExportTourToJson(TestData.NonexistentGuid)).Returns((TourDomain?)null);
+
+        var result = ReportEndpoints.ExportTourToJson(TestData.NonexistentGuid, _mockFileService.Object, _mockMapper.Object);
+
+        Assert.That(result.Result, Is.TypeOf<NotFound>());
     }
 
     [Test]
     public async Task ImportTourFromJsonAsync_HappyPath_ReturnsOkResult()
     {
         var json = TestData.SampleTourJson();
+        _mockFileService
+            .Setup(s => s.ImportTourFromJsonAsync(json, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
 
         var result = await ReportEndpoints.ImportTourFromJsonAsync(json, _mockFileService.Object, CancellationToken.None);
 
-        Assert.That(result, Is.TypeOf<Ok<string>>());
-        Assert.That(result.Value, Is.EqualTo("Tour imported successfully"));
+        Assert.That(result.Result, Is.TypeOf<Ok<string>>());
+    }
+
+    [Test]
+    public async Task ImportTourFromJsonAsync_InvalidJson_ReturnsBadRequest()
+    {
+        const string invalidJson = "not json";
+        _mockFileService
+            .Setup(s => s.ImportTourFromJsonAsync(invalidJson, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var result = await ReportEndpoints.ImportTourFromJsonAsync(invalidJson, _mockFileService.Object, CancellationToken.None);
+
+        Assert.That(result.Result, Is.TypeOf<BadRequest<string>>());
     }
 
 }

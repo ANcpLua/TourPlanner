@@ -100,9 +100,13 @@ Cookie-based auth via ASP.NET Core Identity. All tour and log data is scoped to 
 
 | Endpoint              | Description              |
 |-----------------------|--------------------------|
-| `POST /api/auth/register` | Create account       |
-| `POST /api/auth/login`    | Sign in (sets cookie)|
-| `POST /api/auth/logout`   | Sign out             |
-| `GET  /api/auth/me`       | Current user info    |
+| `POST /api/account/register` | Create account       |
+| `POST /api/account/login`    | Sign in (sets cookie)|
+| `POST /api/account/logout`   | Sign out             |
+| `GET  /api/account/me`       | Current user info    |
 
 All other API endpoints require authentication (return 401 without a valid session cookie).
+
+## AI Policy
+
+AI may be used as a pair-programming and review assistant. Every submitted change must be understood by the student who submits it. Students must be able to explain what changed, why, and which project owns the responsibility.

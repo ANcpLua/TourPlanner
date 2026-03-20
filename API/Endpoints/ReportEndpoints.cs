@@ -16,7 +16,7 @@ public static class ReportEndpoints
 
     public static IEndpointRouteBuilder MapReportEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var reports = endpoints.MapGroup("/api/reports").WithTags("Reports").RequireAuthorization();
+        var reports = endpoints.MapGroup("/api/reports").WithTags("Reports");
         reports.MapGet("/summary", GetSummaryReport);
         reports.MapGet("/tour/{tourId:guid}", GetTourReport);
         reports.MapGet("/export/{tourId:guid}", ExportTourToJson);
@@ -32,30 +32,34 @@ public static class ReportEndpoints
         return TypedResults.File(report, "application/pdf", "SummaryReport.pdf");
     }
 
-    internal static FileContentHttpResult GetTourReport(
+    internal static Results<FileContentHttpResult, NotFound> GetTourReport(
         Guid tourId,
         IFileService fileService)
     {
         var report = fileService.GenerateTourReport(tourId);
-        return TypedResults.File(report, "application/pdf", $"TourReport_{tourId}.pdf");
+        return report is null
+            ? TypedResults.NotFound()
+            : TypedResults.File(report, "application/pdf", $"TourReport_{tourId}.pdf");
     }
 
-    internal static JsonHttpResult<TourDto> ExportTourToJson(
+    internal static Results<JsonHttpResult<TourDto>, NotFound> ExportTourToJson(
         Guid tourId,
         IFileService fileService,
         IMapper mapper)
     {
-        var tourDomain = fileService.ExportTourToJson(tourId);
-        var tourDto = mapper.Map<TourDto>(tourDomain);
-        return TypedResults.Json(tourDto, ExportJsonOptions);
+        if (fileService.ExportTourToJson(tourId) is not { } tourDomain)
+            return TypedResults.NotFound();
+
+        return TypedResults.Json(mapper.Map<TourDto>(tourDomain), ExportJsonOptions);
     }
 
-    internal static async Task<Ok<string>> ImportTourFromJsonAsync(
+    internal static async Task<Results<Ok<string>, BadRequest<string>>> ImportTourFromJsonAsync(
         string json,
         IFileService fileService,
         CancellationToken cancellationToken)
     {
-        await fileService.ImportTourFromJsonAsync(json, cancellationToken);
-        return TypedResults.Ok("Tour imported successfully");
+        return await fileService.ImportTourFromJsonAsync(json, cancellationToken)
+            ? TypedResults.Ok("Tour imported successfully")
+            : TypedResults.BadRequest("Invalid or empty tour data.");
     }
 }

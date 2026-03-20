@@ -1,11 +1,8 @@
 @page "/login"
-@using System.Net.Http.Json
 @using Contracts.Auth
-@using UI.Auth
+@using UI.ViewModel
 @attribute [AllowAnonymous]
-@inject HttpClient Http
-@inject NavigationManager Navigation
-@inject CookieAuthenticationStateProvider AuthStateProvider
+@inject AuthViewModel AuthViewModel
 
 <div class="tour-planner-app">
     <div class="container-fluid tour-planner-container">
@@ -14,9 +11,9 @@
                 <PageTitle>Login</PageTitle>
                 <h2 class="text-center mb-4">Login</h2>
 
-                @if (!string.IsNullOrEmpty(_errorMessage))
+                @if (!string.IsNullOrEmpty(AuthViewModel.ErrorMessage))
                 {
-                    <div class="alert alert-danger">@_errorMessage</div>
+                    <div class="alert alert-danger">@AuthViewModel.ErrorMessage</div>
                 }
 
                 <EditForm Model="_model" OnValidSubmit="HandleLogin" FormName="login">
@@ -31,8 +28,8 @@
                         <label class="form-label">Password</label>
                         <InputText @bind-Value="_model.Password" class="form-control" type="password"/>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100" disabled="@_isLoading">
-                        @(_isLoading ? "Logging in..." : "Login")
+                    <button type="submit" class="btn btn-primary w-100" disabled="@AuthViewModel.IsProcessing">
+                        @(AuthViewModel.IsProcessing ? "Logging in..." : "Login")
                     </button>
                 </EditForm>
 
@@ -46,34 +43,9 @@
 
 @code {
     private readonly LoginRequest _model = new() { Email = "", Password = "" };
-    private string? _errorMessage;
-    private bool _isLoading;
 
-    private async Task HandleLogin()
-    {
-        _isLoading = true;
-        _errorMessage = null;
+    protected override void OnInitialized() =>
+        AuthViewModel.PropertyChanged += (_, _) => InvokeAsync(StateHasChanged);
 
-        try
-        {
-            var response = await Http.PostAsJsonAsync("api/auth/login", _model);
-            if (response.IsSuccessStatusCode)
-            {
-                AuthStateProvider.NotifyAuthStateChanged();
-                Navigation.NavigateTo("/");
-            }
-            else
-            {
-                _errorMessage = "Invalid email or password.";
-            }
-        }
-        catch
-        {
-            _errorMessage = "Unable to reach the server.";
-        }
-        finally
-        {
-            _isLoading = false;
-        }
-    }
+    private Task HandleLogin() => AuthViewModel.LoginAsync(_model);
 }

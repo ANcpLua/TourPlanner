@@ -1,4 +1,3 @@
-using UI.Service.Interface;
 using UI.ViewModel;
 
 namespace Tests.UI.View;
@@ -22,7 +21,7 @@ public sealed class SearchComponentTests : BunitTestBase
         Services.ViewModel<SearchViewModel>().SearchText = "test";
         var cut = RenderComponent<SearchComponent>();
         await cut.Find("input.search-input").KeyUpAsync(new KeyboardEventArgs { Key = "Enter" });
-        cut.WaitForAssertion(() =>
+        await cut.WaitForAssertionAsync(() =>
             Assert.That(cut.FindAll("div.tour-search"), Has.Count.GreaterThan(0)));
     }
 

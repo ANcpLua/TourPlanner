@@ -10,21 +10,18 @@ namespace API.AOP;
                 AttributeTargets.Module)]
 public class ApiMethodDecorator : Attribute, IMethodDecorator
 {
-    private object[] _args = [];
+    // Fody instantiates per call — mutable fields are safe here
     private ILogger _logger = Log.Logger;
     private string _methodName = "";
+    private int _argCount;
     private Stopwatch _stopwatch = new();
 
     public void Init(object instance, MethodBase method, object[] args)
     {
         _logger = Log.Logger;
         _methodName = $"{method.DeclaringType?.FullName}.{method.Name}";
-        _args = args;
-        _logger.Information(
-            "Entering {MethodName} with arguments: {@Arguments}",
-            _methodName,
-            args
-        );
+        _argCount = args.Length;
+        _logger.Information("Entering {MethodName} ({ArgCount} args)", _methodName, _argCount);
         _stopwatch = Stopwatch.StartNew();
     }
 
@@ -38,8 +35,7 @@ public class ApiMethodDecorator : Attribute, IMethodDecorator
         _logger.Information(
             "Exiting {MethodName} after {Duration}ms",
             _methodName,
-            _stopwatch.ElapsedMilliseconds
-        );
+            _stopwatch.ElapsedMilliseconds);
     }
 
     public void OnException(Exception exception)
@@ -47,10 +43,9 @@ public class ApiMethodDecorator : Attribute, IMethodDecorator
         _stopwatch.Stop();
         _logger.Error(
             exception,
-            "Exception in {MethodName} with arguments: {@Arguments} after {Duration}ms",
+            "Exception in {MethodName} ({ArgCount} args) after {Duration}ms",
             _methodName,
-            _args,
-            _stopwatch.ElapsedMilliseconds
-        );
+            _argCount,
+            _stopwatch.ElapsedMilliseconds);
     }
 }

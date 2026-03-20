@@ -9,11 +9,11 @@ public static class AuthEndpoints
 {
     public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var auth = endpoints.MapGroup("/api/auth").WithTags("Auth");
-        auth.MapPost("/register", RegisterAsync);
-        auth.MapPost("/login", LoginAsync);
-        auth.MapPost("/logout", LogoutAsync).RequireAuthorization();
-        auth.MapGet("/me", GetCurrentUser).RequireAuthorization();
+        var auth = endpoints.MapGroup("/api/account").WithTags("Account");
+        auth.MapPost("/register", RegisterAsync).AllowAnonymous();
+        auth.MapPost("/login", LoginAsync).AllowAnonymous();
+        auth.MapPost("/logout", LogoutAsync);
+        auth.MapGet("/me", GetCurrentUser);
         return endpoints;
     }
 
@@ -34,7 +34,7 @@ public static class AuthEndpoints
         }
 
         await signInManager.SignInAsync(user, isPersistent: true);
-        return Results.Ok(new UserInfo { UserId = user.Id, Email = user.Email! });
+        return Results.Ok(new UserInfo { UserId = user.Id, Email = user.Email });
     }
 
     internal static async Task<IResult> LoginAsync(

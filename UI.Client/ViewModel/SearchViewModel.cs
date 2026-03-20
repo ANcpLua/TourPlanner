@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using UI.Decorator;
@@ -9,11 +10,11 @@ using UI.ViewModel.Base;
 namespace UI.ViewModel;
 
 public class SearchViewModel(
-    IHttpService httpService,
+    HttpClient httpClient,
     IToastServiceWrapper toastServiceWrapper,
     TryCatchToastWrapper tryCatchToastWrapper,
     NavigationManager navigationManager)
-    : BaseViewModel(httpService, toastServiceWrapper, tryCatchToastWrapper)
+    : BaseViewModel(httpClient, toastServiceWrapper, tryCatchToastWrapper)
 {
     public string SearchText
     {
@@ -39,7 +40,7 @@ public class SearchViewModel(
                     return;
                 }
 
-                var tours = await HttpService.GetListAsync<Tour>(
+                var tours = await HttpClient.GetFromJsonAsync<List<Tour>>(
                     $"api/tour/search/{SearchText.Trim()}"
                 );
                 SearchResults = new ObservableCollection<Tour>(tours ?? []);

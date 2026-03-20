@@ -9,8 +9,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Autofac"/>
-        <PackageReference Include="Autofac.Extensions.DependencyInjection"/>
         <PackageReference Include="BlazorDownloadFileFast"/>
         <PackageReference Include="Blazored.Toast"/>
         <PackageReference Include="Fody">
@@ -26,7 +24,6 @@
         <PackageReference Include="Serilog"/>
         <PackageReference Include="Serilog.Extensions.Logging"/>
         <PackageReference Include="Serilog.Sinks.BrowserConsole"/>
-        <PackageReference Include="Serilog.Sinks.File"/>
     </ItemGroup>
 
     <ItemGroup>

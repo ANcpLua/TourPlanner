@@ -82,7 +82,7 @@ public class TourLogServiceTests
     public void GetTourLogById_NonExistingId_ReturnsNull()
     {
         _mockTourLogRepository
-            .Setup(r => r.GetTourLogById(TestData.NonexistentGuid, TestData.TestUserId))
+            .Setup(static r => r.GetTourLogById(TestData.NonexistentGuid, TestData.TestUserId))
             .Returns((TourLogPersistence)null!);
 
         var result = _sut.GetTourLogById(TestData.NonexistentGuid);
@@ -116,7 +116,7 @@ public class TourLogServiceTests
     public void GetTourLogsByTourId_NonExistingTourId_ReturnsEmptyList()
     {
         _mockTourLogRepository
-            .Setup(r => r.GetTourLogsByTourId(TestData.NonexistentGuid, TestData.TestUserId));
+            .Setup(static r => r.GetTourLogsByTourId(TestData.NonexistentGuid, TestData.TestUserId));
         _mockMapper
             .Setup(static m =>
                 m.Map<IEnumerable<TourLogDomain>>(It.IsAny<IEnumerable<TourLogPersistence>>())
@@ -212,11 +212,8 @@ public class TourLogServiceTests
             .Setup(r => r.CreateTourLogAsync(tourLogPersistence, TestData.TestUserId, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new OperationCanceledException());
 
-        using var cts = new CancellationTokenSource();
-        cts.Cancel();
-
         Assert.That(
-            () => _sut.CreateTourLogAsync(tourLogDomain, cts.Token),
+            () => _sut.CreateTourLogAsync(tourLogDomain, new CancellationToken(canceled: true)),
             Throws.TypeOf<OperationCanceledException>());
     }
 

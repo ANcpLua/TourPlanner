@@ -28,9 +28,9 @@ public class ApiMethodDecoratorTests
 
         _mockLogger.Verify(
             l => l.Information(
-                "Entering {MethodName} with arguments: {@Arguments}",
+                "Entering {MethodName} ({ArgCount} args)",
                 $"{typeof(TestApiClass).FullName}.TestMethod",
-                args),
+                args.Length),
             Times.Once);
     }
 
@@ -47,9 +47,9 @@ public class ApiMethodDecoratorTests
 
         _mockLogger.Verify(
             l => l.Information(
-                "Entering {MethodName} with arguments: {@Arguments}",
+                "Entering {MethodName} ({ArgCount} args)",
                 ".MockMethod",
-                args),
+                args.Length),
             Times.Once);
     }
 
@@ -84,9 +84,9 @@ public class ApiMethodDecoratorTests
         _mockLogger.Verify(
             l => l.Error(
                 exception,
-                "Exception in {MethodName} with arguments: {@Arguments} after {Duration}ms",
+                "Exception in {MethodName} ({ArgCount} args) after {Duration}ms",
                 $"{typeof(TestApiClass).FullName}.TestMethod",
-                args,
+                args.Length,
                 It.IsAny<long>()),
             Times.Once);
     }
@@ -116,9 +116,9 @@ public class ApiMethodDecoratorTests
         {
             _mockLogger.Verify(
                 static l => l.Information(
-                    "Entering {MethodName} with arguments: {@Arguments}",
+                    "Entering {MethodName} ({ArgCount} args)",
                     It.IsAny<string>(),
-                    It.IsAny<object[]>()),
+                    It.IsAny<int>()),
                 Times.Once);
 
             _mockLogger.Verify(
@@ -131,15 +131,15 @@ public class ApiMethodDecoratorTests
             _mockLogger.Verify(
                 static l => l.Error(
                     It.IsAny<Exception>(),
-                    "Exception in {MethodName} with arguments: {@Arguments} after {Duration}ms",
+                    "Exception in {MethodName} ({ArgCount} args) after {Duration}ms",
                     It.IsAny<string>(),
-                    It.IsAny<object[]>(),
+                    It.IsAny<int>(),
                     It.IsAny<long>()),
                 Times.Once);
         }
     }
 
-    private class TestApiClass
+    private sealed class TestApiClass
     {
         public static void TestMethod()
         {

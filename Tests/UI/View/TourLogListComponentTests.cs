@@ -1,4 +1,3 @@
-using UI.Service.Interface;
 using UI.View.TourLogComponents;
 using UI.ViewModel;
 
@@ -44,7 +43,7 @@ public sealed class TourLogListComponentTests : BunitTestBase
     {
         Services.WithSingleTourLog();
         var logId = Services.FirstTourLogId();
-        JSInterop.Setup<bool>("confirm", static _ => true).SetResult(confirms);
+        JsInterop.Setup<bool>("confirm", static _ => true).SetResult(confirms);
         if (confirms)
         {
             Services.SetupMockDeleteTourLog(logId);

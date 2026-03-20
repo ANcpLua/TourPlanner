@@ -2,6 +2,7 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using Contracts.Auth;
 using Microsoft.AspNetCore.Components.Authorization;
+using Serilog;
 
 namespace UI.Auth;
 
@@ -14,8 +15,8 @@ public class CookieAuthenticationStateProvider(HttpClient httpClient) : Authenti
     {
         try
         {
-            var user = await httpClient.GetFromJsonAsync<UserInfo>("api/auth/me");
-            if (user is null) return Anonymous;
+            if (await httpClient.GetFromJsonAsync<UserInfo>("api/account/me") is not { } user)
+                return Anonymous;
 
             var identity = new ClaimsIdentity(
             [
@@ -25,8 +26,9 @@ public class CookieAuthenticationStateProvider(HttpClient httpClient) : Authenti
 
             return new AuthenticationState(new ClaimsPrincipal(identity));
         }
-        catch
+        catch (Exception ex)
         {
+            Log.Debug(ex, "Auth state check failed, returning anonymous");
             return Anonymous;
         }
     }

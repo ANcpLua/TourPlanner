@@ -8,7 +8,7 @@ namespace Tests.UI.View;
 [FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public sealed class TourListComponentTests : BunitTestBase
 {
-    protected override void OnSetup() => Services.WithTours(2);
+    protected override void OnSetup() => Services.WithTours();
 
     private IRenderedComponent<TourListComponent> Render() =>
         RenderComponent<TourListComponent>(p => p
@@ -31,7 +31,7 @@ public sealed class TourListComponentTests : BunitTestBase
     public async Task DeleteTour_RespectsConfirmation(bool confirms)
     {
         var id = Services.FirstTourId();
-        JSInterop.Setup<bool>("confirm", static _ => true).SetResult(confirms);
+        JsInterop.Setup<bool>("confirm", static _ => true).SetResult(confirms);
         if (confirms) Services.SetupMockDeleteTour(id);
         await Render().Find("button.btn-danger").ClickAsync(new MouseEventArgs());
         Services.VerifyMockDeleteTour(id, confirms ? Times.Once() : Times.Never());

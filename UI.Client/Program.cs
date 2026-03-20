@@ -6,6 +6,7 @@ using Serilog;
 using UI;
 using UI.Auth;
 using UI.Decorator;
+using UI.Infrastructure;
 using UI.Service;
 using UI.Service.Interface;
 using UI.ViewModel;
@@ -17,7 +18,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 var configuration = builder.Configuration;
 
 builder.Services.AddSingleton(
-    new HttpClient
+    new HttpClient(new BrowserCredentialsDelegatingHandler())
     {
         BaseAddress = new Uri(configuration["AppSettings:ApiBaseUrl"] ?? "https://localhost:7102")
     }
@@ -26,7 +27,6 @@ builder.Services.AddSingleton(
 builder.Services.AddBlazoredToast();
 builder.Services.AddBlazorDownloadFile();
 builder.Services.AddSingleton<IConfiguration>(_ => configuration);
-builder.Services.AddScoped<IHttpService, HttpService>();
 builder.Services.AddScoped<IToastServiceWrapper, ToastService>();
 builder.Services.AddScoped<IRouteApiService, RouteApiService>();
 builder.Services.AddScoped<TryCatchToastWrapper>();
@@ -36,6 +36,7 @@ builder.Services.AddScoped<CookieAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp =>
     sp.GetRequiredService<CookieAuthenticationStateProvider>());
 
+builder.Services.AddScoped<AuthViewModel>();
 builder.Services.AddScoped<TourViewModel>();
 builder.Services.AddScoped<TourLogViewModel>();
 builder.Services.AddScoped<SearchViewModel>();

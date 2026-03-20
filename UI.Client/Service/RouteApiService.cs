@@ -12,8 +12,7 @@ public class RouteApiService(HttpClient httpClient) : IRouteApiService
     public async Task<(double Distance, double Duration)> FetchRouteDataAsync(
         (double Latitude, double Longitude) from,
         (double Latitude, double Longitude) to,
-        string transportType
-    )
+        string transportType)
     {
         var response = await httpClient.PostAsJsonAsync(
             "api/routes/resolve",
@@ -24,8 +23,7 @@ public class RouteApiService(HttpClient httpClient) : IRouteApiService
                 ToLatitude = to.Latitude,
                 ToLongitude = to.Longitude,
                 TransportType = transportType
-            }
-        );
+            });
         response.EnsureSuccessStatusCode();
 
         try

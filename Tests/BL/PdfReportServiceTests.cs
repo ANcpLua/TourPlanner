@@ -136,7 +136,7 @@ public class PdfReportServiceTests
     [Test]
     public void GenerateTourReport_ImageReadThrowsIOException_ShowsErrorGracefully()
     {
-        var service = new PdfReportService(_ => throw new IOException("Disk read error"));
+        var service = new PdfReportService(static _ => throw new IOException("Disk read error"));
         var tour = TestData.SampleTourDomain();
         tour.ImagePath = Path.GetTempFileName();
 

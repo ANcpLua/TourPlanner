@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using Blazor.DownloadFileFast.Interfaces;
@@ -11,11 +12,11 @@ using UI.ViewModel.Base;
 namespace UI.ViewModel;
 
 public class ReportViewModel(
-    IHttpService httpService,
+    HttpClient httpClient,
     IToastServiceWrapper toastServiceWrapper,
     TryCatchToastWrapper tryCatchToastWrapper,
     IBlazorDownloadFileService blazorDownloadFile)
-    : BaseViewModel(httpService, toastServiceWrapper, tryCatchToastWrapper)
+    : BaseViewModel(httpClient, toastServiceWrapper, tryCatchToastWrapper)
 {
     private static readonly JsonSerializerOptions CamelCaseOptions = new()
     {
@@ -55,7 +56,7 @@ public class ReportViewModel(
         return HandleApiRequestAsync(
             async () =>
             {
-                var tours = await HttpService.GetListAsync<Tour>("api/tour");
+                var tours = await HttpClient.GetFromJsonAsync<List<Tour>>("api/tour");
                 Tours = new ObservableCollection<Tour>(tours ?? []);
             },
             "Error loading tours"
@@ -70,36 +71,25 @@ public class ReportViewModel(
     [UiMethodDecorator]
     public Task GenerateDetailedReportAsync()
     {
-        return Process(async () =>
+        return ExecuteAsync(async () =>
         {
-            await HandleApiRequestAsync(
-                async () =>
-                {
-                    if (SelectedDetailedTourId == Guid.Empty) return;
-
-                    await GenerateAndDownloadReport($"api/reports/tour/{SelectedDetailedTourId}", "DetailedReport");
-                },
-                "Error generating detailed report"
-            );
-        });
+            if (SelectedDetailedTourId == Guid.Empty) return;
+            await GenerateAndDownloadReport($"api/reports/tour/{SelectedDetailedTourId}", "DetailedReport");
+        }, "Error generating detailed report");
     }
 
     [UiMethodDecorator]
     public Task GenerateSummaryReportAsync()
     {
-        return Process(async () =>
-        {
-            await HandleApiRequestAsync(
-                async () => await GenerateAndDownloadReport("api/reports/summary", "SummaryReport"),
-                "Error generating summary report"
-            );
-        });
+        return ExecuteAsync(
+            async () => await GenerateAndDownloadReport("api/reports/summary", "SummaryReport"),
+            "Error generating summary report");
     }
 
     [UiMethodDecorator]
     public async Task GenerateAndDownloadReport(string uri, string reportType)
     {
-        var reportBytes = await HttpService.GetByteArrayAsync(uri);
+        var reportBytes = await HttpClient.GetByteArrayAsync(uri);
         var fileName = $"{reportType}_{TimeProvider.System.GetUtcNow().UtcDateTime:yyyyMMdd_HHmmss}.pdf";
         if (reportBytes is null || reportBytes.Length is 0)
         {
@@ -120,29 +110,23 @@ public class ReportViewModel(
     [UiMethodDecorator]
     public Task ExportTourToJsonAsync(Guid tourId)
     {
-        return Process(async () =>
+        return ExecuteAsync(async () =>
         {
-            await HandleApiRequestAsync(
-                async () =>
-                {
-                    var json = await HttpService.GetStringAsync($"api/reports/export/{tourId}");
-                    if (string.IsNullOrEmpty(json))
-                    {
-                        ToastServiceWrapper.ShowError("Error exporting tour: Invalid tour data.");
-                        return;
-                    }
+            var json = await HttpClient.GetStringAsync($"api/reports/export/{tourId}");
+            if (string.IsNullOrEmpty(json))
+            {
+                ToastServiceWrapper.ShowError("Error exporting tour: Invalid tour data.");
+                return;
+            }
 
-                    var fileName = $"Tour_{tourId}_{TimeProvider.System.GetUtcNow().UtcDateTime:yyyyMMdd_HHmmss}.json";
-                    await blazorDownloadFile.DownloadFileAsync(
-                        fileName,
-                        Encoding.UTF8.GetBytes(json),
-                        "application/json"
-                    );
-                    ToastServiceWrapper.ShowSuccess("Tour exported successfully.");
-                },
-                "Error exporting tour"
+            var fileName = $"Tour_{tourId}_{TimeProvider.System.GetUtcNow().UtcDateTime:yyyyMMdd_HHmmss}.json";
+            await blazorDownloadFile.DownloadFileAsync(
+                fileName,
+                Encoding.UTF8.GetBytes(json),
+                "application/json"
             );
-        });
+            ToastServiceWrapper.ShowSuccess("Tour exported successfully.");
+        }, "Error exporting tour");
     }
 
     [UiMethodDecorator]
@@ -170,7 +154,7 @@ public class ReportViewModel(
                     return;
                 }
 
-                await HttpService.PostAsync("api/tour", tour);
+                (await HttpClient.PostAsJsonAsync("api/tour", tour)).EnsureSuccessStatusCode();
                 await LoadToursAsync();
                 ToastServiceWrapper.ShowSuccess("Tour imported successfully.");
             },

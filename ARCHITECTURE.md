@@ -1,58 +1,45 @@
-# Architecture
+ # Architecture
 
 ## Projects
 
-- `UI.Client`
-- `API`
-- `BL`
-- `DAL`
-- `Contracts`
-- `Tests`
+| Project | Responsibility |
+|---------|---------------|
+| `UI.Client` | Blazor WASM, ViewModels, components, pages, navigation, map |
+| `API` | Minimal API endpoints, auth (ASP.NET Core Identity), OpenAPI, transport validation |
+| `BL` | Business rules, orchestration, PDF reports, import/export |
+| `DAL` | EF Core persistence, repositories, external service adapters (OpenRouteService) |
+| `Contracts` | Shared DTOs and request/response models for transport only |
+| `Tests` | Unit tests across all layers (NUnit + bUnit + Moq) |
 
-## Ownership
+## Layer Rules
 
-- `UI.Client`
-  - Views
-  - Components
-  - ViewModels
-  - UI state
-  - client-side validation
-  - navigation
-  - map presentation
+```
+UI.Client  -->  Contracts  <--  API  -->  BL  -->  DAL
+                                          |        |
+                                          +-> Contracts
+```
 
-- `API`
-  - endpoints
-  - request validation at HTTP boundary
-  - transport mapping
-  - OpenAPI
-  - cookie-based authentication (ASP.NET Core Identity)
-  - `IUserContext` implementation (`HttpUserContext`)
-
-- `BL`
-  - business rules
-  - use-case logic
-  - orchestration
-  - report generation coordination
-  - import and export rules
-
-- `DAL`
-  - persistence
-  - database models
-  - repositories
-  - external service adapters
-
-- `Contracts`
-  - DTOs
-  - request and response models
-  - shared enums and value types for transport only
-
-- `Tests`
-  - layer-specific tests
-
-## Rules
-
-- `API` must not reference models from `UI.Client`
-- `UI.Client` must not know `BL` or `DAL` directly
+- `UI.Client` must not reference `BL` or `DAL`
+- `API` must not use models from `UI.Client`
 - `BL` must not depend on `UI.Client`
-- `DAL` must not own UI or HTTP models
-- `Contracts` must not contain business logic
+- `DAL` must not expose persistence entities outside its boundary
+- `Contracts` must not contain business logic, UI logic, or persistence logic
+
+## UI Pattern (MVVM)
+
+- Razor pages are pure templates: `@inject ViewModel`, bind to properties
+- `@code` contains only `OnInitializedAsync` + `PropertyChanged` wiring
+- ViewModels own state, HTTP calls, error handling
+- `BaseViewModel` provides `ExecuteAsync` (busy state + error handling) and `HandleApiRequestAsync` (error handling only)
+- ViewModels call `HttpClient` directly — no service abstraction layer
+
+## Auth
+
+Cookie-based via ASP.NET Core Identity. `CookieAuthenticationStateProvider` checks `/api/account/me`. All tour and log data is user-scoped via `IUserContext`.
+
+## Error Handling
+
+- Single catch point per operation (ViewModel layer via `TryCatchToastWrapper`)
+- HTTP services throw on failure — no silent swallowing
+- `FileService` returns `null`/`bool` for not-found — caller decides HTTP semantics
+- Fody decorators log entry/exit timing and arg count (never arg values)

@@ -7,6 +7,8 @@ namespace Tests.UI.View;
 [FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public sealed class MainLayoutTests : BunitTestBase
 {
+    private static readonly string[] ExpectedNavLinks = ["/", "/log/list", "/reports"];
+
     protected override void OnSetup()
     {
         Context.ComponentFactories.AddStub<SearchComponent>();
@@ -19,7 +21,7 @@ public sealed class MainLayoutTests : BunitTestBase
         var links = cut.FindAll("a.nav-link");
 
         Assert.That(links.Select(static l => l.GetAttribute("href")),
-            Is.EqualTo(new[] { "/", "/log/list", "/reports" }));
+            Is.EqualTo(ExpectedNavLinks));
     }
 
     [Test]

@@ -11,11 +11,11 @@ public class TourPlannerContext(DbContextOptions<TourPlannerContext> options)
     public DbSet<TourPersistence> ToursPersistence { get; set; } = null!;
     public DbSet<TourLogPersistence> TourLogsPersistence { get; set; } = null!;
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder builder)
     {
-        base.OnModelCreating(modelBuilder);
+        base.OnModelCreating(builder);
 
-        modelBuilder.Entity<TourPersistence>(static entity =>
+        builder.Entity<TourPersistence>(static entity =>
         {
             entity.ToTable("Tours");
             entity.HasKey(static t => t.Id);
@@ -37,7 +37,7 @@ public class TourPlannerContext(DbContextOptions<TourPlannerContext> options)
                 .HasForeignKey(static tl => tl.TourPersistenceId);
         });
 
-        modelBuilder.Entity<TourLogPersistence>(static entity =>
+        builder.Entity<TourLogPersistence>(static entity =>
         {
             entity.ToTable("TourLogs");
             entity.HasKey(static tl => tl.Id);

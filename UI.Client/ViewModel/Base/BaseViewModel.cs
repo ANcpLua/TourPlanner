@@ -6,11 +6,11 @@ using UI.Service.Interface;
 namespace UI.ViewModel.Base;
 
 public abstract class BaseViewModel(
-    IHttpService httpService,
+    HttpClient httpClient,
     IToastServiceWrapper toastServiceWrapper,
     TryCatchToastWrapper tryCatchToastWrapper) : INotifyPropertyChanged
 {
-    public IHttpService HttpService { get; } = httpService;
+    protected HttpClient HttpClient { get; } = httpClient;
     public IToastServiceWrapper ToastServiceWrapper { get; } = toastServiceWrapper;
 
     public bool IsProcessing
@@ -26,20 +26,41 @@ public abstract class BaseViewModel(
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    public T Process<T>(Func<T> func)
+    protected async Task ExecuteAsync(Func<Task> action, string errorContext)
     {
-        if (IsProcessing) return default!;
+        if (IsProcessing) return;
 
         try
         {
             IsProcessing = true;
-            return func();
+            await tryCatchToastWrapper.ExecuteAsync(action, errorContext);
         }
         finally
         {
             IsProcessing = false;
         }
     }
+
+    protected async Task<T?> ExecuteAsync<T>(Func<Task<T>> action, string errorContext)
+    {
+        if (IsProcessing) return default;
+
+        try
+        {
+            IsProcessing = true;
+            return await tryCatchToastWrapper.ExecuteAsync(action, errorContext);
+        }
+        finally
+        {
+            IsProcessing = false;
+        }
+    }
+
+    protected Task HandleApiRequestAsync(Func<Task> action, string errorContext) =>
+        tryCatchToastWrapper.ExecuteAsync(action, errorContext);
+
+    protected Task<T?> HandleApiRequestAsync<T>(Func<Task<T>> action, string errorContext) =>
+        tryCatchToastWrapper.ExecuteAsync(action, errorContext);
 
     protected bool SetProperty<T>(
         ref T field,
@@ -50,15 +71,5 @@ public abstract class BaseViewModel(
         field = value;
         OnPropertyChanged(propertyName);
         return true;
-    }
-
-    public Task<T?> HandleApiRequestAsync<T>(Func<Task<T>> apiCall, string errorMessage)
-    {
-        return tryCatchToastWrapper.ExecuteAsync(apiCall, errorMessage);
-    }
-
-    protected Task HandleApiRequestAsync(Func<Task> apiCall, string errorMessage)
-    {
-        return tryCatchToastWrapper.ExecuteAsync(apiCall, errorMessage);
     }
 }

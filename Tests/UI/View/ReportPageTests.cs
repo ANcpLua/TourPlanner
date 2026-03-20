@@ -9,7 +9,7 @@ namespace Tests.UI.View;
 [FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public sealed class ReportPageTests : BunitTestBase
 {
-    protected override void OnSetup() => Services.WithTours(2);
+    protected override void OnSetup() => Services.WithTours();
 
     [Test]
     public void TourDropdown_DisplaysAllTours()

@@ -4,12 +4,10 @@ using BL.DomainModel;
 using BL.Interface;
 using Contracts.TourLogs;
 using MapsterMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/tourlog")]
 public class TourLogController(ITourLogService tourLogService, IMapper mapper) : ControllerBase

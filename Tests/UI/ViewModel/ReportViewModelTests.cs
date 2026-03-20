@@ -10,18 +10,21 @@ public sealed class ReportViewModelTests
     [SetUp]
     public void Setup()
     {
-        _mockHttpService = TestData.MockHttpService();
+        var (client, handler) = TestData.MockedHttpClient();
+        _httpClient = client;
+        _mockHandler = handler;
         _mockToastService = TestData.MockToastService();
         _mockDownloadFileService = TestData.MockBlazorDownloadFileService();
 
         _reportViewModel = new ReportViewModel(
-            _mockHttpService.Object,
+            _httpClient,
             _mockToastService.Object,
             TestData.MockTryCatchToastWrapper(),
             _mockDownloadFileService.Object);
     }
 
-    private Mock<IHttpService> _mockHttpService = null!;
+    private HttpClient _httpClient = null!;
+    private Mock<HttpMessageHandler> _mockHandler = null!;
     private Mock<IToastServiceWrapper> _mockToastService = null!;
     private Mock<IBlazorDownloadFileService> _mockDownloadFileService = null!;
     private ReportViewModel _reportViewModel = null!;
@@ -75,8 +78,8 @@ public sealed class ReportViewModelTests
     [Test]
     public async Task InitializeAsync_LoadsTours()
     {
-        _mockHttpService.Setup(static h => h.GetListAsync<Tour>("api/tour"))
-            .ReturnsAsync(new List<Tour> { TestData.SampleTour() });
+        TestData.SetupHandler(_mockHandler, HttpMethod.Get, "api/tour",
+            JsonSerializer.Serialize(new List<Tour> { TestData.SampleTour() }));
 
         await _reportViewModel.InitializeAsync();
 
@@ -89,7 +92,7 @@ public sealed class ReportViewModelTests
     public async Task GenerateAndDownloadReport_Success(string uri, string reportType)
     {
         byte[] bytes = [1, 2, 3];
-        _mockHttpService.Setup(h => h.GetByteArrayAsync(uri)).ReturnsAsync(bytes);
+        TestData.SetupHandlerBytes(_mockHandler, uri, bytes);
 
         await _reportViewModel.GenerateAndDownloadReport(uri, reportType);
 
@@ -99,9 +102,9 @@ public sealed class ReportViewModelTests
     }
 
     [Test]
-    public async Task GenerateAndDownloadReport_NullBytes_ShowsError()
+    public async Task GenerateAndDownloadReport_EmptyBytes_ShowsError()
     {
-        _mockHttpService.Setup(static h => h.GetByteArrayAsync("uri")).ReturnsAsync((byte[])null!);
+        TestData.SetupHandlerBytes(_mockHandler, "uri", []);
 
         await _reportViewModel.GenerateAndDownloadReport("uri", "Rpt");
 
@@ -123,12 +126,11 @@ public sealed class ReportViewModelTests
     {
         var tourId = Guid.NewGuid();
         _reportViewModel.SelectedDetailedTourId = tourId;
-        _mockHttpService.Setup(h => h.GetByteArrayAsync($"api/reports/tour/{tourId}"))
-            .ReturnsAsync(new byte[] { 7, 7, 7 });
+        TestData.SetupHandlerBytes(_mockHandler, $"api/reports/tour/{tourId}", [7, 7, 7]);
 
         await _reportViewModel.GenerateDetailedReportAsync();
 
-        _mockDownloadFileService.Verify(f => f.DownloadFileAsync(
+        _mockDownloadFileService.Verify(static f => f.DownloadFileAsync(
             It.IsRegex(@"DetailedReport_\d{8}_\d{6}\.pdf"), It.IsAny<byte[]>(), "application/pdf"), Times.Once);
     }
 
@@ -137,7 +139,7 @@ public sealed class ReportViewModelTests
     {
         var id = Guid.NewGuid();
         var json = TestData.SampleTourJson();
-        _mockHttpService.Setup(h => h.GetStringAsync($"api/reports/export/{id}")).ReturnsAsync(json);
+        TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/reports/export/{id}", json);
 
         await _reportViewModel.ExportTourToJsonAsync(id);
 
@@ -151,7 +153,7 @@ public sealed class ReportViewModelTests
     public async Task ExportTourToJsonAsync_Empty_ShowsError()
     {
         var id = Guid.NewGuid();
-        _mockHttpService.Setup(h => h.GetStringAsync($"api/reports/export/{id}")).ReturnsAsync("");
+        TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/reports/export/{id}", "");
 
         await _reportViewModel.ExportTourToJsonAsync(id);
 
@@ -162,14 +164,13 @@ public sealed class ReportViewModelTests
     public async Task ImportTourFromJsonAsync_NewTour_Imports()
     {
         var newTour = TestData.SampleTour();
-        _mockHttpService.Setup(static h => h.PostAsync("api/tour", It.IsAny<Tour>()))
-            .Returns(Task.FromResult(newTour));
-        _mockHttpService.Setup(static h => h.GetListAsync<Tour>("api/tour"))
-            .ReturnsAsync(new List<Tour>());
+        TestData.SetupHandler(_mockHandler, HttpMethod.Post, "api/tour", "{}");
+        TestData.SetupHandler(_mockHandler, HttpMethod.Get, "api/tour", "[]");
 
-        await _reportViewModel.ImportTourFromJsonAsync(TestData.MakeFile(JsonSerializer.Serialize(newTour)));
+        var json = JsonSerializer.Serialize(newTour);
+        await _reportViewModel.ImportTourFromJsonAsync(TestData.MakeFile(json));
 
-        _mockHttpService.Verify(static h => h.PostAsync("api/tour", It.IsAny<Tour>()), Times.Once);
+        TestData.VerifyHandler(_mockHandler, HttpMethod.Post, "api/tour", Times.Once());
         _mockToastService.Verify(static t => t.ShowSuccess("Tour imported successfully."), Times.Once);
     }
 
@@ -177,8 +178,8 @@ public sealed class ReportViewModelTests
     public async Task ImportTourFromJsonAsync_Duplicate_ShowsError()
     {
         var duplicate = TestData.SampleTour();
-        _mockHttpService.Setup(static h => h.GetListAsync<Tour>("api/tour"))
-            .ReturnsAsync(new List<Tour> { duplicate });
+        TestData.SetupHandler(_mockHandler, HttpMethod.Get, "api/tour",
+            JsonSerializer.Serialize(new List<Tour> { duplicate }));
         await _reportViewModel.InitializeAsync();
 
         await _reportViewModel.ImportTourFromJsonAsync(TestData.MakeFile(JsonSerializer.Serialize(duplicate)));

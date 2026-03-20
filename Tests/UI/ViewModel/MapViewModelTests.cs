@@ -10,19 +10,17 @@ public class MapViewModelTests
     public void Setup()
     {
         _mockJsRuntime = TestData.MockJsRuntime();
-        _mockHttpService = TestData.MockHttpService();
         _mockToastService = TestData.MockToastService();
 
         _viewModel = new MapViewModel(
             _mockJsRuntime.Object,
-            _mockHttpService.Object,
+            new HttpClient(),
             _mockToastService.Object,
             TestData.MockTryCatchToastWrapper()
         );
     }
 
     private Mock<IJSRuntime> _mockJsRuntime = null!;
-    private Mock<IHttpService> _mockHttpService = null!;
     private Mock<IToastServiceWrapper> _mockToastService = null!;
     private MapViewModel _viewModel = null!;
 

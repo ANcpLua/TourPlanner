@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Net.Http.Json;
 using Microsoft.JSInterop;
 using UI.Decorator;
 using UI.Model;
@@ -8,11 +9,11 @@ using UI.ViewModel.Base;
 namespace UI.ViewModel;
 
 public class TourLogViewModel(
-    IHttpService httpService,
+    HttpClient httpClient,
     IToastServiceWrapper toastServiceWrapper,
     TryCatchToastWrapper tryCatchToastWrapper,
     IJSRuntime jsRuntime)
-    : BaseViewModel(httpService, toastServiceWrapper, tryCatchToastWrapper)
+    : BaseViewModel(httpClient, toastServiceWrapper, tryCatchToastWrapper)
 {
     private Guid? _selectedTourId;
 
@@ -54,20 +55,6 @@ public class TourLogViewModel(
         SelectedTourLog.Difficulty is >= 1 and <= 5 &&
         SelectedTourLog is { TotalDistance: > 0, TotalTime: > 0, Rating: >= 1 and <= 5 };
 
-    private Task HandleTourSelection()
-    {
-        return HandleApiRequestAsync(
-            async () =>
-            {
-                if (_selectedTourId is null || _selectedTourId == Guid.Empty)
-                    ClearTourData();
-                else
-                    await LoadTourLogsAsync();
-            },
-            "Error handling tour selection"
-        );
-    }
-
     public void ClearTourData()
     {
         TourLogs.Clear();
@@ -78,26 +65,14 @@ public class TourLogViewModel(
     {
         if (!SelectedTourId.HasValue) return;
 
-        SelectedTourLog = new TourLog
-        {
-            TourId = SelectedTourId.Value,
-            DateTime = TimeProvider.System.GetUtcNow().UtcDateTime,
-            Difficulty = 1,
-            Rating = 1
-        };
+        SelectedTourLog = CreateEmptyLog();
         IsLogFormVisible = true;
         IsEditing = false;
     }
 
     public void ResetForm()
     {
-        SelectedTourLog = new TourLog
-        {
-            TourId = SelectedTourId ?? Guid.Empty,
-            DateTime = TimeProvider.System.GetUtcNow().UtcDateTime,
-            Difficulty = 1,
-            Rating = 1
-        };
+        SelectedTourLog = CreateEmptyLog();
         IsLogFormVisible = false;
         IsEditing = false;
     }
@@ -111,117 +86,114 @@ public class TourLogViewModel(
     }
 
     [UiMethodDecorator]
-    public Task LoadTourLogsAsync()
+    public async Task LoadTourLogsAsync()
     {
-        return HandleApiRequestAsync(
-            async () =>
-            {
-                if (!SelectedTourId.HasValue) return;
+        if (!SelectedTourId.HasValue) return;
 
-                var logs = await HttpService.GetListAsync<TourLog>(
-                    $"api/tourlog/bytour/{SelectedTourId}"
-                );
-                TourLogs.Clear();
-                foreach (var log in logs ?? []) TourLogs.Add(log);
-
-                ResetForm();
-            },
-            "Error loading tour logs"
-        );
+        await HandleApiRequestAsync(async () =>
+        {
+            var logs = await HttpClient.GetFromJsonAsync<List<TourLog>>(
+                $"api/tourlog/bytour/{SelectedTourId}");
+            TourLogs.Clear();
+            foreach (var log in logs ?? []) TourLogs.Add(log);
+            ResetForm();
+        }, "Error loading tour logs");
     }
 
     [UiMethodDecorator]
-    public Task<bool> SaveTourLogAsync()
+    public async Task<bool> SaveTourLogAsync()
     {
-        return HandleApiRequestAsync(
-            async () =>
-            {
-                if (!IsFormValid || !SelectedTourId.HasValue)
-                {
-                    ToastServiceWrapper.ShowError("Not Valid.");
-                    return false;
-                }
+        if (!IsFormValid || !SelectedTourId.HasValue)
+        {
+            ToastServiceWrapper.ShowError("Not Valid.");
+            return false;
+        }
 
-                if (SelectedTourLog.Id == Guid.Empty)
-                {
-                    await HttpService.PostAsync<TourLog>("api/tourlog", SelectedTourLog);
-                    ToastServiceWrapper.ShowSuccess("Tour log created successfully.");
-                }
-                else
-                {
-                    await HttpService.PutAsync<TourLog>(
-                        $"api/tourlog/{SelectedTourLog.Id}",
-                        SelectedTourLog
-                    );
-                    ToastServiceWrapper.ShowSuccess("Tour log updated successfully.");
-                }
-
-                await LoadTourLogsAsync();
-                ResetForm();
-                return true;
-            },
-            "Error saving tour log"
-        );
+        return await ExecuteAsync(async () =>
+        {
+            await PersistTourLogAsync();
+            await LoadTourLogsAsync();
+            ResetForm();
+            return true;
+        }, "Error saving tour log") is true;
     }
 
     [UiMethodDecorator]
-    private Task EditTourLogAsync(Guid logId)
+    public async Task EditHandleTourLogAction(Guid? logId = null)
     {
-        return HandleApiRequestAsync(
-            async () =>
-            {
-                var log = await HttpService.GetAsync<TourLog>($"api/tourlog/{logId}");
-                if (log is not null)
-                {
-                    SelectedTourLog = log;
-                    SelectedTourId = log.TourId;
-                    IsLogFormVisible = true;
-                    IsEditing = true;
-                }
-            },
-            "Error loading tour log for editing"
-        );
-    }
+        if (!logId.HasValue || logId == Guid.Empty)
+        {
+            ToggleLogForm();
+            return;
+        }
 
-    [UiMethodDecorator]
-    public Task EditHandleTourLogAction(Guid? logId = null)
-    {
-        return HandleApiRequestAsync(
-            async () =>
+        if (IsEditing && IsLogFormVisible && SelectedTourLog.Id == logId)
+        {
+            ResetForm();
+            return;
+        }
+
+        await HandleApiRequestAsync(async () =>
+        {
+            var log = await HttpClient.GetFromJsonAsync<TourLog>($"api/tourlog/{logId}");
+            if (log is null)
             {
-                if (logId.HasValue && logId != Guid.Empty)
-                {
-                    if (IsEditing && IsLogFormVisible && SelectedTourLog.Id == logId)
-                        ResetForm();
-                    else
-                        await EditTourLogAsync(logId.Value);
-                }
-                else
-                {
-                    ToggleLogForm();
-                }
-            },
-            "Error handling tour log action"
-        );
+                ToastServiceWrapper.ShowError("Tour log not found.");
+                return;
+            }
+
+            SelectedTourLog = log;
+            SelectedTourId = log.TourId;
+            IsLogFormVisible = true;
+            IsEditing = true;
+        }, "Error loading tour log for editing");
     }
 
     [UiMethodDecorator]
     public async Task DeleteTourLogAsync(Guid logId)
     {
+        if (logId == Guid.Empty) return;
+
         var confirmed = await jsRuntime.InvokeAsync<bool>(
-            "confirm",
-            "Are you sure you want to delete this tour log?"
-        );
-        if (confirmed)
-            await HandleApiRequestAsync(
-                async () =>
-                {
-                    if (logId == Guid.Empty) return;
-                    await HttpService.DeleteAsync($"api/tourlog/{logId}");
-                    await LoadTourLogsAsync();
-                    ToastServiceWrapper.ShowSuccess("Tour log deleted successfully.");
-                },
-                "Error deleting tour log"
-            );
+            "confirm", "Are you sure you want to delete this tour log?");
+
+        if (!confirmed) return;
+
+        await ExecuteAsync(async () =>
+        {
+            (await HttpClient.DeleteAsync($"api/tourlog/{logId}")).EnsureSuccessStatusCode();
+            await LoadTourLogsAsync();
+            ToastServiceWrapper.ShowSuccess("Tour log deleted successfully.");
+        }, "Error deleting tour log");
     }
+
+    private async Task HandleTourSelection()
+    {
+        if (_selectedTourId is null || _selectedTourId == Guid.Empty)
+            ClearTourData();
+        else
+            await LoadTourLogsAsync();
+    }
+
+    private async Task PersistTourLogAsync()
+    {
+        if (SelectedTourLog.Id == Guid.Empty)
+        {
+            (await HttpClient.PostAsJsonAsync("api/tourlog", SelectedTourLog)).EnsureSuccessStatusCode();
+            ToastServiceWrapper.ShowSuccess("Tour log created successfully.");
+        }
+        else
+        {
+            (await HttpClient.PutAsJsonAsync($"api/tourlog/{SelectedTourLog.Id}", SelectedTourLog)).EnsureSuccessStatusCode();
+            ToastServiceWrapper.ShowSuccess("Tour log updated successfully.");
+        }
+    }
+
+    private TourLog CreateEmptyLog() => new()
+    {
+        TourId = SelectedTourId ?? Guid.Empty,
+        DateTime = TimeProvider.System.GetUtcNow().UtcDateTime,
+        Difficulty = 1,
+        Rating = 1
+    };
 }

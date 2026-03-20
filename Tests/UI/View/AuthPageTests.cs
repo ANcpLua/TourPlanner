@@ -1,5 +1,4 @@
 using System.Net;
-using UI.Auth;
 using UI.View.Pages;
 
 namespace Tests.UI.View;
@@ -16,7 +15,7 @@ public sealed class LoginPageTests : BunitTestBase
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(cut.FindAll("input").Count, Is.GreaterThanOrEqualTo(2));
+            Assert.That(cut.FindAll("input"), Has.Count.GreaterThanOrEqualTo(2));
             Assert.That(cut.Find("button[type=submit]").TextContent, Does.Contain("Login"));
             Assert.That(cut.Find("a[href='/register']"), Is.Not.Null);
         }
@@ -25,24 +24,13 @@ public sealed class LoginPageTests : BunitTestBase
     [Test]
     public async Task LoginPage_SuccessfulLogin_NavigatesToHome()
     {
-        var handler = new Mock<HttpMessageHandler>();
-        handler.Protected()
-            .Setup<Task<HttpResponseMessage>>("SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent("""{"userId":"id","email":"e@e.com"}""",
-                    Encoding.UTF8, "application/json")
-            });
-        var httpClient = new HttpClient(handler.Object) { BaseAddress = new Uri("http://localhost") };
-        Context.Services.AddSingleton(httpClient);
-        Context.Services.AddSingleton(new CookieAuthenticationStateProvider(httpClient));
+        Services.SetupAuthHandler(HttpStatusCode.OK);
 
         var nav = Context.Services.GetRequiredService<NavigationManager>();
         var cut = RenderComponent<LoginPage>();
 
-        cut.Find("input[type=email]").Change("test@example.com");
-        cut.Find("input[type=password]").Change("Test1234!");
+        await cut.Find("input[type=email]").ChangeAsync("test@example.com");
+        await cut.Find("input[type=password]").ChangeAsync("Test1234!");
         await cut.Find("form").SubmitAsync();
 
         Assert.That(nav.Uri, Does.EndWith("/"));
@@ -51,18 +39,11 @@ public sealed class LoginPageTests : BunitTestBase
     [Test]
     public async Task LoginPage_FailedLogin_ShowsError()
     {
-        var handler = new Mock<HttpMessageHandler>();
-        handler.Protected()
-            .Setup<Task<HttpResponseMessage>>("SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.Unauthorized));
-        var httpClient = new HttpClient(handler.Object) { BaseAddress = new Uri("http://localhost") };
-        Context.Services.AddSingleton(httpClient);
-        Context.Services.AddSingleton(new CookieAuthenticationStateProvider(httpClient));
+        Services.SetupAuthHandler(HttpStatusCode.Unauthorized);
 
         var cut = RenderComponent<LoginPage>();
-        cut.Find("input[type=email]").Change("test@example.com");
-        cut.Find("input[type=password]").Change("wrong");
+        await cut.Find("input[type=email]").ChangeAsync("test@example.com");
+        await cut.Find("input[type=password]").ChangeAsync("wrong");
         await cut.Find("form").SubmitAsync();
 
         Assert.That(cut.Find(".alert-danger").TextContent, Does.Contain("Invalid"));
@@ -81,7 +62,7 @@ public sealed class RegisterPageTests : BunitTestBase
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(cut.FindAll("input").Count, Is.GreaterThanOrEqualTo(2));
+            Assert.That(cut.FindAll("input"), Has.Count.GreaterThanOrEqualTo(2));
             Assert.That(cut.Find("button[type=submit]").TextContent, Does.Contain("Register"));
             Assert.That(cut.Find("a[href='/login']"), Is.Not.Null);
         }
@@ -90,24 +71,13 @@ public sealed class RegisterPageTests : BunitTestBase
     [Test]
     public async Task RegisterPage_SuccessfulRegister_NavigatesToHome()
     {
-        var handler = new Mock<HttpMessageHandler>();
-        handler.Protected()
-            .Setup<Task<HttpResponseMessage>>("SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent("""{"userId":"id","email":"e@e.com"}""",
-                    Encoding.UTF8, "application/json")
-            });
-        var httpClient = new HttpClient(handler.Object) { BaseAddress = new Uri("http://localhost") };
-        Context.Services.AddSingleton(httpClient);
-        Context.Services.AddSingleton(new CookieAuthenticationStateProvider(httpClient));
+        Services.SetupAuthHandler(HttpStatusCode.OK);
 
         var nav = Context.Services.GetRequiredService<NavigationManager>();
         var cut = RenderComponent<RegisterPage>();
 
-        cut.Find("input[type=email]").Change("new@example.com");
-        cut.Find("input[type=password]").Change("Test1234!");
+        await cut.Find("input[type=email]").ChangeAsync("new@example.com");
+        await cut.Find("input[type=password]").ChangeAsync("Test1234!");
         await cut.Find("form").SubmitAsync();
 
         Assert.That(nav.Uri, Does.EndWith("/"));
@@ -116,22 +86,12 @@ public sealed class RegisterPageTests : BunitTestBase
     [Test]
     public async Task RegisterPage_DuplicateUser_ShowsDuplicateError()
     {
-        var handler = new Mock<HttpMessageHandler>();
-        handler.Protected()
-            .Setup<Task<HttpResponseMessage>>("SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.BadRequest)
-            {
-                Content = new StringContent("""{"DuplicateUserName":["Already exists"]}""",
-                    Encoding.UTF8, "application/json")
-            });
-        var httpClient = new HttpClient(handler.Object) { BaseAddress = new Uri("http://localhost") };
-        Context.Services.AddSingleton(httpClient);
-        Context.Services.AddSingleton(new CookieAuthenticationStateProvider(httpClient));
+        Services.SetupAuthHandler(HttpStatusCode.BadRequest,
+            """{"DuplicateUserName":["Already exists"]}""");
 
         var cut = RenderComponent<RegisterPage>();
-        cut.Find("input[type=email]").Change("dupe@example.com");
-        cut.Find("input[type=password]").Change("Test1234!");
+        await cut.Find("input[type=email]").ChangeAsync("dupe@example.com");
+        await cut.Find("input[type=password]").ChangeAsync("Test1234!");
         await cut.Find("form").SubmitAsync();
 
         Assert.That(cut.Find(".alert-danger").TextContent, Does.Contain("already exists"));
@@ -140,21 +100,11 @@ public sealed class RegisterPageTests : BunitTestBase
     [Test]
     public async Task RegisterPage_GenericError_ShowsGenericMessage()
     {
-        var handler = new Mock<HttpMessageHandler>();
-        handler.Protected()
-            .Setup<Task<HttpResponseMessage>>("SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.BadRequest)
-            {
-                Content = new StringContent("other error", Encoding.UTF8, "text/plain")
-            });
-        var httpClient = new HttpClient(handler.Object) { BaseAddress = new Uri("http://localhost") };
-        Context.Services.AddSingleton(httpClient);
-        Context.Services.AddSingleton(new CookieAuthenticationStateProvider(httpClient));
+        Services.SetupAuthHandler(HttpStatusCode.BadRequest, "other error");
 
         var cut = RenderComponent<RegisterPage>();
-        cut.Find("input[type=email]").Change("fail@example.com");
-        cut.Find("input[type=password]").Change("Test1234!");
+        await cut.Find("input[type=email]").ChangeAsync("fail@example.com");
+        await cut.Find("input[type=password]").ChangeAsync("Test1234!");
         await cut.Find("form").SubmitAsync();
 
         Assert.That(cut.Find(".alert-danger").TextContent, Does.Contain("Registration failed"));

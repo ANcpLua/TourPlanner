@@ -6,8 +6,10 @@ using BL.Interface;
 using BL.Module;
 using DAL.Infrastructure;
 using DAL.Module;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,7 +42,39 @@ builder.Services.AddCors(options =>
 builder.Services.AddProblemDetails();
 builder.Services.AddValidation();
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+builder.Services.AddAuthorizationBuilder()
+    .SetFallbackPolicy(new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build());
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, _, _) =>
+    {
+        document.Info.Title = "TourPlanner API";
+        document.Info.Version = "v1";
+        document.Components ??= new OpenApiComponents();
+        document.Components.SecuritySchemes["cookie"] = new OpenApiSecurityScheme
+        {
+            Type = SecuritySchemeType.ApiKey,
+            In = ParameterLocation.Cookie,
+            Name = ".AspNetCore.Identity.Application"
+        };
+        return Task.CompletedTask;
+    });
+
+    options.AddOperationTransformer((operation, context, _) =>
+    {
+        if (context.Description.ActionDescriptor.EndpointMetadata
+            .OfType<IAllowAnonymous>().Any())
+            return Task.CompletedTask;
+
+        operation.Security = [new OpenApiSecurityRequirement
+        {
+            [new OpenApiSecuritySchemeReference("cookie")] = []
+        }];
+        return Task.CompletedTask;
+    });
+});
 builder.Services.AddHttpClient("OpenRouteService").AddStandardResilienceHandler();
 builder.Services.AddHealthChecks().AddCheck<PostgreSqlHealthCheck>("postgres");
 
@@ -87,6 +121,6 @@ app.MapControllers();
 app.MapAuthEndpoints();
 app.MapRouteEndpoints();
 app.MapReportEndpoints();
-app.MapHealthChecks("/health");
-app.MapOpenApi("/openapi/{documentName}.json");
+app.MapHealthChecks("/health").AllowAnonymous();
+app.MapOpenApi().AllowAnonymous();
 app.Run();

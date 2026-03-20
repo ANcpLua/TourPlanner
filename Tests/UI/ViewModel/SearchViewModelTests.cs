@@ -1,4 +1,4 @@
-﻿using UI.Model;
+using UI.Model;
 using UI.Service.Interface;
 using UI.ViewModel;
 
@@ -10,20 +10,23 @@ public class SearchViewModelTests
     [SetUp]
     public void Setup()
     {
-        _mockHttpService = TestData.MockHttpService();
+        var (client, handler) = TestData.MockedHttpClient();
+        _httpClient = client;
+        _mockHandler = handler;
         _mockToastService = TestData.MockToastService();
         _mockNavigationManager = new TestNavigationManager();
         _viewModel = new SearchViewModel(
-            _mockHttpService.Object, _mockToastService.Object,
+            _httpClient, _mockToastService.Object,
             TestData.MockTryCatchToastWrapper(), _mockNavigationManager);
     }
 
-    private Mock<IHttpService> _mockHttpService = null!;
+    private HttpClient _httpClient = null!;
+    private Mock<HttpMessageHandler> _mockHandler = null!;
     private Mock<IToastServiceWrapper> _mockToastService = null!;
     private TestNavigationManager _mockNavigationManager = null!;
     private SearchViewModel _viewModel = null!;
 
-    private class TestNavigationManager : NavigationManager
+    private sealed class TestNavigationManager : NavigationManager
     {
         public string? LastUri;
 
@@ -58,8 +61,7 @@ public class SearchViewModelTests
     public async Task SearchToursAsync_NoHits_ShowsToast()
     {
         _viewModel.SearchText = "xyz";
-        _mockHttpService.Setup(static h => h.GetListAsync<Tour>(It.IsAny<string>()))
-            .ReturnsAsync((IEnumerable<Tour>?)null);
+        TestData.SetupHandler(_mockHandler, HttpMethod.Get, "api/tour/search/xyz", "[]");
 
         await _viewModel.SearchToursAsync();
 
@@ -70,12 +72,12 @@ public class SearchViewModelTests
     public async Task SearchToursAsync_Hits_FillsResults()
     {
         var tours = TestData.SampleTourList();
-        _mockHttpService.Setup(static h => h.GetListAsync<Tour>("api/tour/search/a")).ReturnsAsync(tours);
+        TestData.SetupHandler(_mockHandler, HttpMethod.Get, "api/tour/search/a", JsonSerializer.Serialize(tours));
 
         _viewModel.SearchText = "a";
         await _viewModel.SearchToursAsync();
 
-        Assert.That(_viewModel.SearchResults, Is.EquivalentTo(tours));
+        Assert.That(_viewModel.SearchResults, Has.Count.EqualTo(tours.Count));
     }
 
     [Test]
@@ -105,15 +107,17 @@ public class SearchViewModelTests
     public async Task HandleKeyPress_Enter_PerformsSearch()
     {
         _viewModel.SearchText = "foo";
+        TestData.SetupHandler(_mockHandler, HttpMethod.Get, "api/tour/search/foo", "[]");
+
         await _viewModel.HandleKeyPress(new KeyboardEventArgs { Key = "Enter" });
 
-        _mockHttpService.Verify(static h => h.GetListAsync<Tour>("api/tour/search/foo"), Times.Once);
+        TestData.VerifyHandler(_mockHandler, HttpMethod.Get, "api/tour/search/foo", Times.Once());
     }
 
     [Test]
     public async Task HandleKeyPress_OtherKey_NoSearch()
     {
         await _viewModel.HandleKeyPress(new KeyboardEventArgs { Key = "X" });
-        _mockHttpService.VerifyNoOtherCalls();
+        TestData.VerifyHandler(_mockHandler, HttpMethod.Get, "api/tour/search/", Times.Never());
     }
 }

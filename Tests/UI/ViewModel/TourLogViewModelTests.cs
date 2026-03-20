@@ -1,4 +1,4 @@
-﻿using UI.Model;
+using UI.Model;
 using UI.Service.Interface;
 using UI.ViewModel;
 
@@ -10,19 +10,22 @@ public class TourLogViewModelTests
     [SetUp]
     public void Setup()
     {
-        _mockHttpService = TestData.MockHttpService();
+        var (client, handler) = TestData.MockedHttpClient();
+        _httpClient = client;
+        _mockHandler = handler;
         _mockToastService = TestData.MockToastService();
         _mockJsRuntime = TestData.MockJsRuntime();
 
         _viewModel = new TourLogViewModel(
-            _mockHttpService.Object,
+            _httpClient,
             _mockToastService.Object,
             TestData.MockTryCatchToastWrapper(),
             _mockJsRuntime.Object
         );
     }
 
-    private Mock<IHttpService> _mockHttpService = null!;
+    private HttpClient _httpClient = null!;
+    private Mock<HttpMessageHandler> _mockHandler = null!;
     private Mock<IToastServiceWrapper> _mockToastService = null!;
     private Mock<IJSRuntime> _mockJsRuntime = null!;
     private TourLogViewModel _viewModel = null!;
@@ -115,9 +118,8 @@ public class TourLogViewModelTests
     public void SelectedTourId_WhenSetToValidGuid_ShouldLoadTourLogs()
     {
         var newTourId = TestData.SampleTour().Id;
-        _mockHttpService
-            .Setup(s => s.GetListAsync<TourLog>($"api/tourlog/bytour/{newTourId}"))
-            .ReturnsAsync(TestData.SampleTourLogList(tourId: newTourId));
+        TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/bytour/{newTourId}",
+            JsonSerializer.Serialize(TestData.SampleTourLogList(tourId: newTourId)));
 
         _viewModel.SelectedTourId = newTourId;
 
@@ -228,9 +230,8 @@ public class TourLogViewModelTests
         var tourId = Guid.NewGuid();
         _viewModel.SelectedTourId = tourId;
         var logs = TestData.SampleTourLogList(tourId: tourId);
-        _mockHttpService
-            .Setup(s => s.GetListAsync<TourLog>($"api/tourlog/bytour/{tourId}"))
-            .ReturnsAsync(logs);
+        TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/bytour/{tourId}",
+            JsonSerializer.Serialize(logs));
 
         await _viewModel.LoadTourLogsAsync();
 
@@ -244,10 +245,7 @@ public class TourLogViewModelTests
 
         await _viewModel.LoadTourLogsAsync();
 
-        _mockHttpService.Verify(
-            static s => s.GetListAsync<TourLog>(It.IsAny<string>()),
-            Times.Never
-        );
+        TestData.VerifyHandler(_mockHandler, HttpMethod.Get, "api/tourlog", Times.Never());
     }
 
     [Test]
@@ -258,18 +256,15 @@ public class TourLogViewModelTests
         _viewModel.SelectedTourId = TestData.SampleTour().Id;
         _viewModel.SelectedTourLog = newLog;
 
-        _mockHttpService
-            .Setup(static s => s.PostAsync<TourLog>(It.IsAny<string>(), It.IsAny<TourLog>()))
-            .ReturnsAsync(newLog);
+        TestData.SetupHandler(_mockHandler, HttpMethod.Post, "api/tourlog", "{}");
+        TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/bytour/{_viewModel.SelectedTourId}",
+            JsonSerializer.Serialize(TestData.SampleTourLogList()));
 
         var result = await _viewModel.SaveTourLogAsync();
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.True);
-            _mockHttpService.Verify(
-                static s => s.PostAsync<TourLog>("api/tourlog", It.IsAny<TourLog>()),
-                Times.Once
-            );
+            TestData.VerifyHandler(_mockHandler, HttpMethod.Post, "api/tourlog", Times.Once());
             _mockToastService.Verify(static t => t.ShowSuccess("Tour log created successfully."), Times.Once);
         }
     }
@@ -281,18 +276,15 @@ public class TourLogViewModelTests
         _viewModel.SelectedTourId = TestData.SampleTour().Id;
         _viewModel.SelectedTourLog = existingLog;
 
-        _mockHttpService
-            .Setup(static s => s.PutAsync<TourLog>(It.IsAny<string>(), It.IsAny<TourLog>()))
-            .ReturnsAsync(existingLog);
+        TestData.SetupHandler(_mockHandler, HttpMethod.Put, $"api/tourlog/{existingLog.Id}", "{}");
+        TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/bytour/{_viewModel.SelectedTourId}",
+            JsonSerializer.Serialize(TestData.SampleTourLogList()));
 
         var result = await _viewModel.SaveTourLogAsync();
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.True);
-            _mockHttpService.Verify(
-                s => s.PutAsync<TourLog>($"api/tourlog/{existingLog.Id}", It.IsAny<TourLog>()),
-                Times.Once
-            );
+            TestData.VerifyHandler(_mockHandler, HttpMethod.Put, $"api/tourlog/{existingLog.Id}", Times.Once());
             _mockToastService.Verify(static t => t.ShowSuccess("Tour log updated successfully."), Times.Once);
         }
     }
@@ -332,13 +324,10 @@ public class TourLogViewModelTests
         var tourLog = TestData.SampleTourLog(id: logId);
         var tourId = tourLog.TourId;
 
-        _mockHttpService
-            .Setup(s => s.GetAsync<TourLog>($"api/tourlog/{logId}"))
-            .ReturnsAsync(tourLog);
-
-        _mockHttpService
-            .Setup(static s => s.GetListAsync<TourLog>(It.IsAny<string>()))
-            .ReturnsAsync([]);
+        TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/{logId}",
+            JsonSerializer.Serialize(tourLog));
+        TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/bytour/{tourId}",
+            JsonSerializer.Serialize(TestData.SampleTourLogList()));
 
         _viewModel.SelectedTourId = tourId;
 
@@ -351,7 +340,7 @@ public class TourLogViewModelTests
             Assert.That(_viewModel.SelectedTourLog.TourId, Is.EqualTo(tourId));
         }
 
-        _mockHttpService.Verify(s => s.GetAsync<TourLog>($"api/tourlog/{logId}"), Times.Once);
+        TestData.VerifyHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/{logId}", Times.Once());
     }
 
     [Test]
@@ -361,13 +350,10 @@ public class TourLogViewModelTests
         var tourLog = TestData.SampleTourLog(id: logId);
         var tourId = tourLog.TourId;
 
-        _mockHttpService
-            .Setup(s => s.GetAsync<TourLog>($"api/tourlog/{logId}"))
-            .ReturnsAsync(tourLog);
-
-        _mockHttpService
-            .Setup(static s => s.GetListAsync<TourLog>(It.IsAny<string>()))
-            .ReturnsAsync([]);
+        TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/{logId}",
+            JsonSerializer.Serialize(tourLog));
+        TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/bytour/{tourId}",
+            JsonSerializer.Serialize(TestData.SampleTourLogList()));
 
         _viewModel.SelectedTourId = tourId;
 
@@ -388,7 +374,7 @@ public class TourLogViewModelTests
             Assert.That(_viewModel.SelectedTourLog.TourId, Is.EqualTo(tourId));
         }
 
-        _mockHttpService.Verify(s => s.GetAsync<TourLog>($"api/tourlog/{logId}"), Times.Once);
+        TestData.VerifyHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/{logId}", Times.Once());
     }
 
     [Test]
@@ -422,18 +408,24 @@ public class TourLogViewModelTests
             .Setup(static j => j.InvokeAsync<bool>(It.IsAny<string>(), It.IsAny<object[]>()))
             .ReturnsAsync(userConfirms);
 
+        if (userConfirms)
+        {
+            TestData.SetupHandler(_mockHandler, HttpMethod.Delete, $"api/tourlog/{logId}", "{}");
+            TestData.SetupHandler(_mockHandler, HttpMethod.Get, "api/tourlog/bytour/", "[]");
+        }
+
         await _viewModel.DeleteTourLogAsync(logId);
 
         if (userConfirms)
             using (Assert.EnterMultipleScope())
             {
-                _mockHttpService.Verify(s => s.DeleteAsync($"api/tourlog/{logId}"), Times.Once);
+                TestData.VerifyHandler(_mockHandler, HttpMethod.Delete, $"api/tourlog/{logId}", Times.Once());
                 _mockToastService.Verify(static t => t.ShowSuccess("Tour log deleted successfully."), Times.Once);
             }
         else
             using (Assert.EnterMultipleScope())
             {
-                _mockHttpService.Verify(static s => s.DeleteAsync(It.IsAny<string>()), Times.Never);
+                TestData.VerifyHandler(_mockHandler, HttpMethod.Delete, $"api/tourlog/{logId}", Times.Never());
                 _mockToastService.Verify(static t => t.ShowSuccess(It.IsAny<string>()), Times.Never);
             }
     }
@@ -447,7 +439,7 @@ public class TourLogViewModelTests
 
         await _viewModel.DeleteTourLogAsync(Guid.Empty);
 
-        _mockHttpService.Verify(static s => s.DeleteAsync(It.IsAny<string>()), Times.Never);
+        TestData.VerifyHandler(_mockHandler, HttpMethod.Delete, "api/tourlog/", Times.Never());
     }
 
     [Test]

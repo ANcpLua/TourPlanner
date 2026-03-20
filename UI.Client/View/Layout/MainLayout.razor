@@ -1,5 +1,4 @@
 @using Blazored.Toast.Configuration
-@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Routing
 @using UI.Auth
 @using UI.View.SharedComponents
@@ -82,7 +81,7 @@
 @code {
     private async Task LogoutAsync()
     {
-        await Http.PostAsync("api/auth/logout", null);
+        await Http.PostAsync("api/account/logout", null);
         AuthStateProvider.NotifyAuthStateChanged();
         Navigation.NavigateTo("/login");
     }

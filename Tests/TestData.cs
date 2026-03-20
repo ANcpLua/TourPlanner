@@ -64,24 +64,77 @@ public static class TestData
         return mock;
     }
 
-    public static Mock<IHttpService> MockHttpService()
+    public static (HttpClient Client, Mock<HttpMessageHandler> Handler) MockedHttpClient()
     {
-        var mock = new Mock<IHttpService>();
-        mock.Setup(static s => s.GetAsync<Tour>(It.IsAny<string>())).ReturnsAsync(SampleTour());
-        mock.Setup(static s => s.GetListAsync<Tour>(It.IsAny<string>())).ReturnsAsync(SampleTourList());
-        mock.Setup(static s => s.PostAsync<Tour>(It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync(SampleTour());
-        mock.Setup(static s => s.PutAsync<Tour>(It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync(SampleTour());
-        mock.Setup(static s => s.DeleteAsync(It.IsAny<string>())).Returns(Task.CompletedTask);
-        mock.Setup(static s => s.GetStringAsync(It.IsAny<string>())).ReturnsAsync("Sample string response");
-        mock.Setup(static s => s.GetByteArrayAsync(It.IsAny<string>())).ReturnsAsync([1, 2, 3, 4, 5]);
-        return mock;
+        var handler = new Mock<HttpMessageHandler>();
+        SetupHttpMessageHandlerSuccess(handler, "[]");
+        var client = new HttpClient(handler.Object) { BaseAddress = new Uri("https://test.invalid/") };
+        return (client, handler);
+    }
+
+    public static void SetupHandler(
+        Mock<HttpMessageHandler> handler,
+        HttpMethod method,
+        string urlContains,
+        string jsonResponse,
+        HttpStatusCode statusCode = HttpStatusCode.OK)
+    {
+        handler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(req =>
+                    req.Method == method &&
+                    req.RequestUri!.ToString().Contains(urlContains)),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage(statusCode)
+            {
+                Content = new StringContent(jsonResponse, Encoding.UTF8, "application/json")
+            });
+    }
+
+    public static void SetupHandlerBytes(
+        Mock<HttpMessageHandler> handler,
+        string urlContains,
+        byte[] content,
+        HttpStatusCode statusCode = HttpStatusCode.OK)
+    {
+        handler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(req =>
+                    req.Method == HttpMethod.Get &&
+                    req.RequestUri!.ToString().Contains(urlContains)),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage(statusCode)
+            {
+                Content = new ByteArrayContent(content)
+            });
+    }
+
+    public static void VerifyHandler(
+        Mock<HttpMessageHandler> handler,
+        HttpMethod method,
+        string urlContains,
+        Times times)
+    {
+        handler
+            .Protected()
+            .Verify(
+                "SendAsync",
+                times,
+                ItExpr.Is<HttpRequestMessage>(req =>
+                    req.Method == method &&
+                    req.RequestUri!.ToString().Contains(urlContains)),
+                ItExpr.IsAny<CancellationToken>());
     }
 
     public static Mock<MapViewModel> MockMapViewModel()
     {
         return new Mock<MapViewModel>(
             MockJsRuntime().Object,
-            MockHttpService().Object,
+            new HttpClient(),
             MockToastService().Object,
             MockTryCatchToastWrapper())
         {
