@@ -28,4 +28,7 @@ public class TourLog
     [Range(1, 5, ErrorMessage = "Rating must be between 1 and 5")]
     [JsonPropertyName("rating")]
     public double? Rating { get; set; }
+
+    [JsonIgnore] public string TotalDistanceDisplay => $"{TotalDistance} meters";
+    [JsonIgnore] public string TotalTimeDisplay => $"{TotalTime} minutes";
 }

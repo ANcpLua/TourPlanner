@@ -9,20 +9,21 @@ namespace Tests.UI.View;
 public sealed class SearchComponentTests : BunitTestBase
 {
     [Test]
-    public void SearchInput_TypesText_UpdatesViewModel()
+    public void SearchInput_TypesText_UpdatesRenderedValue()
     {
         var cut = RenderComponent<SearchComponent>();
         cut.Find("input.search-input").Input("test");
-        Assert.That(Services.ViewModel<SearchViewModel>().SearchText, Is.EqualTo("test"));
+        Assert.That(cut.Find("input.search-input").GetAttribute("value"), Is.EqualTo("test"));
     }
 
     [Test]
-    public async Task SearchInput_PressesEnter_ExecutesSearch()
+    public async Task SearchInput_PressesEnter_RendersResults()
     {
         Services.ViewModel<SearchViewModel>().SearchText = "test";
         var cut = RenderComponent<SearchComponent>();
         await cut.Find("input.search-input").KeyUpAsync(new KeyboardEventArgs { Key = "Enter" });
-        Assert.That(Services.ViewModel<SearchViewModel>().SearchResults, Is.Not.Null);
+        cut.WaitForAssertion(() =>
+            Assert.That(cut.FindAll("div.tour-search"), Has.Count.GreaterThan(0)));
     }
 
     [Test]
@@ -49,17 +50,16 @@ public sealed class SearchComponentTests : BunitTestBase
     }
 
     [Test]
-    public void ClearButton_ResetsState()
+    public void ClearButton_ResetsRenderedState()
     {
         Services.ViewModel<SearchViewModel>().SearchText = "test";
         Services.WithSearchResults();
         var cut = RenderComponent<SearchComponent>();
         cut.Find("button.clear-btn").Click();
-        var vm = Services.ViewModel<SearchViewModel>();
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(vm.SearchText, Is.Empty);
-            Assert.That(vm.SearchResults, Is.Empty);
+            Assert.That(cut.Find("input.search-input").GetAttribute("value"), Is.Empty);
+            Assert.Throws<ElementNotFoundException>(() => cut.Find("div.tour-search"));
         }
     }
 

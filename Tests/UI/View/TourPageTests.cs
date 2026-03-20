@@ -43,7 +43,7 @@ public sealed class TourPageTests : BunitTestBase
         Services.ViewModel<TourViewModel>().IsMapVisible = false;
         var cut = RenderComponent<TourPage>();
         await cut.Find("button.show-map-btn").ClickAsync(new MouseEventArgs());
-        Assert.That(Services.ViewModel<TourViewModel>().IsMapVisible, Is.True);
+        Assert.That(cut.FindComponents<MapComponent>(), Has.Count.EqualTo(1));
     }
 
     [TestCase(true, "Hide Map")]

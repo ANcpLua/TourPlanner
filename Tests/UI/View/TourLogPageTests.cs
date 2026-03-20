@@ -31,7 +31,7 @@ public sealed class TourLogPageTests : BunitTestBase
         var cut = RenderComponent<TourLogPage>();
         cut.Find("select").Change(tourId.ToString());
         cut.WaitForAssertion(() =>
-            Assert.That(Services.ViewModel<TourLogViewModel>().TourLogs, Has.Count.EqualTo(3)));
+            Assert.That(cut.FindAll(".tour-card"), Has.Count.EqualTo(3)));
     }
 
     [Test]
