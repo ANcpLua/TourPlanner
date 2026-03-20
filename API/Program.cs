@@ -2,8 +2,12 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using API.Endpoints;
 using API.Infrastructure;
+using BL.Interface;
 using BL.Module;
+using DAL.Infrastructure;
 using DAL.Module;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -39,15 +43,48 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddHttpClient("OpenRouteService").AddStandardResilienceHandler();
 builder.Services.AddHealthChecks().AddCheck<PostgreSqlHealthCheck>("postgres");
+
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+    .AddEntityFrameworkStores<TourPlannerContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Events.OnRedirectToLogin = context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        return Task.CompletedTask;
+    };
+    options.Events.OnRedirectToAccessDenied = context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+        return Task.CompletedTask;
+    };
+});
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserContext, HttpUserContext>();
+
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<TourPlannerContext>();
+    db.Database.Migrate();
+}
 
 app.UseRouting();
 app.UseCors("AllowUI");
 app.UseStaticFiles();
+app.UseAuthentication();
 app.UseAuthorization();
 app.UseSerilogRequestLogging();
 app.UseExceptionHandler();
 app.MapControllers();
+app.MapAuthEndpoints();
 app.MapRouteEndpoints();
 app.MapReportEndpoints();
 app.MapHealthChecks("/health");

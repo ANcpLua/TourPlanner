@@ -1,19 +1,26 @@
 using DAL.PersistenceModel;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace DAL.Infrastructure;
 
-public class TourPlannerContext(DbContextOptions<TourPlannerContext> options) : DbContext(options)
+public class TourPlannerContext(DbContextOptions<TourPlannerContext> options)
+    : IdentityDbContext<IdentityUser>(options)
 {
     public DbSet<TourPersistence> ToursPersistence { get; set; } = null!;
     public DbSet<TourLogPersistence> TourLogsPersistence { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.Entity<TourPersistence>(static entity =>
         {
             entity.ToTable("Tours");
             entity.HasKey(static t => t.Id);
+            entity.Property(static t => t.UserId).IsRequired().HasMaxLength(450);
+            entity.HasIndex(static t => t.UserId);
             entity.Property(static t => t.Name).IsRequired().HasMaxLength(200);
             entity.Property(static t => t.Description).IsRequired().HasMaxLength(500);
             entity.Property(static t => t.From).IsRequired().HasMaxLength(100);
@@ -34,6 +41,8 @@ public class TourPlannerContext(DbContextOptions<TourPlannerContext> options) : 
         {
             entity.ToTable("TourLogs");
             entity.HasKey(static tl => tl.Id);
+            entity.Property(static tl => tl.UserId).IsRequired().HasMaxLength(450);
+            entity.HasIndex(static tl => tl.UserId);
             entity
                 .Property(static tl => tl.DateTime)
                 .HasConversion(
@@ -51,17 +60,5 @@ public class TourPlannerContext(DbContextOptions<TourPlannerContext> options) : 
                 .WithMany(static t => t.TourLogPersistence)
                 .HasForeignKey(static tl => tl.TourPersistenceId);
         });
-
-        modelBuilder.Entity<TourPersistence>().HasData(
-            new TourPersistence
-            {
-                Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
-                Name = "Sample Tour",
-                Description = "A sample tour for testing",
-                From = "Vienna",
-                To = "Salzburg",
-                TransportType = "DRIVING"
-            }
-        );
     }
 }

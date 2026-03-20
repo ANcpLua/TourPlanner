@@ -3,6 +3,7 @@
     <ItemGroup>
         <PackageReference Include="Autofac"/>
         <PackageReference Include="Autofac.Extensions.DependencyInjection"/>
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
             <PrivateAssets>all</PrivateAssets>

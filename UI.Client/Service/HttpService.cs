@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using Microsoft.AspNetCore.Components.WebAssembly.Http;
 using UI.Decorator;
 using UI.Service.Interface;
 
@@ -73,6 +74,7 @@ public class HttpService(HttpClient httpClient, TryCatchToastWrapper tryCatchToa
             async () =>
             {
                 using var request = new HttpRequestMessage(method, uri);
+                request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
                 if (data is not null && method is { Method: "POST" or "PUT" })
                     request.Content = JsonContent.Create(data);
 
@@ -93,6 +95,7 @@ public class HttpService(HttpClient httpClient, TryCatchToastWrapper tryCatchToa
             async () =>
             {
                 using var request = new HttpRequestMessage(method, uri);
+                request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
                 if (data is not null && method is { Method: "POST" or "PUT" })
                     request.Content = JsonContent.Create(data);
 

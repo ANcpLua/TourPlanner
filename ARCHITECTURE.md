@@ -25,7 +25,8 @@
   - request validation at HTTP boundary
   - transport mapping
   - OpenAPI
-  - auth later if needed
+  - cookie-based authentication (ASP.NET Core Identity)
+  - `IUserContext` implementation (`HttpUserContext`)
 
 - `BL`
   - business rules

@@ -12,6 +12,9 @@
         <PackageVersion Include="Autofac.Extensions.DependencyInjection" Version="$(AutofacExtensionsDependencyInjectionVersion)"/>
         <PackageVersion Include="Autofac.Extras.DynamicProxy" Version="$(AutofacExtrasDynamicProxyVersion)"/>
 
+        <!-- ASP.NET Core Identity -->
+        <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion)"/>
+
         <!-- EF Core 10 -->
         <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="$(MicrosoftEntityFrameworkCoreVersion)"/>
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="$(MicrosoftEntityFrameworkCoreDesignVersion)"/>
@@ -21,6 +24,7 @@
         <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion)"/>
 
         <!-- ASP.NET Core 10 -->
+        <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="$(MicrosoftAspNetCoreComponentsAuthorizationVersion)"/>
         <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="$(MicrosoftAspNetCoreOpenApiVersion)"/>
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="$(MicrosoftAspNetCoreComponentsWebAssemblyVersion)"/>
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="$(MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion)"/>

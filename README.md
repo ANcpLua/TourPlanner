@@ -22,6 +22,8 @@ docker compose up -d
 
 pgAdmin login: `admin@admin.com` / `admin`
 
+Open the frontend and register an account — all tour data is user-scoped.
+
 To stop:
 
 ```bash
@@ -65,7 +67,7 @@ dotnet run --project API/API.csproj
 dotnet run --project UI.Client/UI.Client.csproj
 ```
 
-Open http://localhost:7226.
+Open http://localhost:7226, register an account, and log in.
 
 ## Build
 
@@ -89,5 +91,18 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for layer ownership rules.
 | API        | HTTP endpoints, transport validation  |
 | BL         | Business rules, orchestration         |
 | DAL        | Persistence, external service access  |
-| Contracts  | Shared DTOs                           |
+| Contracts  | Shared DTOs (including auth models)   |
 | Tests      | Unit tests across all layers          |
+
+## Authentication
+
+Cookie-based auth via ASP.NET Core Identity. All tour and log data is scoped to the authenticated user.
+
+| Endpoint              | Description              |
+|-----------------------|--------------------------|
+| `POST /api/auth/register` | Create account       |
+| `POST /api/auth/login`    | Sign in (sets cookie)|
+| `POST /api/auth/logout`   | Sign out             |
+| `GET  /api/auth/me`       | Current user info    |
+
+All other API endpoints require authentication (return 401 without a valid session cookie).

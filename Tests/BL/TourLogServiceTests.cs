@@ -1,4 +1,5 @@
-﻿using BL.DomainModel;
+using BL.DomainModel;
+using BL.Interface;
 using BL.Service;
 using DAL.Interface;
 using DAL.PersistenceModel;
@@ -15,11 +16,13 @@ public class TourLogServiceTests
     {
         _mockTourLogRepository = new Mock<ITourLogRepository>();
         _mockMapper = new Mock<IMapper>();
-        _sut = new TourLogService(_mockTourLogRepository.Object, _mockMapper.Object);
+        _mockUserContext = TestData.MockUserContext();
+        _sut = new TourLogService(_mockTourLogRepository.Object, _mockMapper.Object, _mockUserContext.Object);
     }
 
     private Mock<ITourLogRepository> _mockTourLogRepository = null!;
     private Mock<IMapper> _mockMapper = null!;
+    private Mock<IUserContext> _mockUserContext = null!;
     private TourLogService _sut = null!;
 
     [Test]
@@ -32,7 +35,7 @@ public class TourLogServiceTests
             .Returns(tourLogPersistence);
         _mockMapper.Setup(m => m.Map<TourLogDomain>(tourLogPersistence)).Returns(tourLogDomain);
         _mockTourLogRepository
-            .Setup(r => r.CreateTourLogAsync(tourLogPersistence, CancellationToken.None))
+            .Setup(r => r.CreateTourLogAsync(tourLogPersistence, TestData.TestUserId, CancellationToken.None))
             .ReturnsAsync(tourLogPersistence);
 
         var result = await _sut.CreateTourLogAsync(tourLogDomain);
@@ -46,7 +49,7 @@ public class TourLogServiceTests
         }
 
         _mockTourLogRepository.Verify(
-            r => r.CreateTourLogAsync(tourLogPersistence, CancellationToken.None),
+            r => r.CreateTourLogAsync(tourLogPersistence, TestData.TestUserId, CancellationToken.None),
             Times.Once
         );
     }
@@ -57,7 +60,7 @@ public class TourLogServiceTests
         var tourLogPersistence = TestData.SampleTourLogPersistence();
 
         _mockTourLogRepository
-            .Setup(r => r.GetTourLogById(tourLogPersistence.Id))
+            .Setup(r => r.GetTourLogById(tourLogPersistence.Id, TestData.TestUserId))
             .Returns(tourLogPersistence);
 
         _mockMapper.Setup(static m => m.Map<TourLogDomain>(It.IsAny<TourLogPersistence>()))
@@ -72,14 +75,14 @@ public class TourLogServiceTests
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Id, Is.EqualTo(tourLogPersistence.Id));
-        _mockTourLogRepository.Verify(r => r.GetTourLogById(tourLogPersistence.Id), Times.Once);
+        _mockTourLogRepository.Verify(r => r.GetTourLogById(tourLogPersistence.Id, TestData.TestUserId), Times.Once);
     }
 
     [Test]
     public void GetTourLogById_NonExistingId_ReturnsNull()
     {
         _mockTourLogRepository
-            .Setup(static r => r.GetTourLogById(TestData.NonexistentGuid))
+            .Setup(r => r.GetTourLogById(TestData.NonexistentGuid, TestData.TestUserId))
             .Returns((TourLogPersistence)null!);
 
         var result = _sut.GetTourLogById(TestData.NonexistentGuid);
@@ -93,7 +96,7 @@ public class TourLogServiceTests
         var tourLogsPersistence = TestData.SampleTourLogPersistenceList();
         var tourLogsDomain = TestData.SampleTourLogDomainList();
         _mockTourLogRepository
-            .Setup(r => r.GetTourLogsByTourId(TestData.TestGuid)).Returns(tourLogsPersistence);
+            .Setup(r => r.GetTourLogsByTourId(TestData.TestGuid, TestData.TestUserId)).Returns(tourLogsPersistence);
 
         _mockMapper
             .Setup(m => m.Map<IEnumerable<TourLogDomain>>(tourLogsPersistence))
@@ -104,7 +107,7 @@ public class TourLogServiceTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Has.Count.EqualTo(tourLogsDomain.Count));
         _mockTourLogRepository.Verify(
-            r => r.GetTourLogsByTourId(TestData.TestGuid),
+            r => r.GetTourLogsByTourId(TestData.TestGuid, TestData.TestUserId),
             Times.Once
         );
     }
@@ -113,7 +116,7 @@ public class TourLogServiceTests
     public void GetTourLogsByTourId_NonExistingTourId_ReturnsEmptyList()
     {
         _mockTourLogRepository
-            .Setup(static r => r.GetTourLogsByTourId(TestData.NonexistentGuid));
+            .Setup(r => r.GetTourLogsByTourId(TestData.NonexistentGuid, TestData.TestUserId));
         _mockMapper
             .Setup(static m =>
                 m.Map<IEnumerable<TourLogDomain>>(It.IsAny<IEnumerable<TourLogPersistence>>())
@@ -135,7 +138,7 @@ public class TourLogServiceTests
             .Returns(tourLogPersistence);
         _mockMapper.Setup(m => m.Map<TourLogDomain>(tourLogPersistence)).Returns(tourLogDomain);
         _mockTourLogRepository
-            .Setup(r => r.UpdateTourLogAsync(tourLogPersistence, CancellationToken.None))
+            .Setup(r => r.UpdateTourLogAsync(tourLogPersistence, TestData.TestUserId, CancellationToken.None))
             .ReturnsAsync(tourLogPersistence);
 
         var result = await _sut.UpdateTourLogAsync(tourLogDomain);
@@ -149,7 +152,7 @@ public class TourLogServiceTests
         }
 
         _mockTourLogRepository.Verify(
-            r => r.UpdateTourLogAsync(tourLogPersistence, CancellationToken.None),
+            r => r.UpdateTourLogAsync(tourLogPersistence, TestData.TestUserId, CancellationToken.None),
             Times.Once
         );
     }
@@ -163,7 +166,7 @@ public class TourLogServiceTests
             .Setup(m => m.Map<TourLogPersistence>(tourLogDomain))
             .Returns(tourLogPersistence);
         _mockTourLogRepository
-            .Setup(r => r.UpdateTourLogAsync(tourLogPersistence, CancellationToken.None))
+            .Setup(r => r.UpdateTourLogAsync(tourLogPersistence, TestData.TestUserId, CancellationToken.None))
             .ThrowsAsync(new InvalidOperationException("Tour log not found"));
 
         Assert.That(
@@ -177,19 +180,19 @@ public class TourLogServiceTests
     {
         var tourLogId = TestData.SampleTourLogPersistence().Id;
         _mockTourLogRepository
-            .Setup(r => r.DeleteTourLogAsync(tourLogId, CancellationToken.None))
+            .Setup(r => r.DeleteTourLogAsync(tourLogId, TestData.TestUserId, CancellationToken.None))
             .Returns(Task.CompletedTask);
 
         await _sut.DeleteTourLogAsync(tourLogId);
 
-        _mockTourLogRepository.Verify(r => r.DeleteTourLogAsync(tourLogId, CancellationToken.None), Times.Once);
+        _mockTourLogRepository.Verify(r => r.DeleteTourLogAsync(tourLogId, TestData.TestUserId, CancellationToken.None), Times.Once);
     }
 
     [Test]
     public void DeleteTourLogAsync_NonExistingId_DoesNotThrowException()
     {
         _mockTourLogRepository
-            .Setup(r => r.DeleteTourLogAsync(TestData.NonexistentGuid, CancellationToken.None))
+            .Setup(r => r.DeleteTourLogAsync(TestData.NonexistentGuid, TestData.TestUserId, CancellationToken.None))
             .Returns(Task.CompletedTask);
 
         Assert.That(
@@ -206,7 +209,7 @@ public class TourLogServiceTests
             .Setup(m => m.Map<TourLogPersistence>(tourLogDomain))
             .Returns(tourLogPersistence);
         _mockTourLogRepository
-            .Setup(r => r.CreateTourLogAsync(tourLogPersistence, It.IsAny<CancellationToken>()))
+            .Setup(r => r.CreateTourLogAsync(tourLogPersistence, TestData.TestUserId, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new OperationCanceledException());
 
         using var cts = new CancellationTokenSource();
@@ -229,7 +232,7 @@ public class TourLogServiceTests
             .Select(static _ => TestData.SampleTourLogDomainList().First())];
 
         _mockTourLogRepository
-            .Setup(r => r.GetTourLogsByTourId(TestData.TestGuid)).Returns(largeTourLogList);
+            .Setup(r => r.GetTourLogsByTourId(TestData.TestGuid, TestData.TestUserId)).Returns(largeTourLogList);
 
         _mockMapper
             .Setup(m => m.Map<IEnumerable<TourLogDomain>>(largeTourLogList))
@@ -240,7 +243,7 @@ public class TourLogServiceTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Has.Count.EqualTo(largeTourLogDomainList.Count));
         _mockTourLogRepository.Verify(
-            r => r.GetTourLogsByTourId(TestData.TestGuid),
+            r => r.GetTourLogsByTourId(TestData.TestGuid, TestData.TestUserId),
             Times.Once
         );
     }
@@ -256,7 +259,7 @@ public class TourLogServiceTests
         _mockMapper.Setup(m => m.Map<TourLogDomain>(tourLogPersistence)).Returns(tourLogDomain);
 
         _mockTourLogRepository
-            .SetupSequence(r => r.UpdateTourLogAsync(tourLogPersistence, CancellationToken.None))
+            .SetupSequence(r => r.UpdateTourLogAsync(tourLogPersistence, TestData.TestUserId, CancellationToken.None))
             .ThrowsAsync(new DbUpdateConcurrencyException("Update conflict"))
             .ReturnsAsync(tourLogPersistence);
 

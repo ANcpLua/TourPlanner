@@ -1,17 +1,17 @@
-﻿using DAL.PersistenceModel;
+using DAL.PersistenceModel;
 
 namespace DAL.Interface;
 
 public interface ITourLogRepository
 {
-    Task<TourLogPersistence> CreateTourLogAsync(TourLogPersistence newTourLogPersistence,
+    Task<TourLogPersistence> CreateTourLogAsync(TourLogPersistence newTourLogPersistence, string userId,
         CancellationToken cancellationToken = default);
 
-    IEnumerable<TourLogPersistence> GetTourLogsByTourId(Guid tourId);
-    TourLogPersistence? GetTourLogById(Guid id);
+    IEnumerable<TourLogPersistence> GetTourLogsByTourId(Guid tourId, string userId);
+    TourLogPersistence? GetTourLogById(Guid id, string userId);
 
-    Task<TourLogPersistence> UpdateTourLogAsync(TourLogPersistence updatedTourLogPersistence,
+    Task<TourLogPersistence> UpdateTourLogAsync(TourLogPersistence updatedTourLogPersistence, string userId,
         CancellationToken cancellationToken = default);
 
-    Task DeleteTourLogAsync(Guid id, CancellationToken cancellationToken = default);
+    Task DeleteTourLogAsync(Guid id, string userId, CancellationToken cancellationToken = default);
 }

@@ -9,6 +9,8 @@ public class TourLogPersistence
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
 
+    [Required] public required string UserId { get; set; }
+
     public DateTime DateTime { get; set; } = TimeProvider.System.GetUtcNow().UtcDateTime;
 
     [Required] public required string Comment { get; set; }

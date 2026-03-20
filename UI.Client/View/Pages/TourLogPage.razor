@@ -2,6 +2,7 @@
 @page "/log/list/{TourId:guid?}"
 @using UI.View.TourLogComponents
 @using UI.ViewModel
+@attribute [Authorize]
 @inject TourLogViewModel TourLogViewModel
 @inject TourViewModel TourViewModel
 

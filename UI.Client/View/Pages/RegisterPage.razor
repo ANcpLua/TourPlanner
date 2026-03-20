@@ -1,0 +1,82 @@
+@page "/register"
+@using System.Net.Http.Json
+@using Contracts.Auth
+@using UI.Auth
+@attribute [AllowAnonymous]
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject CookieAuthenticationStateProvider AuthStateProvider
+
+<div class="tour-planner-app">
+    <div class="container-fluid tour-planner-container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-6 col-lg-4">
+                <PageTitle>Register</PageTitle>
+                <h2 class="text-center mb-4">Register</h2>
+
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <div class="alert alert-danger">@_errorMessage</div>
+                }
+
+                <EditForm Model="_model" OnValidSubmit="HandleRegister" FormName="register">
+                    <DataAnnotationsValidator/>
+                    <ValidationSummary/>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <InputText @bind-Value="_model.Email" class="form-control" type="email"/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <InputText @bind-Value="_model.Password" class="form-control" type="password"/>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100" disabled="@_isLoading">
+                        @(_isLoading ? "Registering..." : "Register")
+                    </button>
+                </EditForm>
+
+                <p class="text-center mt-3">
+                    Already have an account? <a href="/login">Login</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private readonly RegisterRequest _model = new() { Email = "", Password = "" };
+    private string? _errorMessage;
+    private bool _isLoading;
+
+    private async Task HandleRegister()
+    {
+        _isLoading = true;
+        _errorMessage = null;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/auth/register", _model);
+            if (response.IsSuccessStatusCode)
+            {
+                AuthStateProvider.NotifyAuthStateChanged();
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                var problem = await response.Content.ReadAsStringAsync();
+                _errorMessage = problem.Contains("DuplicateUserName")
+                    ? "An account with this email already exists."
+                    : "Registration failed. Please check your input.";
+            }
+        }
+        catch
+        {
+            _errorMessage = "Unable to reach the server.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+}

@@ -8,7 +8,7 @@ public static class RouteEndpoints
 {
     public static IEndpointRouteBuilder MapRouteEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var routes = endpoints.MapGroup("/api/routes").WithTags("Routes");
+        var routes = endpoints.MapGroup("/api/routes").WithTags("Routes").RequireAuthorization();
         routes.MapPost("/resolve", ResolveRoute);
         return endpoints;
     }

@@ -23,6 +23,7 @@ public class BusinessLogicModuleTests
         builder.RegisterInstance(Mock.Of<ITourRepository>()).As<ITourRepository>();
         builder.RegisterInstance(Mock.Of<ITourLogRepository>()).As<ITourLogRepository>();
         builder.RegisterInstance(Mock.Of<IMapper>()).As<IMapper>();
+        builder.RegisterInstance(Mock.Of<IUserContext>()).As<IUserContext>();
 
         builder.RegisterModule(new BusinessLogicModule(config));
 

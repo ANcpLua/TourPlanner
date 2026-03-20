@@ -24,6 +24,7 @@ public class MappingConfigurationTests
         var tourPersistence = new TourPersistence
         {
             Id = Guid.NewGuid(),
+            UserId = TestData.TestUserId,
             Name = "Test Tour",
             Description = "Test Description",
             From = "Start Location",
@@ -38,6 +39,7 @@ public class MappingConfigurationTests
                 new TourLogPersistence
                 {
                     Id = Guid.NewGuid(),
+                    UserId = TestData.TestUserId,
                     Comment = "Test comment",
                     DateTime = TimeProvider.System.GetUtcNow().UtcDateTime,
                     Difficulty = 3.0,
@@ -178,6 +180,7 @@ public class MappingConfigurationTests
         var tourLogPersistence = new TourLogPersistence
         {
             Id = Guid.NewGuid(),
+            UserId = TestData.TestUserId,
             DateTime = TimeProvider.System.GetUtcNow().UtcDateTime,
             Comment = "Persistence test comment",
             Difficulty = 2.5,
@@ -244,6 +247,7 @@ public class MappingConfigurationTests
     {
         var tourLogPersistence = new TourLogPersistence
         {
+            UserId = TestData.TestUserId,
             Comment = "Default DateTime test"
         };
 
@@ -253,9 +257,10 @@ public class MappingConfigurationTests
     [Test]
     public void TourLogPersistence_WithTourPersistence_NavigationPropertyWorks()
     {
-        var tour = new TourPersistence { Name = "Navigation Test Tour", Description = "", From = "", To = "", TransportType = "" };
+        var tour = new TourPersistence { UserId = TestData.TestUserId, Name = "Navigation Test Tour", Description = "", From = "", To = "", TransportType = "" };
         var tourLog = new TourLogPersistence
         {
+            UserId = TestData.TestUserId,
             TourPersistence = tour,
             Comment = "Navigation test"
         };

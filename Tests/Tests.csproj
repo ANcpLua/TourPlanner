@@ -10,6 +10,7 @@
 
     <ItemGroup>
         <PackageReference Include="Mapster"/>
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory"/>
         <PackageReference Include="SixLabors.ImageSharp"/>
         <PackageReference Include="Autofac.Extensions.DependencyInjection"/>

@@ -14,7 +14,11 @@
         <MicrosoftEntityFrameworkCoreToolsVersion>10.0.5</MicrosoftEntityFrameworkCoreToolsVersion>
         <NpgsqlEntityFrameworkCorePostgreSQLVersion>10.0.1</NpgsqlEntityFrameworkCorePostgreSQLVersion>
 
+        <!-- ASP.NET Core Identity -->
+        <MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>10.0.5</MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>
+
         <!-- ASP.NET Core 10 -->
+        <MicrosoftAspNetCoreComponentsAuthorizationVersion>10.0.5</MicrosoftAspNetCoreComponentsAuthorizationVersion>
         <MicrosoftAspNetCoreComponentsWebAssemblyVersion>10.0.5</MicrosoftAspNetCoreComponentsWebAssemblyVersion>
         <MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion>10.0.5</MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion>
         <MicrosoftAspNetCoreOpenApiVersion>10.0.4</MicrosoftAspNetCoreOpenApiVersion>

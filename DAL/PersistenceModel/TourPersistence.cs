@@ -11,6 +11,7 @@ public class TourPersistence
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
 
+    [Required] public required string UserId { get; set; }
     [Required] public required string Name { get; set; }
     [Required] public required string Description { get; set; }
     [Required] public required string From { get; set; }

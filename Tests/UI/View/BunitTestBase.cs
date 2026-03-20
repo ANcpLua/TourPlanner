@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using UI.Auth;
 using UI.Decorator;
 using UI.Model;
 using UI.Service.Interface;
@@ -19,6 +21,7 @@ public abstract class BunitTestBase : IDisposable
         JSInterop.Mode = JSRuntimeMode.Loose;
 
         RegisterServices();
+        RegisterAuth();
         OnSetup();
     }
 
@@ -85,6 +88,19 @@ public abstract class BunitTestBase : IDisposable
         Context.Services.AddScoped<TourLogViewModel>();
         Context.Services.AddScoped<SearchViewModel>();
         Context.Services.AddScoped<ReportViewModel>();
+    }
+
+    private void RegisterAuth()
+    {
+        var httpClient = new HttpClient { BaseAddress = new Uri("http://localhost") };
+        Context.Services.AddSingleton(httpClient);
+        Context.Services.AddSingleton(new CookieAuthenticationStateProvider(httpClient));
+
+        var authContext = Context.AddAuthorization();
+        authContext.SetAuthorized("test@example.com");
+        authContext.SetClaims(
+            new Claim(ClaimTypes.NameIdentifier, TestData.TestUserId),
+            new Claim(ClaimTypes.Email, "test@example.com"));
     }
 }
 

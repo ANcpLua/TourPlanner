@@ -16,7 +16,7 @@ public static class ReportEndpoints
 
     public static IEndpointRouteBuilder MapReportEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var reports = endpoints.MapGroup("/api/reports").WithTags("Reports");
+        var reports = endpoints.MapGroup("/api/reports").WithTags("Reports").RequireAuthorization();
         reports.MapGet("/summary", GetSummaryReport);
         reports.MapGet("/tour/{tourId:guid}", GetTourReport);
         reports.MapGet("/export/{tourId:guid}", ExportTourToJson);

@@ -1,8 +1,10 @@
 using Blazored.Toast;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Serilog;
 using UI;
+using UI.Auth;
 using UI.Decorator;
 using UI.Service;
 using UI.Service.Interface;
@@ -28,6 +30,11 @@ builder.Services.AddScoped<IHttpService, HttpService>();
 builder.Services.AddScoped<IToastServiceWrapper, ToastService>();
 builder.Services.AddScoped<IRouteApiService, RouteApiService>();
 builder.Services.AddScoped<TryCatchToastWrapper>();
+
+builder.Services.AddAuthorizationCore();
+builder.Services.AddScoped<CookieAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(sp =>
+    sp.GetRequiredService<CookieAuthenticationStateProvider>());
 
 builder.Services.AddScoped<TourViewModel>();
 builder.Services.AddScoped<TourLogViewModel>();
