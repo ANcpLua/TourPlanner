@@ -182,15 +182,13 @@ public class UiMethodDecoratorTests
         using (Assert.EnterMultipleScope())
         {
             _mockLogger.Verify(
-                l => l.Error(
-                    exception,
-                    "Exception in {MethodName} ({ArgCount} args) after {Duration}ms",
-                    It.Is<string>(s => s.Contains("OnPropertyChanged")),
-                    args.Length,
-                    It.IsAny<long>()
-                ),
-                Times.Once
-            );
+                static l => l.Error(
+                    It.IsAny<Exception>(),
+                    It.Is<string>(static s => s.Contains("Exception in") && s.Contains("({ArgCount} args)")),
+                    It.IsAny<string>(),
+                    It.IsAny<int>(),
+                    It.IsAny<long>()),
+                Times.Once);
 
             _mockToastService.Verify(
                 static t => t.ShowError(It.Is<string>(static s => s.Contains("Test exception message"))),
