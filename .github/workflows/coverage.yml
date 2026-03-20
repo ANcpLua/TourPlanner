@@ -34,6 +34,15 @@ jobs:
         run: |
           ./Tests/bin/Release/net10.0/Tests \
             --coverlet --coverlet-output-format cobertura \
+            --coverlet-exclude-by-file "**/Program.cs" \
+            --coverlet-exclude-by-file "**/*.g.cs" \
+            --coverlet-exclude-by-file "**/*.g.i.cs" \
+            --coverlet-exclude-by-file "**/*.designer.cs" \
+            --coverlet-exclude-by-file "**/*.Generated.cs" \
+            --coverlet-exclude "[*]*.Migrations.*" \
+            --coverlet-exclude-by-attribute ExcludeFromCodeCoverage \
+            --coverlet-exclude-by-attribute GeneratedCodeAttribute \
+            --coverlet-exclude-by-attribute CompilerGeneratedAttribute \
             --results-directory TestResults
 
       - name: Upload coverage to Codecov
