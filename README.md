@@ -1,5 +1,8 @@
 # TourPlanner (Blazor)
 
+[![Tests and Coverage](https://github.com/ANcpLua/TourPlanner/actions/workflows/coverage.yml/badge.svg)](https://github.com/ANcpLua/TourPlanner/actions/workflows/coverage.yml)
+[![codecov](https://codecov.io/gh/ANcpLua/TourPlanner/graph/badge.svg)](https://codecov.io/gh/ANcpLua/TourPlanner)
+
 SWEN2 2026 -- Tour planning application with .NET 10 backend and Blazor WebAssembly frontend.
 
 ## Quick Start (Docker)
