@@ -12,9 +12,10 @@ namespace UI.Decorator;
                 AttributeTargets.Module)]
 public class UiMethodDecorator : Attribute, IMethodDecorator
 {
-    private object[] _args = [];
+    // Fody instantiates per call — mutable fields are safe here
     private ILogger _logger = Log.Logger;
     private string _methodName = "";
+    private int _argCount;
     private Stopwatch _stopwatch = new();
     private IToastServiceWrapper? _toastService;
 
@@ -22,12 +23,8 @@ public class UiMethodDecorator : Attribute, IMethodDecorator
     {
         _logger = Log.Logger;
         _methodName = $"{method.DeclaringType?.FullName}.{method.Name}";
-        _args = args;
-        _logger.Information(
-            "Entering {MethodName} with arguments: {@Arguments}",
-            _methodName,
-            args
-        );
+        _argCount = args.Length;
+        _logger.Information("Entering {MethodName} ({ArgCount} args)", _methodName, _argCount);
         _stopwatch = Stopwatch.StartNew();
 
         if (instance is BaseViewModel viewModel) _toastService = viewModel.ToastServiceWrapper;
@@ -43,8 +40,7 @@ public class UiMethodDecorator : Attribute, IMethodDecorator
         _logger.Information(
             "Exiting {MethodName} after {Duration}ms",
             _methodName,
-            _stopwatch.ElapsedMilliseconds
-        );
+            _stopwatch.ElapsedMilliseconds);
     }
 
     public void OnException(Exception exception)
@@ -52,11 +48,10 @@ public class UiMethodDecorator : Attribute, IMethodDecorator
         _stopwatch.Stop();
         _logger.Error(
             exception,
-            "Exception in {MethodName} with arguments: {@Arguments} after {Duration}ms",
+            "Exception in {MethodName} ({ArgCount} args) after {Duration}ms",
             _methodName,
-            _args,
-            _stopwatch.ElapsedMilliseconds
-        );
+            _argCount,
+            _stopwatch.ElapsedMilliseconds);
         _toastService?.ShowError($"An error occurred in {_methodName}: {exception.Message}");
     }
 }
