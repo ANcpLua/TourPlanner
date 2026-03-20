@@ -51,7 +51,7 @@
     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
         <button type="submit" class="btn btn-primary"
                 disabled="@(ViewModel.IsProcessing || !ViewModel.IsFormValid)">
-            @(ViewModel.IsProcessing ? "Saving..." : "Save Tour")
+            @ViewModel.SaveButtonText
         </button>
         <button type="button" class="btn btn-secondary" @onclick="ViewModel.ShowAddTourForm">Cancel</button>
     </div>

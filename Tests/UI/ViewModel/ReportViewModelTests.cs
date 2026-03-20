@@ -26,6 +26,22 @@ public sealed class ReportViewModelTests
     private Mock<IBlazorDownloadFileService> _mockDownloadFileService = null!;
     private ReportViewModel _reportViewModel = null!;
 
+    [TestCase(true, "Generating...")]
+    [TestCase(false, "Generate Summary")]
+    public void SummaryButtonText_ReflectsProcessing(bool processing, string expected)
+    {
+        _reportViewModel.IsProcessing = processing;
+        Assert.That(_reportViewModel.SummaryButtonText, Is.EqualTo(expected));
+    }
+
+    [TestCase(true, "Exporting...")]
+    [TestCase(false, "Export")]
+    public void ExportButtonText_ReflectsProcessing(bool processing, string expected)
+    {
+        _reportViewModel.IsProcessing = processing;
+        Assert.That(_reportViewModel.ExportButtonText, Is.EqualTo(expected));
+    }
+
     [Test]
     public void CurrentReportUrl_Change_RaisesPropertyChanged()
     {

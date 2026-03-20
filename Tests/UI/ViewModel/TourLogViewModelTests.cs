@@ -27,6 +27,45 @@ public class TourLogViewModelTests
     private Mock<IJSRuntime> _mockJsRuntime = null!;
     private TourLogViewModel _viewModel = null!;
 
+    [TestCase(true, "Hide Form")]
+    [TestCase(false, "Add New Log")]
+    public void LogFormToggleButtonText_ReflectsVisibility(bool visible, string expected)
+    {
+        _viewModel.IsLogFormVisible = visible;
+        Assert.That(_viewModel.LogFormToggleButtonText, Is.EqualTo(expected));
+    }
+
+    [Test]
+    public void LogFormTitle_NewLog_ShowsAddText()
+    {
+        _viewModel.SelectedTourLog = new TourLog { Id = Guid.Empty };
+        Assert.That(_viewModel.LogFormTitle, Is.EqualTo("Add New Log"));
+    }
+
+    [Test]
+    public void LogFormTitle_ExistingLog_ShowsEditText()
+    {
+        _viewModel.SelectedTourLog = TestData.SampleTourLog();
+        Assert.That(_viewModel.LogFormTitle, Is.EqualTo("Edit Log"));
+    }
+
+    [Test]
+    public void EditLogButtonText_WhenEditingThisLog_ShowsHideText()
+    {
+        var logId = Guid.NewGuid();
+        _viewModel.IsEditing = true;
+        _viewModel.IsLogFormVisible = true;
+        _viewModel.SelectedTourLog = new TourLog { Id = logId };
+        Assert.That(_viewModel.EditLogButtonText(logId), Is.EqualTo("Hide Edit Form"));
+    }
+
+    [Test]
+    public void EditLogButtonText_WhenNotEditing_ShowsEditText()
+    {
+        _viewModel.IsEditing = false;
+        Assert.That(_viewModel.EditLogButtonText(Guid.NewGuid()), Is.EqualTo("Edit"));
+    }
+
     [Test]
     public void Constructor_ShouldInitializePropertiesCorrectly()
     {

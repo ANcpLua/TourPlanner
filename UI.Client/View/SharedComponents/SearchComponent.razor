@@ -37,7 +37,7 @@
                             </p>
                             <p>
                                 <span
-                                    class="attribute-label">Child Friendly:</span> @(tour.IsChildFriendly ? "Yes" : "No")
+                                    class="attribute-label">Child Friendly:</span> @tour.ChildFriendlyText
                             </p>
                             <p>
                                 <span class="attribute-label">Transport:</span> @tour.TransportType
@@ -56,11 +56,11 @@
                             </p>
                             <p>
                                 <span
-                                    class="attribute-label">Description:</span> @(string.IsNullOrEmpty(tour.Description) ? "N/A" : tour.Description)
+                                    class="attribute-label">Description:</span> @tour.DescriptionDisplay
                             </p>
                             <p>
                                 <span
-                                    class="attribute-label">Image:</span> @(string.IsNullOrEmpty(tour.ImagePath) ? "N/A" : "Available")
+                                    class="attribute-label">Image:</span> @tour.ImageDisplay
                             </p>
                             <p>
                                 <span class="attribute-label">ID:</span> @tour.Id

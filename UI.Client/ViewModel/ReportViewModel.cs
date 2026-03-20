@@ -35,6 +35,9 @@ public class ReportViewModel(
         set => SetProperty(ref field, value);
     } = Guid.Empty;
 
+    public string SummaryButtonText => IsProcessing ? "Generating..." : "Generate Summary";
+    public string ExportButtonText => IsProcessing ? "Exporting..." : "Export";
+
     public ObservableCollection<Tour> Tours
     {
         get;

@@ -21,7 +21,7 @@
                 </p>
                 <div class="btn-group">
                     <button class="btn btn-success" @onclick="() => ViewModel.EditHandleTourLogAction(log.Id)">
-                        @(ViewModel is { IsEditing: true, IsLogFormVisible: true } && ViewModel.SelectedTourLog.Id == log.Id ? "Hide Edit Form" : "Edit")
+                        @ViewModel.EditLogButtonText(log.Id)
                     </button>
                     <button class="btn btn-danger" @onclick="() => ViewModel.DeleteTourLogAsync(log.Id)">Delete</button>
                 </div>

@@ -45,6 +45,10 @@ public class TourLogViewModel(
         }
     }
 
+    public string LogFormToggleButtonText => IsLogFormVisible ? "Hide Form" : "Add New Log";
+    public string LogFormTitle => SelectedTourLog.Id == Guid.Empty ? "Add New Log" : "Edit Log";
+    public string EditLogButtonText(Guid logId) => IsEditing && IsLogFormVisible && SelectedTourLog.Id == logId ? "Hide Edit Form" : "Edit";
+
     public bool IsFormValid =>
         !string.IsNullOrWhiteSpace(SelectedTourLog.Comment) &&
         SelectedTourLog.Difficulty is >= 1 and <= 5 &&

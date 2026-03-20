@@ -21,7 +21,7 @@
                     </select>
                     <button class="btn btn-primary add-log-btn" @onclick="TourLogViewModel.ToggleLogForm"
                             disabled="@(TourLogViewModel.SelectedTourId == null)">
-                        @(TourLogViewModel.IsLogFormVisible ? "Hide Form" : "Add New Log")
+                        @TourLogViewModel.LogFormToggleButtonText
                     </button>
                 </div>
                 <div class="tour-list-container-tour-card">
@@ -40,7 +40,7 @@
                 @if (TourLogViewModel.IsLogFormVisible)
                 {
                     <div class="tour-form">
-                        <h5>@(TourLogViewModel.SelectedTourLog.Id == Guid.Empty ? "Add New Log" : "Edit Log")</h5>
+                        <h5>@TourLogViewModel.LogFormTitle</h5>
                         <TourLogFormComponent ViewModel="TourLogViewModel"/>
                     </div>
                 }

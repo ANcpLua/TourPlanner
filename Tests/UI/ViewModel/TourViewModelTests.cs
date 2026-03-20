@@ -36,6 +36,46 @@ public class TourViewModelTests
     private Mock<MapViewModel> _mockMapViewModel = null!;
     private TourViewModel _viewModel = null!;
 
+    [TestCase(true, "Hide Map")]
+    [TestCase(false, "Show Map")]
+    public void MapToggleButtonText_ReflectsVisibility(bool visible, string expected)
+    {
+        _viewModel.IsMapVisible = visible;
+        Assert.That(_viewModel.MapToggleButtonText, Is.EqualTo(expected));
+    }
+
+    [TestCase(true, "Hide Form")]
+    [TestCase(false, "Add Tour")]
+    public void FormToggleButtonText_ReflectsVisibility(bool visible, string expected)
+    {
+        _viewModel.IsFormVisible = visible;
+        Assert.That(_viewModel.FormToggleButtonText, Is.EqualTo(expected));
+    }
+
+    [TestCase(true, "Saving...")]
+    [TestCase(false, "Save Tour")]
+    public void SaveButtonText_ReflectsProcessing(bool processing, string expected)
+    {
+        _viewModel.IsProcessing = processing;
+        Assert.That(_viewModel.SaveButtonText, Is.EqualTo(expected));
+    }
+
+    [Test]
+    public void EditButtonText_WhenEditingThisTour_ShowsHideText()
+    {
+        var id = Guid.NewGuid();
+        _viewModel.IsFormVisible = true;
+        _viewModel.SelectedTour = TestData.SampleTour(id: id);
+        Assert.That(_viewModel.EditButtonText(id), Is.EqualTo("Hide Edit Form"));
+    }
+
+    [Test]
+    public void EditButtonText_WhenNotEditing_ShowsEditText()
+    {
+        _viewModel.IsFormVisible = false;
+        Assert.That(_viewModel.EditButtonText(Guid.NewGuid()), Is.EqualTo("Edit"));
+    }
+
     [Test]
     public void Constructor_ShouldInitializePropertiesCorrectly()
     {

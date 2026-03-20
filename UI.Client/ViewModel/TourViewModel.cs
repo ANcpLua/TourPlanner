@@ -59,6 +59,11 @@ public class TourViewModel(
 
     public IEnumerable<string> FilteredToCities => mapViewModel.CityNames.Where(city => city != SelectedTour.From);
 
+    public string MapToggleButtonText => IsMapVisible ? "Hide Map" : "Show Map";
+    public string FormToggleButtonText => IsFormVisible ? "Hide Form" : "Add Tour";
+    public string SaveButtonText => IsProcessing ? "Saving..." : "Save Tour";
+    public string EditButtonText(Guid tourId) => IsFormVisible && SelectedTour.Id == tourId ? "Hide Edit Form" : "Edit";
+
     public void ToggleMap()
     {
         IsMapVisible = !IsMapVisible;

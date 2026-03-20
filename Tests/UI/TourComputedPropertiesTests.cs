@@ -90,4 +90,68 @@ public class TourComputedPropertiesTests
 
         return tour.IsChildFriendly;
     }
+
+    [TestCase(true, "Yes")]
+    [TestCase(false, "No")]
+    public void ChildFriendlyText_ReflectsState(bool friendly, string expected)
+    {
+        var tour = TestData.SampleTour(tourLogs: friendly
+            ? [TestData.SampleTourLog(rating: 5, difficulty: 1)]
+            : []);
+        Assert.That(tour.ChildFriendlyText, Is.EqualTo(expected));
+    }
+
+    [TestCase("A description", "A description")]
+    [TestCase("", "N/A")]
+    [TestCase(null, "N/A")]
+    public void DescriptionDisplay_FormatsCorrectly(string? description, string expected)
+    {
+        var tour = TestData.SampleTour(description: description ?? "");
+        if (description is null)
+        {
+            // Force null after construction since 'required' prevents null in constructor
+            tour.Description = null!;
+        }
+        Assert.That(tour.DescriptionDisplay, Is.EqualTo(expected));
+    }
+
+    [TestCase("/images/test.png", "Available")]
+    [TestCase("", "N/A")]
+    [TestCase(null, "N/A")]
+    public void ImageDisplay_FormatsCorrectly(string? imagePath, string expected)
+    {
+        var tour = TestData.SampleTour(imagePath: imagePath);
+        Assert.That(tour.ImageDisplay, Is.EqualTo(expected));
+    }
+
+    [TestCase(100.5, "100.50 meters")]
+    [TestCase(null, "N/A meters")]
+    public void DistanceDisplay_FormatsCorrectly(double? distance, string expected)
+    {
+        var tour = TestData.SampleTour(distance: distance);
+        Assert.That(tour.DistanceDisplay, Is.EqualTo(expected));
+    }
+
+    [TestCase(60.0, "60 minutes")]
+    [TestCase(null, "N/A minutes")]
+    public void EstimatedTimeDisplay_FormatsCorrectly(double? time, string expected)
+    {
+        var tour = TestData.SampleTour(estimatedTime: time);
+        Assert.That(tour.EstimatedTimeDisplay, Is.EqualTo(expected));
+    }
+
+    [Test]
+    public void AverageRatingDisplay_WithRating_FormatsValue()
+    {
+        var tour = TestData.SampleTour(tourLogs: [TestData.SampleTourLog(rating: 4.5)]);
+        Assert.That(tour.AverageRatingDisplay, Is.EqualTo("4.5"));
+    }
+
+    [Test]
+    public void AverageRatingDisplay_NoLogs_ShowsNA()
+    {
+        var tour = TestData.SampleTour();
+        tour.TourLogs.Clear();
+        Assert.That(tour.AverageRatingDisplay, Is.EqualTo("N/A"));
+    }
 }

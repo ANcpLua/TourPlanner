@@ -56,4 +56,11 @@ public class Tour
     public bool IsChildFriendly =>
         TourLogs.Count > 0 &&
         TourLogs.All(static x => x is { Difficulty: <= 2, Rating: >= 3 });
+
+    [JsonIgnore] public string ChildFriendlyText => IsChildFriendly ? "Yes" : "No";
+    [JsonIgnore] public string DescriptionDisplay => string.IsNullOrEmpty(Description) ? "N/A" : Description;
+    [JsonIgnore] public string ImageDisplay => string.IsNullOrEmpty(ImagePath) ? "N/A" : "Available";
+    [JsonIgnore] public string DistanceDisplay => $"{Distance?.ToString("F2") ?? "N/A"} meters";
+    [JsonIgnore] public string EstimatedTimeDisplay => $"{EstimatedTime?.ToString("F0") ?? "N/A"} minutes";
+    [JsonIgnore] public string AverageRatingDisplay => AverageRating?.ToString("F1") ?? "N/A";
 }
