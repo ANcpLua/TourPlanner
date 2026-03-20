@@ -54,7 +54,7 @@ public class OpenRouteServiceRepository(IHttpClientFactory httpClientFactory, IC
             "Car" => "driving-car",
             "Bike" => "cycling-regular",
             "Foot" => "foot-walking",
-            _ => "driving-car"
+            _ => throw new ArgumentOutOfRangeException(nameof(transportType), transportType, "Unsupported transport type")
         };
     }
 }

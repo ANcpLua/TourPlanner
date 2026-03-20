@@ -149,16 +149,17 @@ public class FileServiceTests
     }
 
     [Test]
-    public Task ImportTourFromJsonAsync_InvalidJson_DoesNotCreateTour()
+    public void ImportTourFromJsonAsync_InvalidJson_DoesNotCreateTour()
     {
         const string invalidJson = "{invalid json}";
         _mockTourService
             .Setup(s => s.CreateTourAsync(It.IsAny<TourDomain>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((TourDomain)null!);
 
-        Assert.ThrowsAsync<JsonException>(() => _fileService.ImportTourFromJsonAsync(invalidJson));
+        Assert.That(
+            () => _fileService.ImportTourFromJsonAsync(invalidJson),
+            Throws.TypeOf<JsonException>());
         _mockTourService.Verify(s => s.CreateTourAsync(It.IsAny<TourDomain>(), It.IsAny<CancellationToken>()),
             Times.Never);
-        return Task.CompletedTask;
     }
 }

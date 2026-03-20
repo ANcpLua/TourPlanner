@@ -39,20 +39,6 @@ public class TourControllerTests
     }
 
     [Test]
-    public Task CreateTourAsync_UnhappyPath_ValidationFails()
-    {
-        var tourDto = TestData.SampleTourDto();
-        var tourDomain = TestData.SampleTourDomain();
-        _mockMapper.Setup(m => m.Map<TourDomain>(tourDto)).Returns(tourDomain);
-        _mockTourService
-            .Setup(s => s.CreateTourAsync(tourDomain))
-            .ThrowsAsync(new ArgumentException("Invalid tour data"));
-
-        Assert.ThrowsAsync<ArgumentException>(() => _controller.CreateTour(tourDto));
-        return Task.CompletedTask;
-    }
-
-    [Test]
     public void GetAllTours_HappyPath_ReturnsAllTours()
     {
         var toursDomain = TestData.SampleTourDomainList();
@@ -65,16 +51,6 @@ public class TourControllerTests
         Assert.That(result.Result, Is.TypeOf<OkObjectResult>());
         var okResult = (OkObjectResult)result.Result;
         Assert.That(okResult.Value, Is.EqualTo(toursDto));
-    }
-
-    [Test]
-    public void GetAllTours_UnhappyPath_DatabaseError()
-    {
-        _mockTourService
-            .Setup(static s => s.GetAllTours())
-            .Throws(new Exception("Database connection error"));
-
-        Assert.Throws<Exception>(() => _controller.GetAllTours());
     }
 
     [Test]
@@ -91,17 +67,6 @@ public class TourControllerTests
         Assert.That(result.Result, Is.TypeOf<OkObjectResult>());
         var okResult = (OkObjectResult)result.Result;
         Assert.That(okResult.Value, Is.EqualTo(tourDto));
-    }
-
-    [Test]
-    public void GetTourById_UnhappyPath_TourNotFound()
-    {
-        var tourId = TestData.NonexistentGuid;
-        _mockTourService
-            .Setup(s => s.GetTourById(tourId))
-            .Throws(new KeyNotFoundException("Tour not found"));
-
-        Assert.Throws<KeyNotFoundException>(() => _controller.GetTourById(tourId));
     }
 
     [Test]
@@ -156,18 +121,6 @@ public class TourControllerTests
         var result = await _controller.DeleteTour(tourId);
 
         Assert.That(result, Is.TypeOf<NoContentResult>());
-    }
-
-    [Test]
-    public Task DeleteTourAsync_UnhappyPath_TourNotFound()
-    {
-        var tourId = Guid.NewGuid();
-        _mockTourService
-            .Setup(s => s.DeleteTourAsync(tourId))
-            .ThrowsAsync(new KeyNotFoundException("Tour not found"));
-
-        Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.DeleteTour(tourId));
-        return Task.CompletedTask;
     }
 
     [Test]

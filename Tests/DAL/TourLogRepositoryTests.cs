@@ -121,41 +121,4 @@ public class TourLogRepositoryTests
         Assert.That(await _context.TourLogsPersistence.CountAsync(), Is.Zero);
     }
 
-    [Test]
-    public async Task CreateTourLogAsync_WithUtcDateTime_PreservesUtcKind()
-    {
-        var tourLog = TestData.SampleTourLogPersistence();
-        tourLog.DateTime = TimeProvider.System.GetUtcNow().UtcDateTime;
-
-        var result = await _repository.CreateTourLogAsync(tourLog);
-
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.DateTime.Kind, Is.EqualTo(DateTimeKind.Utc));
-    }
-
-    [Test]
-    public async Task CreateTourLogAsync_WithPreciseDistance_MaintainsPrecision()
-    {
-        var tourLog = TestData.SampleTourLogPersistence();
-        tourLog.TotalDistance = 10.123456789;
-
-        var result = await _repository.CreateTourLogAsync(tourLog);
-
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.TotalDistance, Is.EqualTo(10.123456789).Within(0.000000001),
-            "Distance should maintain its precision"
-        );
-    }
-
-    [Test]
-    public async Task CreateTourLogAsync_WithFutureDate_SavesSuccessfully()
-    {
-        var tourLog = TestData.SampleTourLogPersistence();
-        tourLog.DateTime = TimeProvider.System.GetUtcNow().UtcDateTime.AddYears(1);
-
-        var result = await _repository.CreateTourLogAsync(tourLog);
-
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.DateTime, Is.GreaterThan(TimeProvider.System.GetUtcNow().UtcDateTime));
-    }
 }

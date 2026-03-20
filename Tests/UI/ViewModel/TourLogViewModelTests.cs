@@ -75,7 +75,7 @@ public class TourLogViewModelTests
     }
 
     [Test]
-    public Task SelectedTourId_WhenSetToValidGuid_ShouldLoadTourLogs()
+    public void SelectedTourId_WhenSetToValidGuid_ShouldLoadTourLogs()
     {
         var newTourId = TestData.SampleTour().Id;
         _mockHttpService
@@ -85,7 +85,6 @@ public class TourLogViewModelTests
         _viewModel.SelectedTourId = newTourId;
 
         Assert.That(_viewModel.SelectedTourId, Is.EqualTo(newTourId));
-        return Task.CompletedTask;
     }
 
     [Test]

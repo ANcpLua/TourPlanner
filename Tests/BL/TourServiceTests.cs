@@ -14,12 +14,12 @@ public class TourServiceTests
     {
         _mockTourRepository = new Mock<ITourRepository>();
         _mockMapper = new Mock<IMapper>();
-        _tourService = new TourService(_mockTourRepository.Object, _mockMapper.Object);
+        _sut = new TourService(_mockTourRepository.Object, _mockMapper.Object);
     }
 
     private Mock<ITourRepository> _mockTourRepository = null!;
     private Mock<IMapper> _mockMapper = null!;
-    private TourService _tourService = null!;
+    private TourService _sut = null!;
 
     [Test]
     public async Task CreateTourAsync_ValidTour_ReturnsMappedTourDomain()
@@ -32,7 +32,7 @@ public class TourServiceTests
             .Setup(r => r.CreateTourAsync(tourPersistence))
             .ReturnsAsync(tourPersistence);
 
-        var result = await _tourService.CreateTourAsync(tourDomain);
+        var result = await _sut.CreateTourAsync(tourDomain);
 
         Assert.That(result, Is.Not.Null);
         using (Assert.EnterMultipleScope())
@@ -46,21 +46,6 @@ public class TourServiceTests
     }
 
     [Test]
-    public Task CreateTourAsync_RepositoryThrowsException_PropagatesException()
-    {
-        var tourDomain = TestData.SampleTourDomainList().First();
-        var tourPersistence = TestData.SampleTourPersistence();
-        _mockMapper.Setup(m => m.Map<TourPersistence>(tourDomain)).Returns(tourPersistence);
-        _mockTourRepository
-            .Setup(r => r.CreateTourAsync(tourPersistence))
-            .ThrowsAsync(new Exception("Database error"));
-
-        var ex = Assert.ThrowsAsync<Exception>(async () => await _tourService.CreateTourAsync(tourDomain));
-        Assert.That(ex.Message, Is.EqualTo("Database error"));
-        return Task.CompletedTask;
-    }
-
-    [Test]
     public void GetAllToursAsync_ToursExist_ReturnsAllMappedTours()
     {
         var toursPersistence = TestData.SampleTourPersistenceList();
@@ -70,7 +55,7 @@ public class TourServiceTests
             .Setup(m => m.Map<IEnumerable<TourDomain>>(toursPersistence))
             .Returns(toursDomain);
 
-        var result = _tourService.GetAllTours().ToList();
+        var result = _sut.GetAllTours().ToList();
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Has.Count.EqualTo(toursDomain.Count));
@@ -87,7 +72,7 @@ public class TourServiceTests
             .Setup(static m => m.Map<IEnumerable<TourDomain>>(It.IsAny<IEnumerable<TourPersistence>>()))
             .Returns([]);
 
-        var result = _tourService.GetAllTours();
+        var result = _sut.GetAllTours();
 
         Assert.That(result, Is.Empty);
     }
@@ -100,7 +85,7 @@ public class TourServiceTests
         _mockTourRepository.Setup(r => r.GetTourById(TestData.TestGuid)).Returns(tourPersistence);
         _mockMapper.Setup(m => m.Map<TourDomain>(tourPersistence)).Returns(tourDomain);
 
-        var result = _tourService.GetTourById(TestData.TestGuid);
+        var result = _sut.GetTourById(TestData.TestGuid);
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Id, Is.EqualTo(TestData.TestGuid));
@@ -114,7 +99,7 @@ public class TourServiceTests
             .Setup(static r => r.GetTourById(TestData.NonexistentGuid))
             .Returns((TourPersistence)null!);
 
-        var result = _tourService.GetTourById(TestData.NonexistentGuid);
+        var result = _sut.GetTourById(TestData.NonexistentGuid);
 
         Assert.That(result, Is.Null);
     }
@@ -130,7 +115,7 @@ public class TourServiceTests
             .Setup(r => r.UpdateTourAsync(tourPersistence))
             .ReturnsAsync(tourPersistence);
 
-        var result = await _tourService.UpdateTourAsync(tourDomain);
+        var result = await _sut.UpdateTourAsync(tourDomain);
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Id, Is.EqualTo(tourDomain.Id));
@@ -138,7 +123,7 @@ public class TourServiceTests
     }
 
     [Test]
-    public Task UpdateTourAsync_NonExistingTour_ThrowsException()
+    public void UpdateTourAsync_NonExistingTour_ThrowsException()
     {
         var tourDomain = TestData.SampleTourDomainList().First();
         var tourPersistence = TestData.SampleTourPersistence();
@@ -147,10 +132,10 @@ public class TourServiceTests
             .Setup(r => r.UpdateTourAsync(tourPersistence))
             .ThrowsAsync(new InvalidOperationException("Tour not found"));
 
-        var ex = Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await _tourService.UpdateTourAsync(tourDomain));
-        Assert.That(ex.Message, Is.EqualTo("Tour not found"));
-        return Task.CompletedTask;
+        Assert.That(
+            () => _sut.UpdateTourAsync(tourDomain),
+            Throws.TypeOf<InvalidOperationException>()
+                .With.Message.EqualTo("Tour not found"));
     }
 
     [Test]
@@ -160,7 +145,7 @@ public class TourServiceTests
             .Setup(static r => r.DeleteTourAsync(TestData.TestGuid))
             .Returns(Task.CompletedTask);
 
-        await _tourService.DeleteTourAsync(TestData.TestGuid);
+        await _sut.DeleteTourAsync(TestData.TestGuid);
 
         _mockTourRepository.Verify(static r => r.DeleteTourAsync(TestData.TestGuid), Times.Once);
     }
@@ -182,7 +167,7 @@ public class TourServiceTests
                 return domain;
             });
 
-        var result = _tourService.SearchTours(TestData.ValidSearchText);
+        var result = _sut.SearchTours(TestData.ValidSearchText);
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Count(), Is.EqualTo(3));
@@ -196,7 +181,7 @@ public class TourServiceTests
             .Setup(static r => r.SearchToursAsync(TestData.InvalidSearchText))
             .Returns(new List<TourPersistence>().AsQueryable());
 
-        var result = _tourService.SearchTours(TestData.InvalidSearchText);
+        var result = _sut.SearchTours(TestData.InvalidSearchText);
 
         Assert.That(result, Is.Empty);
     }

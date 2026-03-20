@@ -123,13 +123,12 @@ public class TourRepositoryTests
     }
 
     [Test]
-    public Task UpdateTourAsync_WithNonExistingTour_ThrowsDbUpdateConcurrencyException()
+    public void UpdateTourAsync_WithNonExistingTour_ThrowsDbUpdateConcurrencyException()
     {
         var tour = TestData.SampleTourPersistence();
 
         Assert.That(async () => await _repository.UpdateTourAsync(tour),
             Throws.InstanceOf<DbUpdateConcurrencyException>());
-        return Task.CompletedTask;
     }
 
     [Test]

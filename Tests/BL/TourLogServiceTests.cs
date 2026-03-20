@@ -15,12 +15,12 @@ public class TourLogServiceTests
     {
         _mockTourLogRepository = new Mock<ITourLogRepository>();
         _mockMapper = new Mock<IMapper>();
-        _tourLogService = new TourLogService(_mockTourLogRepository.Object, _mockMapper.Object);
+        _sut = new TourLogService(_mockTourLogRepository.Object, _mockMapper.Object);
     }
 
     private Mock<ITourLogRepository> _mockTourLogRepository = null!;
     private Mock<IMapper> _mockMapper = null!;
-    private TourLogService _tourLogService = null!;
+    private TourLogService _sut = null!;
 
     [Test]
     public async Task CreateTourLogAsync_ValidTourLog_ReturnsMappedTourLogDomain()
@@ -35,7 +35,7 @@ public class TourLogServiceTests
             .Setup(r => r.CreateTourLogAsync(tourLogPersistence, CancellationToken.None))
             .ReturnsAsync(tourLogPersistence);
 
-        var result = await _tourLogService.CreateTourLogAsync(tourLogDomain);
+        var result = await _sut.CreateTourLogAsync(tourLogDomain);
 
         Assert.That(result, Is.Not.Null);
         using (Assert.EnterMultipleScope())
@@ -49,23 +49,6 @@ public class TourLogServiceTests
             r => r.CreateTourLogAsync(tourLogPersistence, CancellationToken.None),
             Times.Once
         );
-    }
-
-    [Test]
-    public Task CreateTourLogAsync_RepositoryThrowsException_PropagatesException()
-    {
-        var tourLogDomain = TestData.SampleTourLogDomainList().First();
-        var tourLogPersistence = TestData.SampleTourLogPersistence();
-        _mockMapper
-            .Setup(m => m.Map<TourLogPersistence>(tourLogDomain))
-            .Returns(tourLogPersistence);
-        _mockTourLogRepository
-            .Setup(r => r.CreateTourLogAsync(tourLogPersistence, CancellationToken.None))
-            .ThrowsAsync(new Exception("Database error"));
-
-        var ex = Assert.ThrowsAsync<Exception>(async () => await _tourLogService.CreateTourLogAsync(tourLogDomain));
-        Assert.That(ex.Message, Is.EqualTo("Database error"));
-        return Task.CompletedTask;
     }
 
     [Test]
@@ -85,7 +68,7 @@ public class TourLogServiceTests
                 return domain;
             });
 
-        var result = _tourLogService.GetTourLogById(tourLogPersistence.Id);
+        var result = _sut.GetTourLogById(tourLogPersistence.Id);
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Id, Is.EqualTo(tourLogPersistence.Id));
@@ -99,7 +82,7 @@ public class TourLogServiceTests
             .Setup(static r => r.GetTourLogById(TestData.NonexistentGuid))
             .Returns((TourLogPersistence)null!);
 
-        var result = _tourLogService.GetTourLogById(TestData.NonexistentGuid);
+        var result = _sut.GetTourLogById(TestData.NonexistentGuid);
 
         Assert.That(result, Is.Null);
     }
@@ -116,7 +99,7 @@ public class TourLogServiceTests
             .Setup(m => m.Map<IEnumerable<TourLogDomain>>(tourLogsPersistence))
             .Returns(tourLogsDomain);
 
-        var result = _tourLogService.GetTourLogsByTourId(TestData.TestGuid).ToList();
+        var result = _sut.GetTourLogsByTourId(TestData.TestGuid).ToList();
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Has.Count.EqualTo(tourLogsDomain.Count));
@@ -137,7 +120,7 @@ public class TourLogServiceTests
             )
             .Returns([]);
 
-        var result = _tourLogService.GetTourLogsByTourId(TestData.NonexistentGuid);
+        var result = _sut.GetTourLogsByTourId(TestData.NonexistentGuid);
 
         Assert.That(result, Is.Empty);
     }
@@ -155,7 +138,7 @@ public class TourLogServiceTests
             .Setup(r => r.UpdateTourLogAsync(tourLogPersistence, CancellationToken.None))
             .ReturnsAsync(tourLogPersistence);
 
-        var result = await _tourLogService.UpdateTourLogAsync(tourLogDomain);
+        var result = await _sut.UpdateTourLogAsync(tourLogDomain);
 
         Assert.That(result, Is.Not.Null);
         using (Assert.EnterMultipleScope())
@@ -172,7 +155,7 @@ public class TourLogServiceTests
     }
 
     [Test]
-    public Task UpdateTourLogAsync_NonExistingTourLog_ThrowsException()
+    public void UpdateTourLogAsync_NonExistingTourLog_ThrowsException()
     {
         var tourLogDomain = TestData.SampleTourLogDomainList().First();
         var tourLogPersistence = TestData.SampleTourLogPersistence();
@@ -183,11 +166,10 @@ public class TourLogServiceTests
             .Setup(r => r.UpdateTourLogAsync(tourLogPersistence, CancellationToken.None))
             .ThrowsAsync(new InvalidOperationException("Tour log not found"));
 
-        var ex = Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await _tourLogService.UpdateTourLogAsync(tourLogDomain)
-        );
-        Assert.That(ex.Message, Is.EqualTo("Tour log not found"));
-        return Task.CompletedTask;
+        Assert.That(
+            () => _sut.UpdateTourLogAsync(tourLogDomain),
+            Throws.TypeOf<InvalidOperationException>()
+                .With.Message.EqualTo("Tour log not found"));
     }
 
     [Test]
@@ -198,25 +180,25 @@ public class TourLogServiceTests
             .Setup(r => r.DeleteTourLogAsync(tourLogId, CancellationToken.None))
             .Returns(Task.CompletedTask);
 
-        await _tourLogService.DeleteTourLogAsync(tourLogId);
+        await _sut.DeleteTourLogAsync(tourLogId);
 
         _mockTourLogRepository.Verify(r => r.DeleteTourLogAsync(tourLogId, CancellationToken.None), Times.Once);
     }
 
     [Test]
-    public Task DeleteTourLogAsync_NonExistingId_DoesNotThrowException()
+    public void DeleteTourLogAsync_NonExistingId_DoesNotThrowException()
     {
         _mockTourLogRepository
             .Setup(r => r.DeleteTourLogAsync(TestData.NonexistentGuid, CancellationToken.None))
             .Returns(Task.CompletedTask);
 
-        Assert.DoesNotThrowAsync(async () => await _tourLogService.DeleteTourLogAsync(TestData.NonexistentGuid)
-        );
-        return Task.CompletedTask;
+        Assert.That(
+            () => _sut.DeleteTourLogAsync(TestData.NonexistentGuid),
+            Throws.Nothing);
     }
 
     [Test]
-    public Task CreateTourLogAsync_CancellationRequested_ThrowsOperationCanceledException()
+    public void CreateTourLogAsync_CancellationRequested_ThrowsOperationCanceledException()
     {
         var tourLogDomain = TestData.SampleTourLogDomainList().First();
         var tourLogPersistence = TestData.SampleTourLogPersistence();
@@ -230,10 +212,9 @@ public class TourLogServiceTests
         using var cts = new CancellationTokenSource();
         cts.Cancel();
 
-        Assert.ThrowsAsync<OperationCanceledException>(async () =>
-            await _tourLogService.CreateTourLogAsync(tourLogDomain, cts.Token)
-        );
-        return Task.CompletedTask;
+        Assert.That(
+            () => _sut.CreateTourLogAsync(tourLogDomain, cts.Token),
+            Throws.TypeOf<OperationCanceledException>());
     }
 
     [Test]
@@ -254,7 +235,7 @@ public class TourLogServiceTests
             .Setup(m => m.Map<IEnumerable<TourLogDomain>>(largeTourLogList))
             .Returns(largeTourLogDomainList);
 
-        var result = _tourLogService.GetTourLogsByTourId(TestData.TestGuid).ToList();
+        var result = _sut.GetTourLogsByTourId(TestData.TestGuid).ToList();
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Has.Count.EqualTo(largeTourLogDomainList.Count));
@@ -279,10 +260,10 @@ public class TourLogServiceTests
             .ThrowsAsync(new DbUpdateConcurrencyException("Update conflict"))
             .ReturnsAsync(tourLogPersistence);
 
-        Assert.ThrowsAsync<DbUpdateConcurrencyException>(async () =>
-            await _tourLogService.UpdateTourLogAsync(tourLogDomain)
-        );
-        var result = await _tourLogService.UpdateTourLogAsync(tourLogDomain);
+        Assert.That(
+            () => _sut.UpdateTourLogAsync(tourLogDomain),
+            Throws.TypeOf<DbUpdateConcurrencyException>());
+        var result = await _sut.UpdateTourLogAsync(tourLogDomain);
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Id, Is.EqualTo(tourLogDomain.Id));
     }

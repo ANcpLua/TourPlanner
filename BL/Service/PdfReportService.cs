@@ -213,7 +213,7 @@ public class PdfReportService : IPdfReportService
 
     private static void AddPageFooter(PageDescriptor page)
     {
-        page.Footer().AlignCenter().Text(x =>
+        page.Footer().AlignCenter().Text(static x =>
         {
             x.Span("Page ");
             x.CurrentPageNumber();

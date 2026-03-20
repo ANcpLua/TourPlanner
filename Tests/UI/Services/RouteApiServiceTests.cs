@@ -79,15 +79,16 @@ public class RouteApiServiceTests
     }
 
     [Test]
-    public Task FetchRouteDataAsync_HttpError_ThrowsHttpRequestException()
+    public void FetchRouteDataAsync_HttpError_ThrowsHttpRequestException()
     {
         var from = TestData.TestCoordinates;
         var to = (52.5200, 13.4050);
         TestData.SetupHttpMessageHandlerError(_mockHttpMessageHandler, HttpStatusCode.BadRequest, "Bad Request");
 
-        Assert.ThrowsAsync<HttpRequestException>(() => _sut.FetchRouteDataAsync(from, to, "Car"));
+        Assert.That(
+            () => _sut.FetchRouteDataAsync(from, to, "Car"),
+            Throws.TypeOf<HttpRequestException>());
         TestData.VerifyHttpPostRequest(_mockHttpMessageHandler, "api/routes/resolve");
-        return Task.CompletedTask;
     }
 
     [Test]
@@ -97,7 +98,9 @@ public class RouteApiServiceTests
         var to = (52.5200, 13.4050);
         TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler, "");
 
-        Assert.ThrowsAsync<HttpRequestException>(() => _sut.FetchRouteDataAsync(from, to, "Car"));
+        Assert.That(
+            () => _sut.FetchRouteDataAsync(from, to, "Car"),
+            Throws.TypeOf<HttpRequestException>());
         TestData.VerifyHttpPostRequest(_mockHttpMessageHandler, "api/routes/resolve");
     }
 
