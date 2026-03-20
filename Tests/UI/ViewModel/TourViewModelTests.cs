@@ -15,16 +15,15 @@ public class TourViewModelTests
         _mockConfiguration = TestData.MockConfiguration();
         _mockJsRuntime = TestData.MockJsRuntime();
         _mockRouteApiService = TestData.MockRouteApiService();
-        _mockLogger = TestData.MockLogger();
         _mockMapViewModel = TestData.MockMapViewModel();
 
         _viewModel = new TourViewModel(
             _mockHttpService.Object,
             _mockToastService.Object,
+            TestData.MockTryCatchToastWrapper(_mockToastService.Object),
             _mockConfiguration.Object,
             _mockJsRuntime.Object,
             _mockRouteApiService.Object,
-            _mockLogger.Object,
             _mockMapViewModel.Object
         );
     }
@@ -34,7 +33,6 @@ public class TourViewModelTests
     private Mock<IConfiguration> _mockConfiguration = null!;
     private Mock<IJSRuntime> _mockJsRuntime = null!;
     private Mock<IRouteApiService> _mockRouteApiService = null!;
-    private Mock<ILogger> _mockLogger = null!;
     private Mock<MapViewModel> _mockMapViewModel = null!;
     private TourViewModel _viewModel = null!;
 

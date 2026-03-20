@@ -12,15 +12,14 @@ public class SearchViewModelTests
     {
         _mockHttpService = TestData.MockHttpService();
         _mockToastService = TestData.MockToastService();
-        _mockLogger = TestData.MockLogger();
         _mockNavigationManager = new TestNavigationManager();
-        _viewModel = new SearchViewModel(_mockHttpService.Object, _mockToastService.Object, _mockLogger.Object,
-            _mockNavigationManager);
+        _viewModel = new SearchViewModel(
+            _mockHttpService.Object, _mockToastService.Object,
+            TestData.MockTryCatchToastWrapper(), _mockNavigationManager);
     }
 
     private Mock<IHttpService> _mockHttpService = null!;
     private Mock<IToastServiceWrapper> _mockToastService = null!;
-    private Mock<ILogger> _mockLogger = null!;
     private TestNavigationManager _mockNavigationManager = null!;
     private SearchViewModel _viewModel = null!;
 

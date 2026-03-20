@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Text;
 using System.Text.Json;
 using Blazor.DownloadFileFast.Interfaces;
@@ -7,30 +7,21 @@ using UI.Decorator;
 using UI.Model;
 using UI.Service.Interface;
 using UI.ViewModel.Base;
-using ILogger = Serilog.ILogger;
 
 namespace UI.ViewModel;
 
-public class ReportViewModel : BaseViewModel
+public class ReportViewModel(
+    IHttpService httpService,
+    IToastServiceWrapper toastServiceWrapper,
+    TryCatchToastWrapper tryCatchToastWrapper,
+    IBlazorDownloadFileService blazorDownloadFile)
+    : BaseViewModel(httpService, toastServiceWrapper, tryCatchToastWrapper)
 {
     private static readonly JsonSerializerOptions CamelCaseOptions = new()
     {
         WriteIndented = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
-
-    private readonly IBlazorDownloadFileService _blazorDownloadFile;
-
-    public ReportViewModel(
-        IHttpService httpService,
-        IToastServiceWrapper toastServiceWrapper,
-        ILogger logger,
-        IBlazorDownloadFileService blazorDownloadFile
-    )
-        : base(httpService, toastServiceWrapper, logger)
-    {
-        _blazorDownloadFile = blazorDownloadFile;
-    }
 
     public string CurrentReportUrl
     {
@@ -113,7 +104,7 @@ public class ReportViewModel : BaseViewModel
             return;
         }
 
-        await _blazorDownloadFile.DownloadFileAsync(
+        await blazorDownloadFile.DownloadFileAsync(
             fileName,
             reportBytes,
             "application/pdf"
@@ -139,7 +130,7 @@ public class ReportViewModel : BaseViewModel
                     }
 
                     var fileName = $"Tour_{tourId}_{TimeProvider.System.GetUtcNow().UtcDateTime:yyyyMMdd_HHmmss}.json";
-                    await _blazorDownloadFile.DownloadFileAsync(
+                    await blazorDownloadFile.DownloadFileAsync(
                         fileName,
                         Encoding.UTF8.GetBytes(json),
                         "application/json"

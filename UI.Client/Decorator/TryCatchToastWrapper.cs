@@ -7,8 +7,7 @@ public class TryCatchToastWrapper(IToastServiceWrapper toastServiceWrapper, ILog
 {
     public async Task<T?> ExecuteAsync<T>(
         Func<Task<T>> action,
-        string errorMessage,
-        Action<Exception>? errorHandler = null
+        string errorMessage
     )
     {
         try
@@ -17,7 +16,6 @@ public class TryCatchToastWrapper(IToastServiceWrapper toastServiceWrapper, ILog
         }
         catch (Exception ex)
         {
-            errorHandler?.Invoke(ex);
             logger.Error(ex, "Operation failed: {ErrorContext}", errorMessage);
             toastServiceWrapper.ShowError($"{errorMessage}: {ex.Message}");
             return default;
@@ -26,8 +24,7 @@ public class TryCatchToastWrapper(IToastServiceWrapper toastServiceWrapper, ILog
 
     public async Task ExecuteAsync(
         Func<Task> action,
-        string errorMessage,
-        Action<Exception>? errorHandler = null
+        string errorMessage
     )
     {
         try
@@ -36,7 +33,6 @@ public class TryCatchToastWrapper(IToastServiceWrapper toastServiceWrapper, ILog
         }
         catch (Exception ex)
         {
-            errorHandler?.Invoke(ex);
             logger.Error(ex, "Operation failed: {ErrorContext}", errorMessage);
             toastServiceWrapper.ShowError($"{errorMessage}: {ex.Message}");
         }

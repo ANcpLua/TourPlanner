@@ -1,4 +1,5 @@
-﻿using UI.Service.Interface;
+﻿using UI.Decorator;
+using UI.Service.Interface;
 using UI.ViewModel.Base;
 
 namespace Tests.UI.ViewModel;
@@ -11,22 +12,17 @@ public class BaseViewModelTests
     {
         _mockHttpService = new Mock<IHttpService>();
         _mockToastService = new Mock<IToastServiceWrapper>();
-        _mockLogger = new Mock<ILogger>();
-        _viewModel = new TestViewModel(_mockHttpService.Object, _mockToastService.Object, _mockLogger.Object);
+        _viewModel = new TestViewModel(
+            _mockHttpService.Object, _mockToastService.Object, TestData.MockTryCatchToastWrapper());
     }
 
     private Mock<IHttpService> _mockHttpService = null!;
     private Mock<IToastServiceWrapper> _mockToastService = null!;
-    private Mock<ILogger> _mockLogger = null!;
     private TestViewModel _viewModel = null!;
 
-    private class TestViewModel : BaseViewModel
+    private class TestViewModel(IHttpService http, IToastServiceWrapper toast, TryCatchToastWrapper wrapper)
+        : BaseViewModel(http, toast, wrapper)
     {
-        public TestViewModel(IHttpService http, IToastServiceWrapper toast, ILogger logger)
-            : base(http, toast, logger)
-        {
-        }
-
         public new void OnPropertyChanged(string? propertyName = null)
         {
             base.OnPropertyChanged(propertyName);

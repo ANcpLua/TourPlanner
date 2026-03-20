@@ -1,4 +1,5 @@
-﻿using System.Net;
+using System.Net;
+using UI.Decorator;
 using UI.Service;
 using UI.Service.Interface;
 
@@ -17,7 +18,8 @@ public class HttpServiceTests
         };
         _mockToastService = TestData.MockToastService();
         _mockLogger = TestData.MockLogger();
-        _httpService = new HttpService(_httpClient, _mockToastService.Object, _mockLogger.Object);
+        var wrapper = new TryCatchToastWrapper(_mockToastService.Object, _mockLogger.Object);
+        _httpService = new HttpService(_httpClient, wrapper);
     }
 
     [TearDown]
@@ -39,9 +41,8 @@ public class HttpServiceTests
         var jsonResponse = JsonSerializer.Serialize(tour);
         TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler, jsonResponse);
 
-        var result = await _httpService.GetAsync<dynamic>("api/test");
+        await _httpService.GetAsync<JsonElement>("api/test");
 
-        Assert.That(result, Is.Not.Null);
         TestData.VerifyHttpRequest(_mockHttpMessageHandler, HttpMethod.Get, "api/test");
     }
 
@@ -50,7 +51,7 @@ public class HttpServiceTests
     {
         TestData.SetupHttpMessageHandlerError(_mockHttpMessageHandler, HttpStatusCode.NotFound, "Not Found");
 
-        await _httpService.GetAsync<dynamic>("api/test");
+        await _httpService.GetAsync<JsonElement>("api/test");
 
         TestData.VerifyHttpRequest(_mockHttpMessageHandler, HttpMethod.Get, "api/test");
         _mockToastService.Verify(static t => t.ShowError(It.IsAny<string>()), Times.Once);
@@ -63,9 +64,8 @@ public class HttpServiceTests
         var jsonResponse = JsonSerializer.Serialize(tours);
         TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler, jsonResponse);
 
-        var result = await _httpService.GetListAsync<dynamic>("api/tours");
+        await _httpService.GetListAsync<JsonElement>("api/tours");
 
-        Assert.That(result, Is.Not.Null);
         TestData.VerifyHttpRequest(_mockHttpMessageHandler, HttpMethod.Get, "api/tours");
     }
 
@@ -76,9 +76,8 @@ public class HttpServiceTests
         var jsonResponse = JsonSerializer.Serialize(tour);
         TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler, jsonResponse);
 
-        var result = await _httpService.PostAsync<dynamic>("api/tours", tour);
+        await _httpService.PostAsync<JsonElement>("api/tours", tour);
 
-        Assert.That(result, Is.Not.Null);
         TestData.VerifyHttpRequest(_mockHttpMessageHandler, HttpMethod.Post, "api/tours");
     }
 
@@ -100,9 +99,8 @@ public class HttpServiceTests
         var jsonResponse = JsonSerializer.Serialize(tour);
         TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler, jsonResponse);
 
-        var result = await _httpService.PutAsync<dynamic>($"api/tours/{tour.Id}", tour);
+        await _httpService.PutAsync<JsonElement>($"api/tours/{tour.Id}", tour);
 
-        Assert.That(result, Is.Not.Null);
         TestData.VerifyHttpRequest(_mockHttpMessageHandler, HttpMethod.Put, $"api/tours/{tour.Id}");
     }
 
@@ -157,7 +155,7 @@ public class HttpServiceTests
     {
         TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler, "{}");
 
-        await _httpService.PostAsync<dynamic>("api/test", null);
+        await _httpService.PostAsync<JsonElement>("api/test", null);
 
         TestData.VerifyHttpRequest(_mockHttpMessageHandler, HttpMethod.Post, "api/test");
     }
@@ -167,7 +165,7 @@ public class HttpServiceTests
     {
         TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler, "{}");
 
-        await _httpService.PutAsync<dynamic>("api/test", null);
+        await _httpService.PutAsync<JsonElement>("api/test", null);
 
         TestData.VerifyHttpRequest(_mockHttpMessageHandler, HttpMethod.Put, "api/test");
     }
@@ -180,38 +178,5 @@ public class HttpServiceTests
         await _httpService.PostAsync("api/test", null);
 
         TestData.VerifyHttpRequest(_mockHttpMessageHandler, HttpMethod.Post, "api/test");
-    }
-
-    [Test]
-    public async Task SendRequestAsync_SuccessfulRequest_CompletesSuccessfully()
-    {
-        TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler, "");
-
-        await _httpService.SendRequestAsync(HttpMethod.Delete, "api/test");
-
-        TestData.VerifyHttpRequest(_mockHttpMessageHandler, HttpMethod.Delete, "api/test");
-    }
-
-    [Test]
-    public async Task SendRequestAsync_WithPostData_SendsDataSuccessfully()
-    {
-        var testData = new { Name = "Test", Value = 123 };
-        TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler, "");
-
-        await _httpService.SendRequestAsync(HttpMethod.Post, "api/test", testData);
-
-        TestData.VerifyHttpRequest(_mockHttpMessageHandler, HttpMethod.Post, "api/test");
-    }
-
-    [Test]
-    public async Task SendRequestAsync_FailedRequest_HandlesError()
-    {
-        TestData.SetupHttpMessageHandlerError(_mockHttpMessageHandler, HttpStatusCode.InternalServerError,
-            "Server Error");
-
-        await _httpService.SendRequestAsync(HttpMethod.Get, "api/test");
-
-        _mockToastService.Verify(static t => t.ShowError(It.IsAny<string>()), Times.Once);
-        TestData.VerifyHttpRequest(_mockHttpMessageHandler, HttpMethod.Get, "api/test");
     }
 }

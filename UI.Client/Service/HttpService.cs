@@ -1,25 +1,11 @@
 using System.Net.Http.Json;
 using UI.Decorator;
 using UI.Service.Interface;
-using ILogger = Serilog.ILogger;
 
 namespace UI.Service;
 
-public class HttpService : IHttpService
+public class HttpService(HttpClient httpClient, TryCatchToastWrapper tryCatchToastWrapper) : IHttpService
 {
-    private readonly HttpClient _httpClient;
-    private readonly TryCatchToastWrapper _tryCatchToastWrapper;
-
-    public HttpService(
-        HttpClient httpClient,
-        IToastServiceWrapper toastServiceWrapper,
-        ILogger logger
-    )
-    {
-        _httpClient = httpClient;
-        _tryCatchToastWrapper = new TryCatchToastWrapper(toastServiceWrapper, logger);
-    }
-
     [UiMethodDecorator]
     public Task<T?> GetAsync<T>(string uri)
     {
@@ -80,39 +66,37 @@ public class HttpService : IHttpService
         HttpMethod method,
         string uri,
         object? data = null,
-        Func<HttpResponseMessage, Task<T>>? responseHandler = null,
-        Action<Exception>? errorHandler = null
+        Func<HttpResponseMessage, Task<T>>? responseHandler = null
     )
     {
-        return _tryCatchToastWrapper.ExecuteAsync(
+        return tryCatchToastWrapper.ExecuteAsync(
             async () =>
             {
                 using var request = new HttpRequestMessage(method, uri);
                 if (data is not null && method is { Method: "POST" or "PUT" })
                     request.Content = JsonContent.Create(data);
 
-                var response = await _httpClient.SendAsync(request);
+                var response = await httpClient.SendAsync(request);
                 response.EnsureSuccessStatusCode();
 
                 if (responseHandler is not null) return await responseHandler(response);
 
                 return await response.Content.ReadFromJsonAsync<T>();
             },
-            $"Error {method} data {(method == HttpMethod.Get ? "from" : "to")} {uri}",
-            errorHandler
+            $"Error {method} data {(method == HttpMethod.Get ? "from" : "to")} {uri}"
         );
     }
 
-    public Task SendRequestAsync(HttpMethod method, string uri, object? data = null)
+    private Task SendRequestAsync(HttpMethod method, string uri, object? data = null)
     {
-        return _tryCatchToastWrapper.ExecuteAsync(
+        return tryCatchToastWrapper.ExecuteAsync(
             async () =>
             {
                 using var request = new HttpRequestMessage(method, uri);
                 if (data is not null && method is { Method: "POST" or "PUT" })
                     request.Content = JsonContent.Create(data);
 
-                var response = await _httpClient.SendAsync(request);
+                var response = await httpClient.SendAsync(request);
                 response.EnsureSuccessStatusCode();
             },
             $"Error {method} data {(method == HttpMethod.Get ? "from" : "to")} {uri}"

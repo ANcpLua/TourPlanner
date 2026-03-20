@@ -1,4 +1,4 @@
-﻿using UI.Decorator;
+using UI.Decorator;
 using UI.Service.Interface;
 
 namespace Tests.UI;
@@ -19,49 +19,71 @@ public class TryCatchToastWrapperTests
     private TryCatchToastWrapper _wrapper = null!;
 
     [Test]
-    public async Task ExecuteAsync_WithGeneric_WhenExceptionAndErrorHandler_CallsErrorHandler()
+    public async Task ExecuteAsync_Generic_Success_ReturnsResult()
     {
-        var exception = new InvalidOperationException("Test exception");
-        var errorHandlerCalled = false;
-
-        var result = await _wrapper.ExecuteAsync<string>(
-            () => throw exception,
-            "Test error",
-            ErrorHandler
+        var result = await _wrapper.ExecuteAsync(
+            static () => Task.FromResult("hello"),
+            "Test error"
         );
+
+        Assert.That(result, Is.EqualTo("hello"));
+    }
+
+    [Test]
+    public async Task ExecuteAsync_Generic_Exception_LogsAndShowsToast()
+    {
+        var result = await _wrapper.ExecuteAsync<string>(
+            static () => throw new InvalidOperationException("boom"),
+            "Test error"
+        );
+
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(errorHandlerCalled, Is.True);
             Assert.That(result, Is.Null);
-        }
-
-        return;
-
-        void ErrorHandler(Exception _)
-        {
-            errorHandlerCalled = true;
+            _mockLogger.Verify(
+                static l => l.Error(
+                    It.IsAny<Exception>(),
+                    "Operation failed: {ErrorContext}",
+                    "Test error"),
+                Times.Once);
+            _mockToastService.Verify(
+                static t => t.ShowError(It.Is<string>(static s => s.Contains("Test error"))),
+                Times.Once);
         }
     }
 
     [Test]
-    public async Task ExecuteAsync_NonGeneric_WhenExceptionAndErrorHandler_CallsErrorHandler()
+    public async Task ExecuteAsync_NonGeneric_Success_Completes()
     {
-        var exception = new InvalidOperationException("Test exception");
-        var errorHandlerCalled = false;
+        var executed = false;
 
         await _wrapper.ExecuteAsync(
-            () => throw exception,
-            "Test error",
-            ErrorHandler
+            () => { executed = true; return Task.CompletedTask; },
+            "Test error"
         );
 
-        Assert.That(errorHandlerCalled, Is.True);
+        Assert.That(executed, Is.True);
+    }
 
-        return;
+    [Test]
+    public async Task ExecuteAsync_NonGeneric_Exception_LogsAndShowsToast()
+    {
+        await _wrapper.ExecuteAsync(
+            static () => throw new InvalidOperationException("boom"),
+            "Test error"
+        );
 
-        void ErrorHandler(Exception _)
+        using (Assert.EnterMultipleScope())
         {
-            errorHandlerCalled = true;
+            _mockLogger.Verify(
+                static l => l.Error(
+                    It.IsAny<Exception>(),
+                    "Operation failed: {ErrorContext}",
+                    "Test error"),
+                Times.Once);
+            _mockToastService.Verify(
+                static t => t.ShowError(It.Is<string>(static s => s.Contains("Test error"))),
+                Times.Once);
         }
     }
 }

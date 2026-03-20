@@ -4,28 +4,19 @@ using UI.Decorator;
 using UI.Model;
 using UI.Service.Interface;
 using UI.ViewModel.Base;
-using ILogger = Serilog.ILogger;
 
 namespace UI.ViewModel;
 
-public class TourLogViewModel : BaseViewModel
+public class TourLogViewModel(
+    IHttpService httpService,
+    IToastServiceWrapper toastServiceWrapper,
+    TryCatchToastWrapper tryCatchToastWrapper,
+    IJSRuntime jsRuntime)
+    : BaseViewModel(httpService, toastServiceWrapper, tryCatchToastWrapper)
 {
-    private readonly IJSRuntime _jsRuntime;
     private Guid? _selectedTourId;
 
-    public TourLogViewModel(
-        IHttpService httpService,
-        IToastServiceWrapper toastServiceWrapper,
-        IJSRuntime jsRuntime,
-        ILogger logger
-    )
-        : base(httpService, toastServiceWrapper, logger)
-    {
-        TourLogs = [];
-        _jsRuntime = jsRuntime;
-    }
-
-    public ObservableCollection<TourLog> TourLogs { get; set; }
+    public ObservableCollection<TourLog> TourLogs { get; set; } = [];
 
     public TourLog SelectedTourLog
     {
@@ -213,7 +204,7 @@ public class TourLogViewModel : BaseViewModel
     [UiMethodDecorator]
     public async Task DeleteTourLogAsync(Guid logId)
     {
-        var confirmed = await _jsRuntime.InvokeAsync<bool>(
+        var confirmed = await jsRuntime.InvokeAsync<bool>(
             "confirm",
             "Are you sure you want to delete this tour log?"
         );

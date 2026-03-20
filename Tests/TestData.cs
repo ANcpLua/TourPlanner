@@ -3,6 +3,7 @@ using BL.DomainModel;
 using Contracts.TourLogs;
 using Contracts.Tours;
 using DAL.PersistenceModel;
+using UI.Decorator;
 using UI.Model;
 using UI.Service.Interface;
 using UI.ViewModel;
@@ -73,11 +74,16 @@ public static class TestData
             MockJsRuntime().Object,
             MockHttpService().Object,
             MockToastService().Object,
-            MockLogger().Object)
+            MockTryCatchToastWrapper())
         {
             DefaultValue = DefaultValue.Mock,
             CallBase = false
         };
+    }
+
+    public static TryCatchToastWrapper MockTryCatchToastWrapper(IToastServiceWrapper? toastService = null)
+    {
+        return new TryCatchToastWrapper(toastService ?? MockToastService().Object, MockLogger().Object);
     }
 
     public static Tour SampleTour(

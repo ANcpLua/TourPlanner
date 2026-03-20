@@ -9,12 +9,11 @@ using QuestPDF.Infrastructure;
 
 namespace BL.Service;
 
-public class PdfReportService : IPdfReportService
+public class PdfReportService(Func<string, byte[]>? imageLoader = null) : IPdfReportService
 {
-    public PdfReportService()
-    {
-        Settings.License = LicenseType.Community;
-    }
+    static PdfReportService() => Settings.License = LicenseType.Community;
+
+    private readonly Func<string, byte[]> _imageLoader = imageLoader ?? File.ReadAllBytes;
 
     public byte[] GenerateTourReport(TourDomain tour)
     {
@@ -164,22 +163,16 @@ public class PdfReportService : IPdfReportService
             : "N/A";
     }
 
-    private static void AddTourImage(ColumnDescriptor column, string? imagePath)
+    private void AddTourImage(ColumnDescriptor column, string? imagePath)
     {
         if (string.IsNullOrEmpty(imagePath) || !File.Exists(imagePath)) return;
 
         try
         {
-            column.Item().Image(imagePath).FitWidth();
+            var imageBytes = _imageLoader(imagePath);
+            column.Item().Image(imageBytes).FitWidth();
         }
-        catch (IOException ex)
-        {
-            column.Item().Background(Colors.Grey.Lighten3)
-                .Padding(10)
-                .Text($"Error loading image: {ex.Message}")
-                .FontSize(10);
-        }
-        catch (DocumentComposeException ex)
+        catch (Exception ex) when (ex is IOException or DocumentComposeException)
         {
             column.Item().Background(Colors.Grey.Lighten3)
                 .Padding(10)

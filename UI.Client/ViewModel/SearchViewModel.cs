@@ -1,29 +1,20 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using UI.Decorator;
 using UI.Model;
 using UI.Service.Interface;
 using UI.ViewModel.Base;
-using ILogger = Serilog.ILogger;
 
 namespace UI.ViewModel;
 
-public class SearchViewModel : BaseViewModel
+public class SearchViewModel(
+    IHttpService httpService,
+    IToastServiceWrapper toastServiceWrapper,
+    TryCatchToastWrapper tryCatchToastWrapper,
+    NavigationManager navigationManager)
+    : BaseViewModel(httpService, toastServiceWrapper, tryCatchToastWrapper)
 {
-    private readonly NavigationManager _navigationManager;
-
-    public SearchViewModel(
-        IHttpService httpService,
-        IToastServiceWrapper toastServiceWrapper,
-        ILogger logger,
-        NavigationManager navigationManager
-    )
-        : base(httpService, toastServiceWrapper, logger)
-    {
-        _navigationManager = navigationManager;
-    }
-
     public string SearchText
     {
         get;
@@ -70,7 +61,7 @@ public class SearchViewModel : BaseViewModel
 
     public void NavigateToTour(Guid tourId)
     {
-        _navigationManager.NavigateTo($"/?tourId={tourId}");
+        navigationManager.NavigateTo($"/?tourId={tourId}");
     }
 
     public async Task HandleKeyPress(KeyboardEventArgs e)

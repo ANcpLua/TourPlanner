@@ -2,13 +2,18 @@ using System.Collections.Frozen;
 using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using UI.Decorator;
 using UI.Service.Interface;
 using UI.ViewModel.Base;
-using ILogger = Serilog.ILogger;
 
 namespace UI.ViewModel;
 
-public class MapViewModel : BaseViewModel
+public class MapViewModel(
+    IJSRuntime jsRuntime,
+    IHttpService httpService,
+    IToastServiceWrapper toastServiceWrapper,
+    TryCatchToastWrapper tryCatchToastWrapper)
+    : BaseViewModel(httpService, toastServiceWrapper, tryCatchToastWrapper)
 {
     public static readonly FrozenDictionary<string, (double Latitude, double Longitude)> Coordinates =
         new Dictionary<string, (double Latitude, double Longitude)>
@@ -20,24 +25,10 @@ public class MapViewModel : BaseViewModel
             ["Warsaw"] = (52.2297, 21.0122)
         }.ToFrozenDictionary();
 
-    private readonly IJSRuntime _jsRuntime;
-
     private bool _isMapInitialized;
     private string _toCity = "";
 
-    public MapViewModel(
-        IJSRuntime jsRuntime,
-        IHttpService httpService,
-        IToastServiceWrapper toastServiceWrapper,
-        ILogger logger
-    )
-        : base(httpService, toastServiceWrapper, logger)
-    {
-        _jsRuntime = jsRuntime;
-        CityNames = new ObservableCollection<string>(Coordinates.Keys);
-    }
-
-    public ObservableCollection<string> CityNames { get; }
+    public ObservableCollection<string> CityNames { get; } = new(Coordinates.Keys);
 
     public string FromCity
     {
@@ -60,7 +51,7 @@ public class MapViewModel : BaseViewModel
 
     public async Task InitializeMapAsync(ElementReference mapElement)
     {
-        await _jsRuntime.InvokeVoidAsync("TourPlannerMap.initializeMap", mapElement);
+        await jsRuntime.InvokeVoidAsync("TourPlannerMap.initializeMap", mapElement);
         _isMapInitialized = true;
     }
 
@@ -86,7 +77,7 @@ public class MapViewModel : BaseViewModel
             if (fromCoords.HasValue && toCoords.HasValue)
             {
                 await Task.Delay(500);
-                await _jsRuntime.InvokeVoidAsync(
+                await jsRuntime.InvokeVoidAsync(
                     "TourPlannerMap.setRoute",
                     fromCoords.Value.Latitude,
                     fromCoords.Value.Longitude,
@@ -99,7 +90,7 @@ public class MapViewModel : BaseViewModel
 
     public async Task ClearMapAsync()
     {
-        await _jsRuntime.InvokeVoidAsync("TourPlannerMap.clearMap");
+        await jsRuntime.InvokeVoidAsync("TourPlannerMap.clearMap");
         FromCity = "";
         ToCity = "";
         OnPropertyChanged(nameof(FromCity));

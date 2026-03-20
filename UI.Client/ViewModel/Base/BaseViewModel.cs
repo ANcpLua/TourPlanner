@@ -1,27 +1,17 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using UI.Decorator;
 using UI.Service.Interface;
-using ILogger = Serilog.ILogger;
 
 namespace UI.ViewModel.Base;
 
-public abstract class BaseViewModel : INotifyPropertyChanged
+public abstract class BaseViewModel(
+    IHttpService httpService,
+    IToastServiceWrapper toastServiceWrapper,
+    TryCatchToastWrapper tryCatchToastWrapper) : INotifyPropertyChanged
 {
-    private readonly TryCatchToastWrapper _tryCatchToastWrapper;
-
-    protected BaseViewModel(
-        IHttpService httpService,
-        IToastServiceWrapper toastServiceWrapper,
-        ILogger logger)
-    {
-        HttpService = httpService;
-        ToastServiceWrapper = toastServiceWrapper;
-        _tryCatchToastWrapper = new TryCatchToastWrapper(toastServiceWrapper, logger);
-    }
-
-    public IHttpService HttpService { get; }
-    public IToastServiceWrapper ToastServiceWrapper { get; }
+    public IHttpService HttpService { get; } = httpService;
+    public IToastServiceWrapper ToastServiceWrapper { get; } = toastServiceWrapper;
 
     public bool IsProcessing
     {
@@ -64,11 +54,11 @@ public abstract class BaseViewModel : INotifyPropertyChanged
 
     public Task<T?> HandleApiRequestAsync<T>(Func<Task<T>> apiCall, string errorMessage)
     {
-        return _tryCatchToastWrapper.ExecuteAsync(apiCall, errorMessage);
+        return tryCatchToastWrapper.ExecuteAsync(apiCall, errorMessage);
     }
 
     protected Task HandleApiRequestAsync(Func<Task> apiCall, string errorMessage)
     {
-        return _tryCatchToastWrapper.ExecuteAsync(apiCall, errorMessage);
+        return tryCatchToastWrapper.ExecuteAsync(apiCall, errorMessage);
     }
 }

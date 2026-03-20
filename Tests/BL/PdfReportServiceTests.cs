@@ -132,4 +132,15 @@ public class PdfReportServiceTests
             TestData.AssertValidPdf(result);
         });
     }
+
+    [Test]
+    public void GenerateTourReport_ImageReadThrowsIOException_ShowsErrorGracefully()
+    {
+        var service = new PdfReportService(_ => throw new IOException("Disk read error"));
+        var tour = TestData.SampleTourDomain();
+        tour.ImagePath = Path.GetTempFileName();
+
+        var result = service.GenerateTourReport(tour);
+        TestData.AssertValidPdf(result);
+    }
 }

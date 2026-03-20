@@ -5,37 +5,20 @@ using UI.Decorator;
 using UI.Model;
 using UI.Service.Interface;
 using UI.ViewModel.Base;
-using ILogger = Serilog.ILogger;
 
 namespace UI.ViewModel;
 
-public class TourViewModel : BaseViewModel
+public class TourViewModel(
+    IHttpService httpService,
+    IToastServiceWrapper toastServiceWrapper,
+    TryCatchToastWrapper tryCatchToastWrapper,
+    IConfiguration configuration,
+    IJSRuntime jsRuntime,
+    IRouteApiService routeApiService,
+    MapViewModel mapViewModel)
+    : BaseViewModel(httpService, toastServiceWrapper, tryCatchToastWrapper)
 {
-    private readonly IConfiguration _configuration;
-    private readonly IJSRuntime _jsRuntime;
-    private readonly MapViewModel _mapViewModel;
-    private readonly IRouteApiService _routeApiService;
-
-    public TourViewModel(
-        IHttpService httpService,
-        IToastServiceWrapper toastServiceWrapper,
-        IConfiguration configuration,
-        IJSRuntime jsRuntime,
-        IRouteApiService routeApiService,
-        ILogger logger,
-        MapViewModel mapViewModel
-    )
-        : base(httpService, toastServiceWrapper, logger)
-    {
-        _configuration = configuration;
-        _jsRuntime = jsRuntime;
-        _mapViewModel = mapViewModel;
-        _routeApiService = routeApiService;
-
-        Tours = [];
-    }
-
-    public ObservableCollection<Tour> Tours { get; set; }
+    public ObservableCollection<Tour> Tours { get; set; } = [];
 
     public bool IsFormVisible
     {
@@ -49,8 +32,8 @@ public class TourViewModel : BaseViewModel
         set
         {
             if (!SetProperty(ref field, value)) return;
-            _mapViewModel.FromCity = value.From;
-            _mapViewModel.ToCity = value.To;
+            mapViewModel.FromCity = value.From;
+            mapViewModel.ToCity = value.To;
             OnPropertyChanged(nameof(FilteredToCities));
         }
     } = Tour.Empty;
@@ -74,7 +57,7 @@ public class TourViewModel : BaseViewModel
         !string.IsNullOrWhiteSpace(SelectedTour.To) &&
         !string.IsNullOrWhiteSpace(SelectedTour.TransportType);
 
-    public IEnumerable<string> FilteredToCities => _mapViewModel.CityNames.Where(city => city != SelectedTour.From);
+    public IEnumerable<string> FilteredToCities => mapViewModel.CityNames.Where(city => city != SelectedTour.From);
 
     public void ToggleMap()
     {
@@ -90,8 +73,8 @@ public class TourViewModel : BaseViewModel
         else
         {
             SelectedTour = Tour.Empty;
-            _mapViewModel.FromCity = "";
-            _mapViewModel.ToCity = "";
+            mapViewModel.FromCity = "";
+            mapViewModel.ToCity = "";
             IsFormVisible = true;
         }
     }
@@ -99,8 +82,8 @@ public class TourViewModel : BaseViewModel
     public void ResetForm()
     {
         SelectedTour = Tour.Empty;
-        _mapViewModel.FromCity = "";
-        _mapViewModel.ToCity = "";
+        mapViewModel.FromCity = "";
+        mapViewModel.ToCity = "";
         IsFormVisible = false;
     }
 
@@ -126,10 +109,10 @@ public class TourViewModel : BaseViewModel
             return await HandleApiRequestAsync(
                 async () =>
                 {
-                    var fromCoords = _mapViewModel.GetCoordinates(SelectedTour.From);
-                    var toCoords = _mapViewModel.GetCoordinates(SelectedTour.To);
+                    var fromCoords = mapViewModel.GetCoordinates(SelectedTour.From);
+                    var toCoords = mapViewModel.GetCoordinates(SelectedTour.To);
 
-                    var routeData = await _routeApiService.FetchRouteDataAsync(
+                    var routeData = await routeApiService.FetchRouteDataAsync(
                         fromCoords!.Value,
                         toCoords!.Value,
                         SelectedTour.TransportType
@@ -138,7 +121,7 @@ public class TourViewModel : BaseViewModel
                     SelectedTour.Distance = routeData.Distance;
                     SelectedTour.EstimatedTime = routeData.Duration;
                     SelectedTour.ImagePath =
-                        $"{_configuration["AppSettings:ImageBasePath"]}{SelectedTour.From}{SelectedTour.To}.png";
+                        $"{configuration["AppSettings:ImageBasePath"]}{SelectedTour.From}{SelectedTour.To}.png";
 
                     var routeInformation = new
                     {
@@ -180,7 +163,7 @@ public class TourViewModel : BaseViewModel
 
                     await Task.Delay(100);
 
-                    await _jsRuntime.InvokeVoidAsync(
+                    await jsRuntime.InvokeVoidAsync(
                         "TourPlannerMap.setRoute",
                         fromCoords.Value.Latitude,
                         fromCoords.Value.Longitude,
@@ -205,7 +188,7 @@ public class TourViewModel : BaseViewModel
                 async () =>
                 {
                     ModalTour = await HttpService.GetAsync<Tour>($"api/tour/{id}") ?? Tour.Empty;
-                    await _jsRuntime.InvokeVoidAsync("showModal", "tourDetailsModal");
+                    await jsRuntime.InvokeVoidAsync("showModal", "tourDetailsModal");
                 },
                 "Error loading tour details"
             );
@@ -240,7 +223,7 @@ public class TourViewModel : BaseViewModel
     {
         return Process(async () =>
         {
-            var confirmed = await _jsRuntime.InvokeAsync<bool>(
+            var confirmed = await jsRuntime.InvokeAsync<bool>(
                 "confirm",
                 "Are you sure you want to delete this tour?"
             );

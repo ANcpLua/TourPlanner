@@ -1,3 +1,4 @@
+using UI.Decorator;
 using UI.Model;
 using UI.Service.Interface;
 using UI.ViewModel;
@@ -75,6 +76,8 @@ public abstract class BunitTestBase : IDisposable
         Context.Services.AddSingleton(config);
         Context.Services.AddSingleton(route);
         Context.Services.AddSingleton(download);
+
+        Context.Services.AddSingleton(TestData.MockTryCatchToastWrapper(toast.Object));
 
         // ViewModels — explicit registration
         Context.Services.AddScoped<MapViewModel>();
@@ -225,8 +228,12 @@ public static class ViewTestExtensions
     public static void VerifyMockPostTour(this IServiceProvider s, Times times)
     {
         var http = s.Mock<IHttpService>();
-        try { http.Verify(static x => x.PostAsync("api/tour", It.IsAny<object>()), times); }
-        catch (MockException) { http.Verify(static x => x.PostAsync<Tour>("api/tour", It.IsAny<Tour>()), times); }
+        var callCount = http.Invocations.Count(static i =>
+            i.Method.Name == nameof(IHttpService.PostAsync) &&
+            i.Arguments.Count > 0 &&
+            i.Arguments[0] is "api/tour");
+        var expected = times == Times.Once() ? 1 : 0;
+        Assert.That(callCount, Is.EqualTo(expected));
     }
 
     public static void VerifyMockGetTour(this IServiceProvider s, Guid id, Times times) =>

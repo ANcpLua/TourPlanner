@@ -61,7 +61,7 @@
         <MicrosoftExtensionsHttpResilienceVersion>10.4.0</MicrosoftExtensionsHttpResilienceVersion>
 
         <!-- Code Quality -->
-        <ANcpLuaAnalyzersVersion>1.20.0</ANcpLuaAnalyzersVersion>
+        <ANcpLuaAnalyzersVersion>1.20.1</ANcpLuaAnalyzersVersion>
     </PropertyGroup>
 
 </Project>

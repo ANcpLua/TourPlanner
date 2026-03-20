@@ -12,12 +12,10 @@ public class ApiMethodDecoratorTests
         _decorator = new ApiMethodDecorator();
         _mockLogger = new Mock<ILogger>();
         Log.Logger = _mockLogger.Object;
-        _testMethod = GetType().GetMethod(nameof(SetUp))!;
     }
 
     private ApiMethodDecorator _decorator = null!;
     private Mock<ILogger> _mockLogger = null!;
-    private MethodInfo _testMethod = null!;
 
     [Test]
     public void Init_WithMethodHavingDeclaringType_LogsFullTypeName()
@@ -96,7 +94,8 @@ public class ApiMethodDecoratorTests
     [Test]
     public void OnEntry_ExecutesWithoutException()
     {
-        _decorator.Init(new object(), _testMethod, []);
+        var method = typeof(TestApiClass).GetMethod(nameof(TestApiClass.TestMethod))!;
+        _decorator.Init(new object(), method, []);
 
         _decorator.OnEntry();
     }

@@ -13,20 +13,18 @@ public class TourLogViewModelTests
         _mockHttpService = TestData.MockHttpService();
         _mockToastService = TestData.MockToastService();
         _mockJsRuntime = TestData.MockJsRuntime();
-        _mockLogger = TestData.MockLogger();
 
         _viewModel = new TourLogViewModel(
             _mockHttpService.Object,
             _mockToastService.Object,
-            _mockJsRuntime.Object,
-            _mockLogger.Object
+            TestData.MockTryCatchToastWrapper(),
+            _mockJsRuntime.Object
         );
     }
 
     private Mock<IHttpService> _mockHttpService = null!;
     private Mock<IToastServiceWrapper> _mockToastService = null!;
     private Mock<IJSRuntime> _mockJsRuntime = null!;
-    private Mock<ILogger> _mockLogger = null!;
     private TourLogViewModel _viewModel = null!;
 
     [Test]
