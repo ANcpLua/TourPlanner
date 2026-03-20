@@ -91,22 +91,14 @@ public class RouteApiServiceTests
     }
 
     [Test]
-    public Task FetchRouteDataAsync_EmptyContent_ThrowsHttpRequestException()
+    public void FetchRouteDataAsync_EmptyContent_ThrowsHttpRequestException()
     {
-        try
-        {
-            var from = TestData.TestCoordinates;
-            var to = (52.5200, 13.4050);
-            TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler, "");
+        var from = TestData.TestCoordinates;
+        var to = (52.5200, 13.4050);
+        TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler, "");
 
-            Assert.ThrowsAsync<HttpRequestException>(() => _sut.FetchRouteDataAsync(from, to, "Car"));
-            TestData.VerifyHttpPostRequest(_mockHttpMessageHandler, "api/routes/resolve");
-            return Task.CompletedTask;
-        }
-        catch (Exception exception)
-        {
-            return Task.FromException(exception);
-        }
+        Assert.ThrowsAsync<HttpRequestException>(() => _sut.FetchRouteDataAsync(from, to, "Car"));
+        TestData.VerifyHttpPostRequest(_mockHttpMessageHandler, "api/routes/resolve");
     }
 
     [Test]

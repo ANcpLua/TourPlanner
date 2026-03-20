@@ -31,8 +31,7 @@ public class TourLogController(ITourLogService tourLogService, IMapper mapper) :
     [ProducesResponseType(typeof(TourLogDto), (int)HttpStatusCode.OK)]
     public ActionResult GetTourLogById(Guid id)
     {
-        var tourLog = tourLogService.GetTourLogById(id);
-        if (tourLog is null) return NotFound();
+        if (tourLogService.GetTourLogById(id) is not { } tourLog) return NotFound();
         var tourLogDto = mapper.Map<TourLogDto>(tourLog);
         return Ok(tourLogDto);
     }

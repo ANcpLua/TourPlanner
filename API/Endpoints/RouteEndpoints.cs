@@ -13,12 +13,12 @@ public static class RouteEndpoints
         return endpoints;
     }
 
-    private static async Task<Ok<ResolveRouteResponse>> ResolveRoute(
+    internal static async Task<Ok<ResolveRouteResponse>> ResolveRoute(
         ResolveRouteRequest request,
         IRouteService routeService,
         CancellationToken cancellationToken)
     {
-        var route = await routeService.ResolveRouteAsync(
+        var (distance, duration) = await routeService.ResolveRouteAsync(
             (request.FromLatitude!.Value, request.FromLongitude!.Value),
             (request.ToLatitude!.Value, request.ToLongitude!.Value),
             request.TransportType,
@@ -27,8 +27,8 @@ public static class RouteEndpoints
 
         return TypedResults.Ok(new ResolveRouteResponse
         {
-            Distance = route.Distance,
-            Duration = route.Duration
+            Distance = distance,
+            Duration = duration
         });
     }
 }

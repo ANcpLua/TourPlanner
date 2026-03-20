@@ -2,7 +2,9 @@
 using BL.Interface;
 using Contracts.Tours;
 using MapsterMapper;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Routing;
 
 namespace Tests.API;
 
@@ -20,6 +22,18 @@ public class ReportEndpointsTests
     private Mock<IFileService> _mockFileService = null!;
     private Mock<ITourService> _mockTourService = null!;
     private Mock<IMapper> _mockMapper = null!;
+
+    [Test]
+    public void MapReportEndpoints_RegistersEndpoints()
+    {
+        var builder = WebApplication.CreateBuilder();
+        var app = builder.Build();
+        var result = app.MapReportEndpoints();
+
+        Assert.That(result, Is.Not.Null);
+        var dataSource = app as IEndpointRouteBuilder;
+        Assert.That(dataSource.DataSources, Is.Not.Empty);
+    }
 
     [Test]
     public void GetSummaryReport_HappyPath_ReturnsPdfFile()

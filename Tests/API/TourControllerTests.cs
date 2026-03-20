@@ -105,6 +105,17 @@ public class TourControllerTests
     }
 
     [Test]
+    public void GetTourById_ServiceReturnsNull_ReturnsNotFound()
+    {
+        var tourId = Guid.NewGuid();
+        _mockTourService.Setup(s => s.GetTourById(tourId)).Returns((TourDomain?)null);
+
+        var result = _controller.GetTourById(tourId);
+
+        Assert.That(result.Result, Is.TypeOf<NotFoundResult>());
+    }
+
+    [Test]
     public async Task UpdateTourAsync_HappyPath_ReturnsUpdatedTour()
     {
         var tourId = Guid.NewGuid();
