@@ -80,20 +80,32 @@ public static class TestData
         };
     }
 
-    public static Tour SampleTour(string name = "Sample Tour", Guid? id = null)
+    public static Tour SampleTour(
+        string name = "Sample Tour",
+        Guid? id = null,
+        string from = "City1",
+        string to = "City2",
+        string description = "Sample tour for testing",
+        string transportType = "Car",
+        double? distance = 100.5,
+        double? estimatedTime = 60.0,
+        string? imagePath = "/images/sample.png",
+        string? routeInformation = "Sample route information",
+        List<TourLog>? tourLogs = null)
     {
         return new Tour
         {
             Id = id ?? TestGuid,
             Name = name,
-            Description = "Sample tour for testing",
-            From = "City1",
-            To = "City2",
-            Distance = 100.5,
-            EstimatedTime = 60.0,
-            TransportType = "Car",
-            ImagePath = "/images/sample.png",
-            RouteInformation = "Sample route information"
+            Description = description,
+            From = from,
+            To = to,
+            Distance = distance,
+            EstimatedTime = estimatedTime,
+            TransportType = transportType,
+            ImagePath = imagePath,
+            RouteInformation = routeInformation,
+            TourLogs = tourLogs ?? []
         };
     }
 

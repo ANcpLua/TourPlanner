@@ -46,10 +46,8 @@ public sealed class TourLogFormComponentTests : BunitTestBase
     [Test]
     public async Task SavesWhenValid()
     {
-        Services.WithValidTourLogForm();
         var vm = Services.ViewModel<TourLogViewModel>();
-        vm.SelectedTourLog.Id = Guid.Empty;
-        vm.SelectedTourLog.TourId = TestData.TestGuid;
+        vm.SelectedTourLog = TestData.SampleTourLog(id: Guid.Empty, tourId: TestData.TestGuid);
         vm.SelectedTourId = TestData.TestGuid;
         Services.SetupMockPostTourLog();
         Services.SetupMockGetTourLogs(TestData.TestGuid, 1);

@@ -1,4 +1,3 @@
-using UI.Model;
 using UI.View.TourComponents;
 using UI.ViewModel;
 
@@ -23,7 +22,7 @@ public sealed class TourListComponentTests : BunitTestBase
     [Test]
     public void EmptyTourList_ShowsMessage()
     {
-        Services.ViewModel<TourViewModel>().Tours.Clear();
+        Services.ViewModel<TourViewModel>().Tours = [];
         Assert.That(Render().Markup, Does.Contain("No tours available"));
     }
 
@@ -41,8 +40,9 @@ public sealed class TourListComponentTests : BunitTestBase
     [Test]
     public void EditButton_WhenEditingThisTour_ShowsHideText()
     {
-        Services.ViewModel<TourViewModel>().IsFormVisible = true;
-        Services.ViewModel<TourViewModel>().SelectedTour = Services.ViewModel<TourViewModel>().Tours.First();
+        var vm = Services.ViewModel<TourViewModel>();
+        vm.IsFormVisible = true;
+        vm.SelectedTour = vm.Tours.First();
         Assert.That(Render().FindAll("button").First(static b => b.TextContent.Contains("Hide Edit Form")), Is.Not.Null);
     }
 
@@ -64,19 +64,9 @@ public sealed class TourListComponentTests : BunitTestBase
     [Test]
     public void TourWithNullValues_ShowsNAForMissingFields()
     {
-        var vm = Services.ViewModel<TourViewModel>();
-        vm.Tours.Clear();
-        vm.Tours.Add(new Tour
-        {
-            Id = Guid.NewGuid(),
-            Name = "Null Tour",
-            Description = "",
-            From = "A",
-            To = "B",
-            TransportType = "Car",
-            Distance = null,
-            EstimatedTime = null
-        });
+        Services.ViewModel<TourViewModel>().Tours = [TestData.SampleTour(
+            name: "Null Tour", description: "", from: "A", to: "B",
+            distance: null, estimatedTime: null)];
 
         var markup = Render().Markup;
         using (Assert.EnterMultipleScope())
@@ -90,37 +80,25 @@ public sealed class TourListComponentTests : BunitTestBase
     [TestCase(false, "No")]
     public void ChildFriendly_DisplaysCorrectText(bool isChildFriendly, string expected)
     {
-        var vm = Services.ViewModel<TourViewModel>();
-        vm.Tours.Clear();
-        var tour = TestData.SampleTour();
-        tour.TourLogs = isChildFriendly
-            ? [TestData.SampleTourLog(rating: 5, difficulty: 1, tourId: tour.Id)]
-            : [TestData.SampleTourLog(rating: 1, difficulty: 5, tourId: tour.Id)];
-        vm.Tours.Add(tour);
+        Services.ViewModel<TourViewModel>().Tours = [TestData.SampleTour(tourLogs: isChildFriendly
+            ? [TestData.SampleTourLog(rating: 5, difficulty: 1)]
+            : [TestData.SampleTourLog(rating: 1, difficulty: 5)])];
 
-        Assert.That(Render().Markup, Does.Contain($"Child Friendly:") & Does.Contain(expected));
+        Assert.That(Render().Markup, Does.Contain("Child Friendly:") & Does.Contain(expected));
     }
 
     [Test]
     public void TourWithNullAverageRating_ShowsNA()
     {
-        var vm = Services.ViewModel<TourViewModel>();
-        vm.Tours.Clear();
-        var tour = TestData.SampleTour();
-        tour.TourLogs.Clear();
-        vm.Tours.Add(tour);
-
+        Services.ViewModel<TourViewModel>().Tours = [TestData.SampleTour()];
         Assert.That(Render().Markup, Does.Contain("Average Rating:") & Does.Contain("N/A"));
     }
 
     [Test]
     public void TourWithRating_ShowsFormattedValue()
     {
-        var vm = Services.ViewModel<TourViewModel>();
-        vm.Tours.Clear();
-        var tour = TestData.SampleTour();
-        tour.TourLogs = [TestData.SampleTourLog(rating: 4.5, tourId: tour.Id)];
-        vm.Tours.Add(tour);
+        Services.ViewModel<TourViewModel>().Tours = [TestData.SampleTour(
+            tourLogs: [TestData.SampleTourLog(rating: 4.5)])];
 
         Assert.That(Render().Markup, Does.Contain("4.5"));
     }

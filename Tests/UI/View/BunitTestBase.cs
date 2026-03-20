@@ -57,15 +57,18 @@ public abstract class BunitTestBase : IDisposable
         http.Setup(static s => s.GetListAsync<Tour>("api/tour"))
             .ReturnsAsync(TestData.SampleTourList(2));
 
+        // Service implementations for DI
         Context.Services.AddSingleton(http.Object);
         Context.Services.AddSingleton(toast.Object);
         Context.Services.AddSingleton(logger.Object);
         Context.Services.AddSingleton(config.Object);
         Context.Services.AddSingleton(route.Object);
-
         Context.Services.AddSingleton(download.Object);
+
+        // Blazored.Toast components inject IToastService directly
         Context.Services.AddSingleton(new Mock<IToastService>().Object);
 
+        // Mock<T> wrappers — registered so tests can retrieve them for verification via Services.Mock<T>()
         Context.Services.AddSingleton(http);
         Context.Services.AddSingleton(toast);
         Context.Services.AddSingleton(logger);
@@ -73,11 +76,12 @@ public abstract class BunitTestBase : IDisposable
         Context.Services.AddSingleton(route);
         Context.Services.AddSingleton(download);
 
-        typeof(TourViewModel).Assembly
-            .GetTypes()
-            .Where(static t => t.Name.EndsWith("ViewModel") && t is { IsClass: true, IsAbstract: false })
-            .ToList()
-            .ForEach(vm => Context.Services.AddScoped(vm));
+        // ViewModels — explicit registration
+        Context.Services.AddScoped<MapViewModel>();
+        Context.Services.AddScoped<TourViewModel>();
+        Context.Services.AddScoped<TourLogViewModel>();
+        Context.Services.AddScoped<SearchViewModel>();
+        Context.Services.AddScoped<ReportViewModel>();
     }
 }
 
@@ -97,21 +101,15 @@ public static class ViewTestExtensions
     public static void WithEmptyTours(this IServiceProvider s)
     {
         s.Mock<IHttpService>().Setup(static x => x.GetListAsync<Tour>("api/tour")).ReturnsAsync([]);
-        s.ViewModel<TourViewModel>().Tours.Clear();
+        s.ViewModel<TourViewModel>().Tours = [];
     }
 
     public static Guid FirstTourId(this IServiceProvider s) =>
         s.ViewModel<TourViewModel>().Tours.First().Id;
 
-    public static void WithValidTourForm(this IServiceProvider s)
-    {
-        var tour = TestData.SampleTour();
-        tour.Name = "Valid Tour";
-        tour.From = "Vienna";
-        tour.To = "Paris";
-        tour.TransportType = "Car";
-        s.ViewModel<TourViewModel>().SelectedTour = tour;
-    }
+    public static void WithValidTourForm(this IServiceProvider s) =>
+        s.ViewModel<TourViewModel>().SelectedTour = TestData.SampleTour(
+            name: "Valid Tour", from: "Vienna", to: "Paris", transportType: "Car");
 
     public static void WithEmptyTourForm(this IServiceProvider s) =>
         s.ViewModel<TourViewModel>().SelectedTour = Tour.Empty;
@@ -120,8 +118,9 @@ public static class ViewTestExtensions
         s.ViewModel<TourViewModel>().ModalTour = TestData.SampleTour(name);
 
     public static void WithMinimalModalTour(this IServiceProvider s) =>
-        s.ViewModel<TourViewModel>().ModalTour = new Tour
-            { Name = "Tour", Description = "", From = "A", To = "B", TransportType = "Walk" };
+        s.ViewModel<TourViewModel>().ModalTour = TestData.SampleTour(
+            name: "Tour", description: "", from: "A", to: "B", transportType: "Walk",
+            distance: null, estimatedTime: null, imagePath: null, routeInformation: null);
 
     // ── TourLog ViewModel setup ──
 
@@ -142,14 +141,16 @@ public static class ViewTestExtensions
     }
 
     public static void WithEmptyTourLogForm(this IServiceProvider s) =>
-        s.ViewModel<TourLogViewModel>().SelectedTourLog = new TourLog();
+        s.ViewModel<TourLogViewModel>().ResetForm();
 
     public static void WithTourLogFormVisible(this IServiceProvider s, bool newLog = true)
     {
         var vm = s.ViewModel<TourLogViewModel>();
         vm.SelectedTourId = s.FirstTourId();
         vm.IsLogFormVisible = true;
-        vm.SelectedTourLog = newLog ? new TourLog { Id = Guid.Empty } : new TourLog { Id = Guid.NewGuid() };
+        vm.SelectedTourLog = TestData.SampleTourLog(
+            id: newLog ? Guid.Empty : Guid.NewGuid(),
+            tourId: vm.SelectedTourId ?? Guid.Empty);
     }
 
     // ── Search ViewModel setup ──
@@ -159,22 +160,18 @@ public static class ViewTestExtensions
 
     public static void WithSearchResultWithLogs(this IServiceProvider s)
     {
-        var tour = TestData.SampleTour();
-        tour.TourLogs = [TestData.SampleTourLog(tourId: tour.Id)];
-        s.ViewModel<SearchViewModel>().SearchResults = [tour];
+        var id = TestData.TestGuid;
+        s.ViewModel<SearchViewModel>().SearchResults = [TestData.SampleTour(id: id,
+            tourLogs: [TestData.SampleTourLog(tourId: id)])];
     }
 
-    public static void WithSearchResultWithoutLogs(this IServiceProvider s)
-    {
-        var tour = TestData.SampleTour();
-        tour.TourLogs.Clear();
-        s.ViewModel<SearchViewModel>().SearchResults = [tour];
-    }
+    public static void WithSearchResultWithoutLogs(this IServiceProvider s) =>
+        s.ViewModel<SearchViewModel>().SearchResults = [TestData.SampleTour()];
 
     public static Guid FirstSearchResultId(this IServiceProvider s) =>
         s.ViewModel<SearchViewModel>().SearchResults.First().Id;
 
-    // ── Mock setup helpers (hides Tour/TourLog generic params) ──
+    // ── Mock setup helpers ──
 
     public static void SetupMockDeleteTour(this IServiceProvider s, Guid id) =>
         s.Mock<IHttpService>().Setup(x => x.DeleteAsync($"api/tour/{id}")).Returns(Task.CompletedTask);

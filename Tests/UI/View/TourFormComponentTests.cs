@@ -1,4 +1,3 @@
-using UI.Service.Interface;
 using UI.View.TourComponents;
 using UI.ViewModel;
 
@@ -48,7 +47,8 @@ public sealed class TourFormComponentTests : BunitTestBase
     [Test]
     public async Task SaveTourSuccessfully()
     {
-        Services.ViewModel<TourViewModel>().SelectedTour.Id = Guid.Empty;
+        Services.ViewModel<TourViewModel>().SelectedTour = TestData.SampleTour(
+            id: Guid.Empty, name: "Valid Tour", from: "Vienna", to: "Paris", transportType: "Car");
         Services.SetupMockRouteData();
         Services.SetupMockPostTour();
         await Render().Find(".btn-primary").ClickAsync(new MouseEventArgs());
