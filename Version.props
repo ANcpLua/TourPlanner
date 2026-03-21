@@ -21,7 +21,7 @@
         <MicrosoftAspNetCoreComponentsWebAssemblyVersion>10.0.5</MicrosoftAspNetCoreComponentsWebAssemblyVersion>
         <MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion>10.0.5</MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion>
         <MicrosoftAspNetCoreOpenApiVersion>10.0.5</MicrosoftAspNetCoreOpenApiVersion>
-        <MicrosoftOpenApiVersion>2.0.0</MicrosoftOpenApiVersion>
+        <MicrosoftOpenApiVersion>2.7.1</MicrosoftOpenApiVersion>
         <MicrosoftExtensionsConfigurationAbstractionsVersion>10.0.5</MicrosoftExtensionsConfigurationAbstractionsVersion>
         <MicrosoftExtensionsHttpVersion>10.0.5</MicrosoftExtensionsHttpVersion>
         <MicrosoftNETILLinkTasksVersion>10.0.5</MicrosoftNETILLinkTasksVersion>
@@ -37,10 +37,10 @@
         <SerilogSinksFileVersion>7.0.0</SerilogSinksFileVersion>
 
         <!-- Mapping -->
-        <MapsterVersion>10.0.1</MapsterVersion>
+        <MapsterVersion>10.0.3</MapsterVersion>
 
         <!-- PDF -->
-        <QuestPDFVersion>2026.2.3</QuestPDFVersion>
+        <QuestPDFVersion>2026.2.4</QuestPDFVersion>
 
         <!-- AOP / Fody -->
         <FodyVersion>6.9.3</FodyVersion>
@@ -67,7 +67,7 @@
         <MicrosoftExtensionsHttpResilienceVersion>10.4.0</MicrosoftExtensionsHttpResilienceVersion>
 
         <!-- Code Quality -->
-        <ANcpLuaAnalyzersVersion>1.20.2</ANcpLuaAnalyzersVersion>
+        <ANcpLuaAnalyzersVersion>1.21.0</ANcpLuaAnalyzersVersion>
     </PropertyGroup>
 
 </Project>

@@ -184,7 +184,7 @@ public class UiMethodDecoratorTests
             _mockLogger.Verify(
                 static l => l.Error(
                     It.IsAny<Exception>(),
-                    It.Is<string>(static s => s.Contains("Exception in") && s.Contains("({ArgCount} args)")),
+                    "Exception in {MethodName} ({ArgCount} args) after {Duration}ms",
                     It.IsAny<string>(),
                     It.IsAny<int>(),
                     It.IsAny<long>()),

@@ -8,7 +8,6 @@ using DAL.Infrastructure;
 using DAL.Module;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Serilog;
 
@@ -53,6 +52,7 @@ builder.Services.AddOpenApi(options =>
         document.Info.Title = "TourPlanner API";
         document.Info.Version = "v1";
         document.Components ??= new OpenApiComponents();
+        document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
         document.Components.SecuritySchemes["cookie"] = new OpenApiSecurityScheme
         {
             Type = SecuritySchemeType.ApiKey,
@@ -104,11 +104,8 @@ builder.Services.AddScoped<IUserContext, HttpUserContext>();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<TourPlannerContext>();
-    if (db.Database.IsRelational()) db.Database.Migrate();
-}
+ 
+
 
 app.UseRouting();
 app.UseCors("AllowUI");
