@@ -38,6 +38,13 @@ public sealed class TourPageTests : BunitTestBase
     }
 
     [Test]
+    public void TourForm_WhenFormVisible_RendersTourFormComponent()
+    {
+        Services.ViewModel<TourViewModel>().IsFormVisible = true;
+        Assert.That(RenderComponent<TourPage>().FindComponents<TourFormComponent>(), Has.Count.EqualTo(1));
+    }
+
+    [Test]
     public async Task MapToggleButton_TogglesVisibility()
     {
         Services.ViewModel<TourViewModel>().IsMapVisible = false;
