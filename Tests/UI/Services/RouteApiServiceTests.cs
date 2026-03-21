@@ -37,14 +37,8 @@ public class RouteApiServiceTests
     {
         var from = TestData.TestCoordinates;
         var to = (52.5200, 13.4050);
-        const string responseJson = """
-                                    {
-                                        "distance": 1000.5,
-                                        "duration": 3600.0
-                                    }
-                                    """;
-
-        TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler, responseJson);
+        TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler,
+            new { distance = 1000.5, duration = 3600.0 });
 
         var (distance, duration) = await _sut.FetchRouteDataAsync(from, to, transportType);
         using (Assert.EnterMultipleScope())
@@ -61,14 +55,9 @@ public class RouteApiServiceTests
     {
         var from = TestData.TestCoordinates;
         var to = (52.5200, 13.4050);
-        const string responseJson = """
-                                    {
-                                        "distance": 523400.0,
-                                        "duration": 18000.0
-                                    }
-                                    """;
 
-        TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler, responseJson);
+        TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler,
+            new { distance = 523400.0, duration = 18000.0 });
 
         var (distance, duration) = await _sut.FetchRouteDataAsync(from, to, "Car");
         using (Assert.EnterMultipleScope())
@@ -109,14 +98,8 @@ public class RouteApiServiceTests
     {
         var from = TestData.TestCoordinates;
         var to = (52.5200, 13.4050);
-        const string responseJson = """
-                                    {
-                                        "distance": 1000.0,
-                                        "duration": 3600.0
-                                    }
-                                    """;
-
-        TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler, responseJson);
+        TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler,
+            new { distance = 1000.0, duration = 3600.0 });
 
         await _sut.FetchRouteDataAsync(from, to, "Car");
         TestData.VerifyHttpJsonContent<ResolveRouteRequest>(_mockHttpMessageHandler, static request =>

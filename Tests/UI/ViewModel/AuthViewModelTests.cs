@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Json;
 using Contracts.Auth;
 using UI.Auth;
 using UI.ViewModel;
@@ -44,7 +45,7 @@ public class AuthViewModelTests
     public async Task LoginAsync_Success_NavigatesToHome()
     {
         TestData.SetupHandler(_mockHandler, HttpMethod.Post, "api/account/login",
-            """{"userId":"id","email":"e@e.com"}""");
+            new { userId = "id", email = "e@e.com" });
 
         await _viewModel.LoginAsync(new LoginRequest { Email = "test@example.com", Password = "Test1234!" });
 
@@ -79,7 +80,7 @@ public class AuthViewModelTests
     public async Task RegisterAsync_Success_NavigatesToHome()
     {
         TestData.SetupHandler(_mockHandler, HttpMethod.Post, "api/account/register",
-            """{"userId":"id","email":"e@e.com"}""");
+            new { userId = "id", email = "e@e.com" });
 
         await _viewModel.RegisterAsync(new RegisterRequest { Email = "new@example.com", Password = "Test1234!" });
 
@@ -122,8 +123,7 @@ public class AuthViewModelTests
 
         tcs.SetResult(new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new StringContent("""{"userId":"id","email":"e@e.com"}""",
-                Encoding.UTF8, "application/json")
+            Content = JsonContent.Create(new { userId = "id", email = "e@e.com" })
         });
         await loginTask;
 
@@ -140,7 +140,7 @@ public class AuthViewModelTests
         Assert.That(_viewModel.ErrorMessage, Is.Not.Null);
 
         TestData.SetupHandler(_mockHandler, HttpMethod.Post, "api/account/login",
-            """{"userId":"id","email":"e@e.com"}""");
+            new { userId = "id", email = "e@e.com" });
 
         await _viewModel.LoginAsync(new LoginRequest { Email = "e@e.com", Password = "correct" });
         Assert.That(_viewModel.ErrorMessage, Is.Null);

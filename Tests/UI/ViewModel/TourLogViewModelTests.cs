@@ -119,7 +119,7 @@ public class TourLogViewModelTests
     {
         var newTourId = TestData.SampleTour().Id;
         TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/bytour/{newTourId}",
-            JsonSerializer.Serialize(TestData.SampleTourLogList(tourId: newTourId)));
+            TestData.SampleTourLogList(tourId: newTourId));
 
         _viewModel.SelectedTourId = newTourId;
 
@@ -137,11 +137,23 @@ public class TourLogViewModelTests
     }
 
     [Test]
-    public async Task SelectedTourId_WhenSetToEmpty_ShouldClearTourData()
+    public async Task OnTourSelectionChanged_WithEmptyGuid_ShouldClearTourData()
     {
         _viewModel.TourLogs.Add(TestData.SampleTourLog());
 
         _viewModel.SelectedTourId = Guid.Empty;
+        await _viewModel.OnTourSelectionChangedAsync();
+
+        Assert.That(_viewModel.TourLogs, Is.Empty);
+    }
+
+    [Test]
+    public async Task OnTourSelectionChanged_WithNull_ShouldClearTourData()
+    {
+        _viewModel.SelectedTourId = Guid.NewGuid();
+        _viewModel.TourLogs.Add(TestData.SampleTourLog());
+
+        _viewModel.SelectedTourId = null;
         await _viewModel.OnTourSelectionChangedAsync();
 
         Assert.That(_viewModel.TourLogs, Is.Empty);
@@ -232,7 +244,7 @@ public class TourLogViewModelTests
         _viewModel.SelectedTourId = tourId;
         var logs = TestData.SampleTourLogList(tourId: tourId);
         TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/bytour/{tourId}",
-            JsonSerializer.Serialize(logs));
+            logs);
 
         await _viewModel.LoadTourLogsAsync();
 
@@ -259,7 +271,7 @@ public class TourLogViewModelTests
 
         TestData.SetupHandler(_mockHandler, HttpMethod.Post, "api/tourlog", "{}");
         TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/bytour/{_viewModel.SelectedTourId}",
-            JsonSerializer.Serialize(TestData.SampleTourLogList()));
+            TestData.SampleTourLogList());
 
         var result = await _viewModel.SaveTourLogAsync();
         using (Assert.EnterMultipleScope())
@@ -279,7 +291,7 @@ public class TourLogViewModelTests
 
         TestData.SetupHandler(_mockHandler, HttpMethod.Put, $"api/tourlog/{existingLog.Id}", "{}");
         TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/bytour/{_viewModel.SelectedTourId}",
-            JsonSerializer.Serialize(TestData.SampleTourLogList()));
+            TestData.SampleTourLogList());
 
         var result = await _viewModel.SaveTourLogAsync();
         using (Assert.EnterMultipleScope())
@@ -326,9 +338,9 @@ public class TourLogViewModelTests
         var tourId = tourLog.TourId;
 
         TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/{logId}",
-            JsonSerializer.Serialize(tourLog));
+            tourLog);
         TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/bytour/{tourId}",
-            JsonSerializer.Serialize(TestData.SampleTourLogList()));
+            TestData.SampleTourLogList());
 
         _viewModel.SelectedTourId = tourId;
 
@@ -352,9 +364,9 @@ public class TourLogViewModelTests
         var tourId = tourLog.TourId;
 
         TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/{logId}",
-            JsonSerializer.Serialize(tourLog));
+            tourLog);
         TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/bytour/{tourId}",
-            JsonSerializer.Serialize(TestData.SampleTourLogList()));
+            TestData.SampleTourLogList());
 
         _viewModel.SelectedTourId = tourId;
 

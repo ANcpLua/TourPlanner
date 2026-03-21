@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Net.Http.Json;
 using BL.DomainModel;
 using BL.Interface;
 using Contracts.TourLogs;
@@ -76,7 +77,7 @@ public static class TestData
         Mock<HttpMessageHandler> handler,
         HttpMethod method,
         string urlContains,
-        string jsonResponse,
+        object responseBody,
         HttpStatusCode statusCode = HttpStatusCode.OK)
     {
         handler
@@ -89,7 +90,9 @@ public static class TestData
                 ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(new HttpResponseMessage(statusCode)
             {
-                Content = new StringContent(jsonResponse, Encoding.UTF8, "application/json")
+                Content = responseBody is string s
+                    ? new StringContent(s, Encoding.UTF8, "application/json")
+                    : JsonContent.Create(responseBody, responseBody.GetType())
             });
     }
 
@@ -390,11 +393,13 @@ public static class TestData
         return JsonSerializer.Serialize(SampleTourDomain());
     }
 
-    public static void SetupHttpMessageHandlerSuccess(Mock<HttpMessageHandler> mockHandler, string jsonContent)
+    public static void SetupHttpMessageHandlerSuccess(Mock<HttpMessageHandler> mockHandler, object responseBody)
     {
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new StringContent(jsonContent, Encoding.UTF8, "application/json")
+            Content = responseBody is string s
+                ? new StringContent(s, Encoding.UTF8, "application/json")
+                : JsonContent.Create(responseBody, responseBody.GetType())
         };
 
         mockHandler
@@ -465,9 +470,7 @@ public static class TestData
                     req.Content != null &&
                     req.Content.Headers.ContentType!.MediaType == "application/json" &&
                     predicate(
-                        JsonSerializer.Deserialize<T>(
-                            req.Content.ReadAsStringAsync().GetAwaiter().GetResult()
-                        )!
+                        req.Content.ReadFromJsonAsync<T>().GetAwaiter().GetResult()!
                     )),
                 ItExpr.IsAny<CancellationToken>());
     }

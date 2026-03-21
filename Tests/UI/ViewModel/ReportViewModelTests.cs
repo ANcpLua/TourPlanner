@@ -79,7 +79,7 @@ public sealed class ReportViewModelTests
     public async Task InitializeAsync_LoadsTours()
     {
         TestData.SetupHandler(_mockHandler, HttpMethod.Get, "api/tour",
-            JsonSerializer.Serialize(new List<Tour> { TestData.SampleTour() }));
+            new List<Tour> { TestData.SampleTour() });
 
         await _reportViewModel.InitializeAsync();
 
@@ -179,7 +179,7 @@ public sealed class ReportViewModelTests
     {
         var duplicate = TestData.SampleTour();
         TestData.SetupHandler(_mockHandler, HttpMethod.Get, "api/tour",
-            JsonSerializer.Serialize(new List<Tour> { duplicate }));
+            new List<Tour> { duplicate });
         await _reportViewModel.InitializeAsync();
 
         await _reportViewModel.ImportTourFromJsonAsync(TestData.MakeFile(JsonSerializer.Serialize(duplicate)));

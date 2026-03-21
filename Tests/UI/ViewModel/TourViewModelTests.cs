@@ -120,6 +120,20 @@ public class TourViewModelTests
     }
 
     [Test]
+    public void SelectedTour_WhenSetToSameValue_ShouldNotRaisePropertyChanged()
+    {
+        var tour = TestData.SampleTour();
+        _viewModel.SelectedTour = tour;
+
+        var propertyNames = new List<string>();
+        _viewModel.PropertyChanged += (_, e) => propertyNames.Add(e.PropertyName!);
+
+        _viewModel.SelectedTour = tour;
+
+        Assert.That(propertyNames, Does.Not.Contain(nameof(_viewModel.FilteredToCities)));
+    }
+
+    [Test]
     public void IsMapVisible_WhenSet_ShouldUpdateProperty()
     {
         _viewModel.IsMapVisible = true;
@@ -229,8 +243,8 @@ public class TourViewModelTests
     [Test]
     public async Task LoadToursAsync_ShouldLoadToursSuccessfully()
     {
-        var tours = TestData.SampleTourList(5);
-        TestData.SetupHandler(_mockHandler, HttpMethod.Get, "api/tour", JsonSerializer.Serialize(tours));
+        var tours = TestData.SampleTourList();
+        TestData.SetupHandler(_mockHandler, HttpMethod.Get, "api/tour", tours);
 
         await _viewModel.LoadToursAsync();
         using (Assert.EnterMultipleScope())
@@ -268,7 +282,7 @@ public class TourViewModelTests
         _mockRouteApiService.Setup(r => r.FetchRouteDataAsync(fromCoords, toCoords, tour.TransportType))
             .ReturnsAsync((523.4, 480.0));
         TestData.SetupHandler(_mockHandler, HttpMethod.Post, "api/tour", "{}");
-        TestData.SetupHandler(_mockHandler, HttpMethod.Get, "api/tour", JsonSerializer.Serialize(TestData.SampleTourList()));
+        TestData.SetupHandler(_mockHandler, HttpMethod.Get, "api/tour", TestData.SampleTourList());
 
         _mockJsRuntime.Setup(static j => j.InvokeAsync<IJSVoidResult>(
                 "TourPlannerMap.setRoute",
@@ -303,7 +317,7 @@ public class TourViewModelTests
         _mockRouteApiService.Setup(r => r.FetchRouteDataAsync(fromCoords, toCoords, tour.TransportType))
             .ReturnsAsync((100.5, 60.0));
         TestData.SetupHandler(_mockHandler, HttpMethod.Put, $"api/tour/{tour.Id}", "{}");
-        TestData.SetupHandler(_mockHandler, HttpMethod.Get, "api/tour", JsonSerializer.Serialize(TestData.SampleTourList()));
+        TestData.SetupHandler(_mockHandler, HttpMethod.Get, "api/tour", TestData.SampleTourList());
 
         _mockJsRuntime.Setup(static j => j.InvokeAsync<IJSVoidResult>(
                 "TourPlannerMap.setRoute",
@@ -341,7 +355,7 @@ public class TourViewModelTests
     public async Task ShowTourDetailsAsync_ShouldLoadTourSuccessfully()
     {
         var testTour = TestData.SampleTour();
-        TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tour/{testTour.Id}", JsonSerializer.Serialize(testTour));
+        TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tour/{testTour.Id}", testTour);
 
         await _viewModel.ShowTourDetailsAsync(testTour.Id);
         using (Assert.EnterMultipleScope())
@@ -370,7 +384,7 @@ public class TourViewModelTests
     public async Task EditTourAsync_ShouldLoadTourSuccessfully()
     {
         var testTour = TestData.SampleTour();
-        TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tour/{testTour.Id}", JsonSerializer.Serialize(testTour));
+        TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tour/{testTour.Id}", testTour);
 
         await _viewModel.EditTourAsync(testTour.Id);
         using (Assert.EnterMultipleScope())
@@ -390,7 +404,7 @@ public class TourViewModelTests
         var tour = TestData.SampleTour();
         tour.Id = tourId;
 
-        TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tour/{tourId}", JsonSerializer.Serialize(tour));
+        TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tour/{tourId}", tour);
 
         await _viewModel.EditTourAsync(tourId);
         _viewModel.IsFormVisible = true;
@@ -427,7 +441,7 @@ public class TourViewModelTests
         {
             _viewModel.Tours.Add(testTour);
             TestData.SetupHandler(_mockHandler, HttpMethod.Delete, $"api/tour/{testTour.Id}", "{}");
-            TestData.SetupHandler(_mockHandler, HttpMethod.Get, "api/tour", JsonSerializer.Serialize(TestData.SampleTourList()));
+            TestData.SetupHandler(_mockHandler, HttpMethod.Get, "api/tour", TestData.SampleTourList());
         }
 
         await _viewModel.DeleteTourAsync(testTour.Id);

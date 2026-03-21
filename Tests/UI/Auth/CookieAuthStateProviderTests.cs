@@ -10,9 +10,9 @@ public class CookieAuthStateProviderTests
     [Test]
     public async Task GetAuthenticationStateAsync_SuccessfulResponse_ReturnsAuthenticatedState()
     {
-        const string json = """{"userId":"test-id","email":"test@example.com"}""";
         var handler = new Mock<HttpMessageHandler>();
-        TestData.SetupHttpMessageHandlerSuccess(handler, json);
+        TestData.SetupHttpMessageHandlerSuccess(handler,
+            new { userId = "test-id", email = "test@example.com" });
         var httpClient = new HttpClient(handler.Object) { BaseAddress = new Uri("http://localhost") };
 
         var sut = new CookieAuthenticationStateProvider(httpClient);
@@ -42,9 +42,9 @@ public class CookieAuthStateProviderTests
     [Test]
     public void NotifyAuthStateChanged_RaisesEvent()
     {
-        const string json = """{"userId":"test-id","email":"test@example.com"}""";
         var handler = new Mock<HttpMessageHandler>();
-        TestData.SetupHttpMessageHandlerSuccess(handler, json);
+        TestData.SetupHttpMessageHandlerSuccess(handler,
+            new { userId = "test-id", email = "test@example.com" });
         var httpClient = new HttpClient(handler.Object) { BaseAddress = new Uri("http://localhost") };
 
         var sut = new CookieAuthenticationStateProvider(httpClient);

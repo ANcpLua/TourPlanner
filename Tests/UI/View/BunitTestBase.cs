@@ -47,7 +47,7 @@ public abstract class BunitTestBase
     {
         var mockHandler = new Mock<HttpMessageHandler>();
         TestData.SetupHandler(mockHandler, HttpMethod.Get, "api/tour",
-            JsonSerializer.Serialize(TestData.SampleTourList(2)));
+            TestData.SampleTourList(2));
         var httpClient = new HttpClient(mockHandler.Object)
             { BaseAddress = new UriBuilder { Scheme = "https", Host = "test.invalid" }.Uri };
 
@@ -193,7 +193,7 @@ public static class ViewTestExtensions
 
     public static void SetupMockGetTour(this IServiceProvider s, Guid id) =>
         TestData.SetupHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
-            HttpMethod.Get, $"api/tour/{id}", JsonSerializer.Serialize(TestData.SampleTour(id: id)));
+            HttpMethod.Get, $"api/tour/{id}", TestData.SampleTour(id: id));
 
     public static void SetupMockPostTour(this IServiceProvider s)
     {
@@ -204,11 +204,11 @@ public static class ViewTestExtensions
     public static void SetupMockGetTourLogs(this IServiceProvider s, Guid tourId, int count = 3) =>
         TestData.SetupHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
             HttpMethod.Get, $"api/tourlog/bytour/{tourId}",
-            JsonSerializer.Serialize(TestData.SampleTourLogList(count, tourId)));
+            TestData.SampleTourLogList(count, tourId));
 
     public static void SetupMockGetTourLog(this IServiceProvider s, Guid logId) =>
         TestData.SetupHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
-            HttpMethod.Get, $"api/tourlog/{logId}", JsonSerializer.Serialize(TestData.SampleTourLog(id: logId)));
+            HttpMethod.Get, $"api/tourlog/{logId}", TestData.SampleTourLog(id: logId));
 
     public static void SetupMockPostTourLog(this IServiceProvider s) =>
         TestData.SetupHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),

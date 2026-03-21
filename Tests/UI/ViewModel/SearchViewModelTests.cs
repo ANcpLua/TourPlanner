@@ -72,7 +72,7 @@ public class SearchViewModelTests
     public async Task SearchToursAsync_Hits_FillsResults()
     {
         var tours = TestData.SampleTourList();
-        TestData.SetupHandler(_mockHandler, HttpMethod.Get, "api/tour/search/a", JsonSerializer.Serialize(tours));
+        TestData.SetupHandler(_mockHandler, HttpMethod.Get, "api/tour/search/a", tours);
 
         _viewModel.SearchText = "a";
         await _viewModel.SearchToursAsync();
