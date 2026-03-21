@@ -15,7 +15,7 @@ public class CookieAuthenticationStateProvider(HttpClient httpClient) : Authenti
     {
         try
         {
-            if (await httpClient.GetFromJsonAsync<UserInfo>("api/account/me") is not { } user)
+            if (await httpClient.GetFromJsonAsync<UserInfo>("api/auth/me") is not { } user)
                 return Anonymous;
 
             var identity = new ClaimsIdentity(

@@ -256,7 +256,7 @@ public static class ViewTestExtensions
 
     public static void SetupAuthHandler(this IServiceProvider s, HttpStatusCode statusCode, string? content = null) =>
         TestData.SetupHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
-            HttpMethod.Post, "api/account",
+            HttpMethod.Post, "api/auth",
             content ?? """{"userId":"id","email":"e@e.com"}""",
             statusCode);
 }

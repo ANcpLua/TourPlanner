@@ -28,8 +28,8 @@ public class FallbackPolicyTests
     [TestCase("/api/tourlog")]
     [TestCase("/api/routes/resolve")]
     [TestCase("/api/reports/summary")]
-    [TestCase("/api/account/me")]
-    [TestCase("/api/account/logout")]
+    [TestCase("/api/auth/me")]
+    [TestCase("/api/auth/logout")]
     public async Task ProtectedEndpoint_Anonymous_Returns401(string url)
     {
         var response = await _client.GetAsync(url);
@@ -48,7 +48,7 @@ public class FallbackPolicyTests
     [Test]
     public async Task LoginEndpoint_Anonymous_DoesNotReturn401()
     {
-        var response = await _client.PostAsJsonAsync("/api/account/login",
+        var response = await _client.PostAsJsonAsync("/api/auth/login",
             new { Email = "x", Password = "x" });
 
         Assert.That(response.StatusCode, Is.Not.EqualTo(HttpStatusCode.Unauthorized));
@@ -57,7 +57,7 @@ public class FallbackPolicyTests
     [Test]
     public async Task RegisterEndpoint_Anonymous_DoesNotReturn401()
     {
-        var response = await _client.PostAsJsonAsync("/api/account/register",
+        var response = await _client.PostAsJsonAsync("/api/auth/register",
             new { Email = "x", Password = "x" });
 
         Assert.That(response.StatusCode, Is.Not.EqualTo(HttpStatusCode.Unauthorized));

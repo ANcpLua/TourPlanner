@@ -28,7 +28,7 @@ public class AuthViewModel(
 
     public async Task LoginAsync(LoginRequest request)
     {
-        if (!await SendAuthRequestAsync("api/account/login", request)) return;
+        if (!await SendAuthRequestAsync("api/auth/login", request)) return;
 
         authStateProvider.NotifyAuthStateChanged();
         navigationManager.NavigateTo("/");
@@ -36,7 +36,7 @@ public class AuthViewModel(
 
     public async Task RegisterAsync(RegisterRequest request)
     {
-        if (!await SendAuthRequestAsync("api/account/register", request)) return;
+        if (!await SendAuthRequestAsync("api/auth/register", request)) return;
 
         authStateProvider.NotifyAuthStateChanged();
         navigationManager.NavigateTo("/");
@@ -59,7 +59,7 @@ public class AuthViewModel(
             {
                 _ when await response.Content.ReadAsStringAsync() is { } body
                        && body.Contains("DuplicateUserName") => "An account with this email already exists.",
-                "api/account/login" => "Invalid email or password.",
+                "api/auth/login" => "Invalid email or password.",
                 _ => "Registration failed. Please check your input."
             };
 

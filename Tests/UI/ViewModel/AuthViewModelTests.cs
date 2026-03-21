@@ -44,7 +44,7 @@ public class AuthViewModelTests
     [Test]
     public async Task LoginAsync_Success_NavigatesToHome()
     {
-        TestData.SetupHandler(_mockHandler, HttpMethod.Post, "api/account/login",
+        TestData.SetupHandler(_mockHandler, HttpMethod.Post, "api/auth/login",
             new { userId = "id", email = "e@e.com" });
 
         await _viewModel.LoginAsync(new LoginRequest { Email = "test@example.com", Password = "Test1234!" });
@@ -55,7 +55,7 @@ public class AuthViewModelTests
     [Test]
     public async Task LoginAsync_HttpFailure_SetsErrorMessage()
     {
-        TestData.SetupHandler(_mockHandler, HttpMethod.Post, "api/account/login",
+        TestData.SetupHandler(_mockHandler, HttpMethod.Post, "api/auth/login",
             "", HttpStatusCode.Unauthorized);
 
         await _viewModel.LoginAsync(new LoginRequest { Email = "test@example.com", Password = "wrong" });
@@ -79,7 +79,7 @@ public class AuthViewModelTests
     [Test]
     public async Task RegisterAsync_Success_NavigatesToHome()
     {
-        TestData.SetupHandler(_mockHandler, HttpMethod.Post, "api/account/register",
+        TestData.SetupHandler(_mockHandler, HttpMethod.Post, "api/auth/register",
             new { userId = "id", email = "e@e.com" });
 
         await _viewModel.RegisterAsync(new RegisterRequest { Email = "new@example.com", Password = "Test1234!" });
@@ -90,7 +90,7 @@ public class AuthViewModelTests
     [Test]
     public async Task RegisterAsync_DuplicateUser_SetsDuplicateMessage()
     {
-        TestData.SetupHandler(_mockHandler, HttpMethod.Post, "api/account/register",
+        TestData.SetupHandler(_mockHandler, HttpMethod.Post, "api/auth/register",
             """{"DuplicateUserName":["Already exists"]}""", HttpStatusCode.BadRequest);
 
         await _viewModel.RegisterAsync(new RegisterRequest { Email = "dupe@example.com", Password = "Test1234!" });
@@ -101,7 +101,7 @@ public class AuthViewModelTests
     [Test]
     public async Task RegisterAsync_GenericError_SetsGenericMessage()
     {
-        TestData.SetupHandler(_mockHandler, HttpMethod.Post, "api/account/register",
+        TestData.SetupHandler(_mockHandler, HttpMethod.Post, "api/auth/register",
             "other error", HttpStatusCode.BadRequest);
 
         await _viewModel.RegisterAsync(new RegisterRequest { Email = "fail@example.com", Password = "Test1234!" });
@@ -133,13 +133,13 @@ public class AuthViewModelTests
     [Test]
     public async Task LoginAsync_ClearsErrorOnRetry()
     {
-        TestData.SetupHandler(_mockHandler, HttpMethod.Post, "api/account/login",
+        TestData.SetupHandler(_mockHandler, HttpMethod.Post, "api/auth/login",
             "", HttpStatusCode.Unauthorized);
 
         await _viewModel.LoginAsync(new LoginRequest { Email = "e@e.com", Password = "wrong" });
         Assert.That(_viewModel.ErrorMessage, Is.Not.Null);
 
-        TestData.SetupHandler(_mockHandler, HttpMethod.Post, "api/account/login",
+        TestData.SetupHandler(_mockHandler, HttpMethod.Post, "api/auth/login",
             new { userId = "id", email = "e@e.com" });
 
         await _viewModel.LoginAsync(new LoginRequest { Email = "e@e.com", Password = "correct" });
