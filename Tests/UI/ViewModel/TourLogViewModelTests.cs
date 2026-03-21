@@ -137,11 +137,12 @@ public class TourLogViewModelTests
     }
 
     [Test]
-    public void SelectedTourId_WhenSetToEmpty_ShouldClearTourData()
+    public async Task SelectedTourId_WhenSetToEmpty_ShouldClearTourData()
     {
         _viewModel.TourLogs.Add(TestData.SampleTourLog());
 
         _viewModel.SelectedTourId = Guid.Empty;
+        await _viewModel.OnTourSelectionChangedAsync();
 
         Assert.That(_viewModel.TourLogs, Is.Empty);
     }

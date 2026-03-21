@@ -471,37 +471,7 @@ public static class TestData
                     )),
                 ItExpr.IsAny<CancellationToken>());
     }
-
-    public static void SetupHttpMessageHandlerBytes(Mock<HttpMessageHandler> mockHandler, byte[] content,
-        HttpStatusCode statusCode = HttpStatusCode.OK)
-    {
-        var response = new HttpResponseMessage(statusCode)
-        {
-            Content = new ByteArrayContent(content)
-        };
-
-        mockHandler
-            .Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(response);
-    }
-
-    public static void VerifyHttpRequest(Mock<HttpMessageHandler> mockHandler, HttpMethod method, string expectedUri)
-    {
-        mockHandler
-            .Protected()
-            .Verify(
-                "SendAsync",
-                Times.Once(),
-                ItExpr.Is<HttpRequestMessage>(req =>
-                    req.Method == method &&
-                    req.RequestUri!.ToString().Contains(expectedUri)),
-                ItExpr.IsAny<CancellationToken>());
-    }
-
+    
     public static void AssertValidPdf(byte[] pdfBytes)
     {
         Assert.That(pdfBytes, Is.Not.Null.And.Not.Empty);

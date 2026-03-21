@@ -91,7 +91,7 @@ public class ReportViewModel(
     {
         var reportBytes = await HttpClient.GetByteArrayAsync(uri);
         var fileName = $"{reportType}_{TimeProvider.System.GetUtcNow().UtcDateTime:yyyyMMdd_HHmmss}.pdf";
-        if (reportBytes is null || reportBytes.Length is 0)
+        if (reportBytes.Length is 0)
         {
             ToastServiceWrapper.ShowError($"Error generating {reportType}: No data received.");
             return;

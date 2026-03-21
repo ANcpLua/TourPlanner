@@ -73,7 +73,7 @@ public class ReportEndpointsTests
     [Test]
     public void GetTourReport_InvalidTourId_ReturnsNotFound()
     {
-        _mockFileService.Setup(s => s.GenerateTourReport(TestData.NonexistentGuid)).Returns((byte[]?)null);
+        _mockFileService.Setup(static s => s.GenerateTourReport(TestData.NonexistentGuid)).Returns((byte[]?)null);
 
         var result = ReportEndpoints.GetTourReport(TestData.NonexistentGuid, _mockFileService.Object);
 
@@ -97,7 +97,7 @@ public class ReportEndpointsTests
     [Test]
     public void ExportTourToJson_InvalidTourId_ReturnsNotFound()
     {
-        _mockFileService.Setup(s => s.ExportTourToJson(TestData.NonexistentGuid)).Returns((TourDomain?)null);
+        _mockFileService.Setup(static s => s.ExportTourToJson(TestData.NonexistentGuid)).Returns((TourDomain?)null);
 
         var result = ReportEndpoints.ExportTourToJson(TestData.NonexistentGuid, _mockFileService.Object, _mockMapper.Object);
 
@@ -122,7 +122,7 @@ public class ReportEndpointsTests
     {
         const string invalidJson = "not json";
         _mockFileService
-            .Setup(s => s.ImportTourFromJsonAsync(invalidJson, It.IsAny<CancellationToken>()))
+            .Setup(static s => s.ImportTourFromJsonAsync(invalidJson, It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
         var result = await ReportEndpoints.ImportTourFromJsonAsync(invalidJson, _mockFileService.Object, CancellationToken.None);

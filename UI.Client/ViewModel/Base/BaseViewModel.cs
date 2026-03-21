@@ -59,9 +59,6 @@ public abstract class BaseViewModel(
     protected Task HandleApiRequestAsync(Func<Task> action, string errorContext) =>
         tryCatchToastWrapper.ExecuteAsync(action, errorContext);
 
-    protected Task<T?> HandleApiRequestAsync<T>(Func<Task<T>> action, string errorContext) =>
-        tryCatchToastWrapper.ExecuteAsync(action, errorContext);
-
     protected bool SetProperty<T>(
         ref T field,
         T value,

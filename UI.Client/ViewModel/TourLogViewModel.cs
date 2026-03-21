@@ -40,10 +40,7 @@ public class TourLogViewModel(
     public Guid? SelectedTourId
     {
         get => _selectedTourId;
-        set
-        {
-            if (SetProperty(ref _selectedTourId, value)) _ = HandleTourSelection();
-        }
+        set => SetProperty(ref _selectedTourId, value);
     }
 
     public string LogFormToggleButtonText => IsLogFormVisible ? "Hide Form" : "Add New Log";
@@ -115,7 +112,7 @@ public class TourLogViewModel(
             await LoadTourLogsAsync();
             ResetForm();
             return true;
-        }, "Error saving tour log") is true;
+        }, "Error saving tour log");
     }
 
     [UiMethodDecorator]
@@ -167,12 +164,15 @@ public class TourLogViewModel(
         }, "Error deleting tour log");
     }
 
-    private async Task HandleTourSelection()
+    public Task OnTourSelectionChangedAsync()
     {
         if (_selectedTourId is null || _selectedTourId == Guid.Empty)
+        {
             ClearTourData();
-        else
-            await LoadTourLogsAsync();
+            return Task.CompletedTask;
+        }
+
+        return HandleApiRequestAsync(LoadTourLogsAsync, "loading tour logs");
     }
 
     private async Task PersistTourLogAsync()

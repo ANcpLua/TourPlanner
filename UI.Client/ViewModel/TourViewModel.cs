@@ -114,7 +114,7 @@ public class TourViewModel(
 
             ResetForm();
             return true;
-        }, "Error saving tour") is true;
+        }, "Error saving tour");
     }
 
     [UiMethodDecorator]
