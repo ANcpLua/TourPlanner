@@ -40,7 +40,7 @@ public class TourLogViewModel(
     public Guid? SelectedTourId
     {
         get => _selectedTourId;
-        set => SetProperty(ref _selectedTourId, value);
+        set => SetProperty(ref _selectedTourId, value == Guid.Empty ? null : value);
     }
 
     public string LogFormToggleButtonText => IsLogFormVisible ? "Hide Form" : "Add New Log";
@@ -166,7 +166,7 @@ public class TourLogViewModel(
 
     public Task OnTourSelectionChangedAsync()
     {
-        if (_selectedTourId is null || _selectedTourId == Guid.Empty)
+        if (_selectedTourId is null)
         {
             ClearTourData();
             return Task.CompletedTask;
