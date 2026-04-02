@@ -1,166 +1,135 @@
-﻿using BL.DomainModel;
+using BL.DomainModel;
 using BL.Interface;
 using BL.Service;
 
 namespace Tests.BL;
 
 [TestFixture]
-public class FileServiceTests
+public sealed class FileServiceTests
 {
+    private Mock<ITourService> _tourService = null!;
+    private Mock<IPdfReportService> _pdfReportService = null!;
+    private FileService _sut = null!;
+
     [SetUp]
-    public void Setup()
+    public void SetUp()
     {
-        _mockTourService = new Mock<ITourService>();
-        _mockPdfReportService = new Mock<IPdfReportService>();
-        _fileService = new FileService(_mockTourService.Object, _mockPdfReportService.Object);
-    }
-
-    private Mock<ITourService> _mockTourService = null!;
-    private Mock<IPdfReportService> _mockPdfReportService = null!;
-    private FileService _fileService = null!;
-
-    [Test]
-    public void GenerateTourReport_ValidTourId_ReturnsPdfBytes()
-    {
-        var tourId = TestData.TestGuid;
-        var tour = TestData.SampleTourDomain();
-        byte[] expectedPdfBytes =
-        [
-            1, 2, 3, 4, 5
-        ];
-
-        _mockTourService.Setup(s => s.GetTourById(tourId)).Returns(tour);
-        _mockPdfReportService.Setup(s => s.GenerateTourReport(tour)).Returns(expectedPdfBytes);
-
-        var result = _fileService.GenerateTourReport(tourId);
-
-        Assert.That(result, Is.EqualTo(expectedPdfBytes));
-        _mockTourService.Verify(s => s.GetTourById(tourId), Times.Once);
-        _mockPdfReportService.Verify(s => s.GenerateTourReport(tour), Times.Once);
+        _tourService = new Mock<ITourService>();
+        _pdfReportService = new Mock<IPdfReportService>();
+        _sut = new FileService(_tourService.Object, _pdfReportService.Object);
     }
 
     [Test]
-    public void GenerateSummaryReport_ValidTours_ReturnsPdfBytes()
+    public void GenerateTourReport_WhenTourExists_UsesPdfService()
     {
-        var tours = TestData.SampleTourDomainList();
-        byte[] expectedPdfBytes =
-        [
-            1, 2, 3, 4, 5
-        ];
+        var tour = TourTestData.SampleTourDomain();
+        var reportBytes = new byte[] { 1, 2, 3 };
 
-        _mockPdfReportService.Setup(s => s.GenerateSummaryReport(tours)).Returns(expectedPdfBytes);
+        _tourService.Setup(service => service.GetTourById(TestConstants.TestGuid)).Returns(tour);
+        _pdfReportService.Setup(service => service.GenerateTourReport(tour)).Returns(reportBytes);
 
-        var result = _fileService.GenerateSummaryReport(tours);
-
-        Assert.That(result, Is.EqualTo(expectedPdfBytes));
-        _mockPdfReportService.Verify(s => s.GenerateSummaryReport(tours), Times.Once);
-    }
-
-    [Test]
-    public void ExportTourToJson_ValidTourId_ReturnsTourDomain()
-    {
-        var tourId = TestData.TestGuid;
-        var expectedTour = TestData.SampleTourDomain();
-
-        _mockTourService.Setup(s => s.GetTourById(tourId)).Returns(expectedTour);
-
-        var result = _fileService.ExportTourToJson(tourId);
-
-        Assert.That(result, Is.EqualTo(expectedTour));
-        _mockTourService.Verify(s => s.GetTourById(tourId), Times.Once);
-    }
-
-    [Test]
-    public void GenerateSummaryReport_LargeTourList_HandlesLargeDataSet()
-    {
-        List<TourDomain> largeTourList = [.. Enumerable
-            .Range(0, 1000)
-            .Select(_ => TestData.SampleTourDomain())];
-        var expectedPdfBytes = new byte[1024 * 1024];
-
-        _mockPdfReportService
-            .Setup(s => s.GenerateSummaryReport(largeTourList))
-            .Returns(expectedPdfBytes);
-
-        var result = _fileService.GenerateSummaryReport(largeTourList);
-
-        Assert.That(result, Is.EqualTo(expectedPdfBytes));
-        _mockPdfReportService.Verify(s => s.GenerateSummaryReport(largeTourList), Times.Once);
-    }
-
-    [Test]
-    public void ExportTourToJsonAsync_TourWithLargeLogs_HandlesLargeDataSet()
-    {
-        var tourId = TestData.TestGuid;
-        var tourWithLargeLogs = TestData.SampleTourDomain();
-        tourWithLargeLogs.Logs = [.. Enumerable
-            .Range(0, 10000)
-            .Select(_ => TestData.SampleTourLogDomain())];
-
-        _mockTourService.Setup(s => s.GetTourById(tourId)).Returns(tourWithLargeLogs);
-
-        var result = _fileService.ExportTourToJson(tourId);
+        var report = _sut.GenerateTourReport(TestConstants.TestGuid);
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(result, Is.Not.Null.And.EqualTo(tourWithLargeLogs));
-            Assert.That(result?.Logs, Has.Count.EqualTo(10000));
+            Assert.That(report, Is.EqualTo(reportBytes));
+            _pdfReportService.Verify(service => service.GenerateTourReport(tour), Times.Once);
         }
-        _mockTourService.Verify(s => s.GetTourById(tourId), Times.Once);
     }
 
     [Test]
-    public void ExportTourToJson_InvalidTourId_ReturnsNull()
+    public void GenerateTourReport_WhenTourDoesNotExist_ReturnsNullWithoutCallingPdfService()
     {
-        var invalidTourId = TestData.NonexistentGuid;
-        _mockTourService.Setup(s => s.GetTourById(invalidTourId)).Returns((TourDomain?)null);
+        _tourService.Setup(static service => service.GetTourById(TestConstants.NonexistentGuid)).Returns((TourDomain?)null);
 
-        var result = _fileService.ExportTourToJson(invalidTourId);
+        var report = _sut.GenerateTourReport(TestConstants.NonexistentGuid);
 
-        Assert.That(result, Is.Null);
-        _mockTourService.Verify(s => s.GetTourById(invalidTourId), Times.Once);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(report, Is.Null);
+            _pdfReportService.Verify(static service => service.GenerateTourReport(It.IsAny<TourDomain>()), Times.Never);
+        }
     }
 
     [Test]
-    public void GenerateTourReport_InvalidTourId_ReturnsNull()
+    public void GenerateSummaryReport_DelegatesToPdfService()
     {
-        var invalidTourId = TestData.NonexistentGuid;
-        _mockTourService.Setup(s => s.GetTourById(invalidTourId)).Returns((TourDomain?)null);
+        var tours = TourTestData.SampleTourDomainList();
+        var reportBytes = new byte[] { 4, 5, 6 };
 
-        var result = _fileService.GenerateTourReport(invalidTourId);
+        _pdfReportService.Setup(service => service.GenerateSummaryReport(tours)).Returns(reportBytes);
 
-        Assert.That(result, Is.Null);
-        _mockTourService.Verify(s => s.GetTourById(invalidTourId), Times.Once);
+        var report = _sut.GenerateSummaryReport(tours);
+
+        Assert.That(report, Is.EqualTo(reportBytes));
     }
 
     [Test]
-    public async Task ImportTourFromJsonAsync_ValidJson_CreatesTour()
+    public void ExportTourToJson_ReturnsTourFromTourService()
     {
-        var expectedTour = TestData.SampleTourDomain();
-        var json = TestData.SampleTourDomainJson();
+        var tour = TourTestData.SampleTourDomain();
+        _tourService.Setup(static service => service.GetTourById(TestConstants.TestGuid)).Returns(tour);
 
-        _mockTourService
-            .Setup(s => s.CreateTourAsync(It.IsAny<TourDomain>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(expectedTour);
+        var exported = _sut.ExportTourToJson(TestConstants.TestGuid);
 
-        await _fileService.ImportTourFromJsonAsync(json);
-
-        _mockTourService.Verify(
-            s => s.CreateTourAsync(It.Is<TourDomain>(t => t.Id == expectedTour.Id), It.IsAny<CancellationToken>()),
-            Times.Once
-        );
+        Assert.That(exported, Is.SameAs(tour));
     }
 
     [Test]
-    public async Task ImportTourFromJsonAsync_InvalidJson_ReturnsFalse()
+    public async Task ImportTourFromJsonAsync_ValidPayload_CreatesTourAndReturnsTrue()
     {
-        const string invalidJson = "{invalid json}";
+        var tour = TourTestData.SampleTourDomain("Imported Tour");
+        var json = JsonSerializer.Serialize(tour);
+        var cancellationToken = new CancellationTokenSource().Token;
 
-        var result = await _fileService.ImportTourFromJsonAsync(invalidJson);
+        _tourService.Setup(service => service.CreateTourAsync(
+                It.Is<TourDomain>(candidate => candidate.Name == "Imported Tour" && candidate.From == tour.From),
+                cancellationToken))
+            .ReturnsAsync(tour);
 
-        Assert.That(result, Is.False);
-        _mockTourService.Verify(
-            static s => s.CreateTourAsync(It.IsAny<TourDomain>(), It.IsAny<CancellationToken>()),
-            Times.Never);
+        var result = await _sut.ImportTourFromJsonAsync(json, cancellationToken);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.True);
+            _tourService.Verify(service => service.CreateTourAsync(
+                It.Is<TourDomain>(candidate => candidate.Name == "Imported Tour" && candidate.From == tour.From),
+                cancellationToken), Times.Once);
+        }
+    }
+
+    [Test]
+    public async Task ImportTourFromJsonAsync_InvalidJson_ReturnsFalseWithoutCallingTourService()
+    {
+        var result = await _sut.ImportTourFromJsonAsync("{invalid json}");
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.False);
+            _tourService.Verify(static service => service.CreateTourAsync(It.IsAny<TourDomain>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+    }
+
+    [Test]
+    public async Task ImportTourFromJsonAsync_NullPayload_ReturnsFalseWithoutCallingTourService()
+    {
+        var result = await _sut.ImportTourFromJsonAsync("null");
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.False);
+            _tourService.Verify(static service => service.CreateTourAsync(It.IsAny<TourDomain>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+    }
+
+    [Test]
+    public void ImportTourFromJsonAsync_TourServiceFailure_PropagatesException()
+    {
+        var json = JsonSerializer.Serialize(TourTestData.SampleTourDomain());
+        _tourService.Setup(service => service.CreateTourAsync(It.IsAny<TourDomain>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("create failed"));
+
+        Assert.That(() => _sut.ImportTourFromJsonAsync(json),
+            Throws.TypeOf<InvalidOperationException>().With.Message.EqualTo("create failed"));
     }
 }

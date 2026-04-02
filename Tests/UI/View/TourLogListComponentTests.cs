@@ -47,7 +47,7 @@ public sealed class TourLogListComponentTests : BunitTestBase
         if (confirms)
         {
             Services.SetupMockDeleteTourLog(logId);
-            Services.SetupMockGetTourLogs(TestData.TestGuid, 0);
+            Services.SetupMockGetTourLogs(TestConstants.TestGuid, 0);
         }
 
         await Render().Find(".btn-danger").ClickAsync(new MouseEventArgs());

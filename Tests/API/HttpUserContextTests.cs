@@ -10,7 +10,7 @@ public class HttpUserContextTests
     [Test]
     public void UserId_AuthenticatedUser_ReturnsNameIdentifier()
     {
-        var claims = new[] { new Claim(ClaimTypes.NameIdentifier, TestData.TestUserId) };
+        var claims = new[] { new Claim(ClaimTypes.NameIdentifier, TestConstants.TestUserId) };
         var identity = new ClaimsIdentity(claims, "test");
         var httpContext = new DefaultHttpContext { User = new ClaimsPrincipal(identity) };
         var accessor = new Mock<IHttpContextAccessor>();
@@ -18,7 +18,7 @@ public class HttpUserContextTests
 
         var sut = new HttpUserContext(accessor.Object);
 
-        Assert.That(sut.UserId, Is.EqualTo(TestData.TestUserId));
+        Assert.That(sut.UserId, Is.EqualTo(TestConstants.TestUserId));
     }
 
     [Test]

@@ -25,6 +25,23 @@ UI.Client  -->  Contracts  <--  API  -->  BL  -->  DAL
 - `DAL` must not expose persistence entities outside its boundary
 - `Contracts` must not contain business logic, UI logic, or persistence logic
 
+## Client-Agnostic Backend
+
+- The backend owns an HTTP/OpenAPI contract, not a UI-specific integration
+- `API`, `BL`, `DAL`, and `Contracts` must remain usable by any client that honors that contract
+- `UI.Client` is replaceable; backend code must not assume Blazor-specific state, components, or ViewModels
+- Shared transport models belong in `Contracts`; UI state and UI behavior do not
+
+## Model and ViewModel Separation
+
+- Models and ViewModels are different responsibilities and must not be collapsed into the same type
+- `Contracts` models describe transport only
+- `UI.Client` models describe UI-facing semantics, derived values, parsing, normalization, and mapping from transport to presentation
+- `UI.Client` ViewModels own screen state, async workflows, commands, loading flags, selection, and error presentation
+- Components and pages must not consume persistence entities or business-layer types directly
+- A ViewModel may use a model, but a model must not depend on a ViewModel
+- Generated or shared transport DTOs must not become the UI model by default; map them at the boundary when the UI needs its own semantics
+
 ## UI Pattern (MVVM)
 
 - Razor pages are pure templates: `@inject ViewModel`, bind to properties

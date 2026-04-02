@@ -29,7 +29,7 @@ public class UiMethodDecoratorTests
         var mockViewModel = new Mock<BaseViewModel>(
             new HttpClient(),
             _mockToastService.Object,
-            TestData.MockTryCatchToastWrapper()
+            TestMocks.TryCatchToastWrapper()
         ) { CallBase = true };
 
         _decorator.Init(mockViewModel.Object, _testMethod, ["arg1", 42]);
@@ -49,7 +49,7 @@ public class UiMethodDecoratorTests
         var mockViewModel = new Mock<BaseViewModel>(
             new HttpClient(),
             nullToastService!,
-            TestData.MockTryCatchToastWrapper()
+            TestMocks.TryCatchToastWrapper()
         ) { CallBase = true };
 
         _decorator.Init(mockViewModel.Object, _testMethod, []);
@@ -94,7 +94,7 @@ public class UiMethodDecoratorTests
         var mockViewModel = new Mock<BaseViewModel>(
             new HttpClient(),
             _mockToastService.Object,
-            TestData.MockTryCatchToastWrapper()
+            TestMocks.TryCatchToastWrapper()
         ) { CallBase = true };
 
         _decorator.Init(mockViewModel.Object, _testMethod, ["test", 123]);
@@ -124,7 +124,7 @@ public class UiMethodDecoratorTests
         var mockViewModel = new Mock<BaseViewModel>(
             new HttpClient(),
             _mockToastService.Object,
-            TestData.MockTryCatchToastWrapper()
+            TestMocks.TryCatchToastWrapper()
         ) { CallBase = true };
 
         var mockMethod = new Mock<MethodInfo>();
@@ -147,7 +147,7 @@ public class UiMethodDecoratorTests
         var mockViewModel = new Mock<BaseViewModel>(
             new HttpClient(),
             _mockToastService.Object,
-            TestData.MockTryCatchToastWrapper()
+            TestMocks.TryCatchToastWrapper()
         ) { CallBase = true };
 
         var mockMethod = new Mock<MethodInfo>();
@@ -174,7 +174,7 @@ public class UiMethodDecoratorTests
         var mockViewModel = new Mock<BaseViewModel>(
             new HttpClient(),
             _mockToastService.Object,
-            TestData.MockTryCatchToastWrapper()
+            TestMocks.TryCatchToastWrapper()
         ) { CallBase = true };
 
         _decorator.Init(mockViewModel.Object, method, args);

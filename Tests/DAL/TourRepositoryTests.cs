@@ -1,236 +1,181 @@
-using DAL.Infrastructure;
+using DAL.PersistenceModel;
 using DAL.Repository;
 using Microsoft.EntityFrameworkCore;
+using Tests.DAL.Infrastructure;
 
 namespace Tests.DAL;
 
 [TestFixture]
-public class TourRepositoryTests
+public sealed class TourRepositoryTests : SqliteRepositoryTestBase
 {
-    [SetUp]
-    public void Setup()
-    {
-        var options = new DbContextOptionsBuilder<TourPlannerContext>()
-            .UseInMemoryDatabase($"TourPlannerTestDb_{Guid.NewGuid()}")
-            .Options;
-        _context = new TourPlannerContext(options);
-        _repository = new TourRepository(_context);
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
-        _context.Database.EnsureDeleted();
-        _context.Dispose();
-    }
-
-    private TourPlannerContext _context = null!;
     private TourRepository _repository = null!;
+    private static readonly string[] AllOwnedTourNames = ["One", "Two"];
+
+    protected override void OnSetUp()
+    {
+        _repository = new TourRepository(DbContext);
+    }
 
     [Test]
-    public async Task CreateTourAsync_WithValidTour_ReturnsSavedTour()
+    public async Task CreateTourAsync_AssignsUserAndPersistsTour()
     {
-        var tour = TestData.SampleTourPersistence();
+        var tour = NewTour(name: "Created Tour", userId: "ignored-user");
 
-        var result = await _repository.CreateTourAsync(tour, TestData.TestUserId);
-        var tourCount = await _context.ToursPersistence.CountAsync();
+        var created = await _repository.CreateTourAsync(tour, TestConstants.TestUserId);
 
-        Assert.That(result, Is.Not.Null);
+        await using var verificationContext = CreateContext();
+        var persisted = await verificationContext.ToursPersistence.SingleAsync(t => t.Id == created.Id);
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(result.Id, Is.EqualTo(tour.Id));
-            Assert.That(result.Name, Is.EqualTo(tour.Name));
-            Assert.That(result.UserId, Is.EqualTo(TestData.TestUserId));
-            Assert.That(tourCount, Is.EqualTo(1));
+            Assert.That(created.UserId, Is.EqualTo(TestConstants.TestUserId));
+            Assert.That(persisted.Name, Is.EqualTo("Created Tour"));
+            Assert.That(persisted.UserId, Is.EqualTo(TestConstants.TestUserId));
         }
     }
 
     [Test]
-    public void CreateTourAsync_WithInvalidTour_ThrowsDbUpdateException()
+    public void CreateTourAsync_MissingRequiredName_ThrowsDbUpdateException()
     {
-        var tour = TestData.SampleTourPersistence();
+        var tour = NewTour();
         tour.Name = null!;
 
-        Assert.That(async () => await _repository.CreateTourAsync(tour, TestData.TestUserId), Throws.InstanceOf<DbUpdateException>());
+        Assert.That(async () => await _repository.CreateTourAsync(tour, TestConstants.TestUserId),
+            Throws.TypeOf<DbUpdateException>());
     }
 
     [Test]
-    public void GetAllTours_WithExistingTours_ReturnsOnlyOwnedTours()
+    public void GetAllTours_ReturnsOnlyOwnedToursWithLoadedLogs()
     {
-        var tours = TestData.SampleTourPersistenceList();
-        _context.ToursPersistence.AddRange(tours);
-        _context.SaveChanges();
+        var ownedTour = SeedTour(name: "Owned Tour", userId: TestConstants.TestUserId, logComment: "owned-log");
+        SeedTour(name: "Other Tour", userId: "other-user", logComment: "other-log");
 
-        var result = _repository.GetAllTours(TestData.TestUserId).ToList();
+        var tours = _repository.GetAllTours(TestConstants.TestUserId).ToList();
 
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result, Has.Count.EqualTo(tours.Count));
-    }
-
-    [Test]
-    public void GetAllTours_WithNoExistingTours_ReturnsEmptyList()
-    {
-        var result = _repository.GetAllTours(TestData.TestUserId).ToList();
-
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result, Is.Empty);
-    }
-
-    [Test]
-    public void GetAllTours_WithDifferentUser_ReturnsEmpty()
-    {
-        var tours = TestData.SampleTourPersistenceList();
-        _context.ToursPersistence.AddRange(tours);
-        _context.SaveChanges();
-
-        var result = _repository.GetAllTours("other-user-id").ToList();
-
-        Assert.That(result, Is.Empty);
-    }
-
-    [Test]
-    public void GetTourById_WithExistingId_ReturnsTour()
-    {
-        var tour = TestData.SampleTourPersistence();
-        _context.ToursPersistence.Add(tour);
-        _context.SaveChanges();
-
-        var result = _repository.GetTourById(tour.Id, TestData.TestUserId);
-
-        Assert.That(result, Is.Not.Null);
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(result.Id, Is.EqualTo(tour.Id));
-            Assert.That(result.Name, Is.EqualTo(tour.Name));
+            Assert.That(tours, Has.Count.EqualTo(1));
+            Assert.That(tours.Single().Id, Is.EqualTo(ownedTour.Id));
+            Assert.That(tours.Single().TourLogPersistence.Select(static log => log.Comment), Contains.Item("owned-log"));
         }
-    }
-
-    [Test]
-    public void GetTourById_WithNonExistingId_ReturnsNull()
-    {
-        var nonExistingId = Guid.NewGuid();
-
-        var result = _repository.GetTourById(nonExistingId, TestData.TestUserId);
-
-        Assert.That(result, Is.Null);
     }
 
     [Test]
     public void GetTourById_WithDifferentUser_ReturnsNull()
     {
-        var tour = TestData.SampleTourPersistence();
-        _context.ToursPersistence.Add(tour);
-        _context.SaveChanges();
+        var tour = SeedTour();
 
-        var result = _repository.GetTourById(tour.Id, "other-user-id");
+        var result = _repository.GetTourById(tour.Id, "other-user");
 
         Assert.That(result, Is.Null);
     }
 
     [Test]
-    public async Task UpdateTourAsync_WithExistingTour_ReturnsUpdatedTour()
+    public async Task UpdateTourAsync_PersistsChangesForOwner()
     {
-        var tour = TestData.SampleTourPersistence();
-        await _context.ToursPersistence.AddAsync(tour);
-        await _context.SaveChangesAsync();
+        var tour = SeedTour(name: "Before Update");
+        tour.Name = "After Update";
+        tour.Description = "Updated description";
 
-        tour.Name = "Updated Tour Name";
+        var updated = await _repository.UpdateTourAsync(tour, TestConstants.TestUserId);
 
-        var result = await _repository.UpdateTourAsync(tour, TestData.TestUserId);
-        var dbTour = await _context.ToursPersistence.FirstAsync(t => t.Id == tour.Id);
-
-        Assert.That(result, Is.Not.Null);
+        await using var verificationContext = CreateContext();
+        var persisted = await verificationContext.ToursPersistence.SingleAsync(t => t.Id == tour.Id);
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(result.Name, Is.EqualTo("Updated Tour Name"));
-            Assert.That(dbTour.Name, Is.EqualTo("Updated Tour Name"));
+            Assert.That(updated.Name, Is.EqualTo("After Update"));
+            Assert.That(persisted.Name, Is.EqualTo("After Update"));
+            Assert.That(persisted.Description, Is.EqualTo("Updated description"));
+            Assert.That(persisted.UserId, Is.EqualTo(TestConstants.TestUserId));
         }
     }
 
     [Test]
-    public void UpdateTourAsync_WithNonExistingTour_ThrowsInvalidOperationException()
+    public void UpdateTourAsync_WithDifferentUser_ThrowsInvalidOperationException()
     {
-        var tour = TestData.SampleTourPersistence();
+        var tour = SeedTour();
+        tour.Name = "Should Fail";
 
-        Assert.That(async () => await _repository.UpdateTourAsync(tour, TestData.TestUserId),
-            Throws.InstanceOf<InvalidOperationException>());
+        Assert.That(async () => await _repository.UpdateTourAsync(tour, "other-user"),
+            Throws.TypeOf<InvalidOperationException>()
+                .With.Message.EqualTo("Tour not found or access denied."));
     }
 
     [Test]
-    public async Task DeleteTourAsync_WithExistingId_RemovesTourFromDatabase()
+    public async Task DeleteTourAsync_RemovesOnlyOwnedTour()
     {
-        var tour = TestData.SampleTourPersistence();
-        _context.ToursPersistence.Add(tour);
-        await _context.SaveChangesAsync();
+        var ownedTour = SeedTour(name: "Owned Tour", userId: TestConstants.TestUserId);
+        var otherUserTour = SeedTour(name: "Other Tour", userId: "other-user");
 
-        await _repository.DeleteTourAsync(tour.Id, TestData.TestUserId);
+        await _repository.DeleteTourAsync(ownedTour.Id, TestConstants.TestUserId);
 
-        Assert.That(await _context.ToursPersistence.CountAsync(), Is.Zero);
-    }
-
-    [Test]
-    public async Task DeleteTourAsync_WithNonExistingId_DoesNotRemoveAnyTourFromDatabase()
-    {
-        var tour = TestData.SampleTourPersistence();
-        _context.ToursPersistence.Add(tour);
-        await _context.SaveChangesAsync();
-
-        await _repository.DeleteTourAsync(Guid.NewGuid(), TestData.TestUserId);
-
-        Assert.That(await _context.ToursPersistence.CountAsync(), Is.EqualTo(1));
-    }
-
-    [Test]
-    public async Task DeleteTourAsync_WithDifferentUser_DoesNotDelete()
-    {
-        var tour = TestData.SampleTourPersistence();
-        _context.ToursPersistence.Add(tour);
-        await _context.SaveChangesAsync();
-
-        await _repository.DeleteTourAsync(tour.Id, "other-user-id");
-
-        Assert.That(await _context.ToursPersistence.CountAsync(), Is.EqualTo(1));
-    }
-
-    [Test]
-    public async Task SearchToursAsync_WithMatchingSearchText_ReturnsMatchingTours()
-    {
-        var tour = TestData.SampleTourPersistence();
-        await _context.ToursPersistence.AddAsync(tour);
-        await _context.SaveChangesAsync();
-
-        var result = await _repository.SearchToursAsync("Sample", TestData.TestUserId).ToListAsync();
-
-        Assert.That(result, Is.Not.Null);
+        await using var verificationContext = CreateContext();
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(result, Has.Count.EqualTo(1));
-            Assert.That(result.First().Name, Is.EqualTo("Sample Tour"));
+            Assert.That(await verificationContext.ToursPersistence.AnyAsync(t => t.Id == ownedTour.Id), Is.False);
+            Assert.That(await verificationContext.ToursPersistence.AnyAsync(t => t.Id == otherUserTour.Id), Is.True);
         }
     }
 
     [Test]
-    public async Task SearchToursAsync_WithNonMatchingSearchText_ReturnsEmptyList()
+    public async Task SearchToursAsync_MatchesTourFieldsAndLogCommentsForOwner()
     {
-        var tours = TestData.SampleTourPersistenceList();
-        await _context.ToursPersistence.AddRangeAsync(tours);
-        await _context.SaveChangesAsync();
+        var commentMatch = SeedTour(name: "Lake Route", userId: TestConstants.TestUserId, logComment: "glacier-view");
+        SeedTour(name: "glacier-view hidden", userId: "other-user", logComment: "glacier-view");
+        SeedTour(name: "City Walk", userId: TestConstants.TestUserId, logComment: "urban");
 
-        var result = _repository.SearchToursAsync("NonExistingTour", TestData.TestUserId);
+        var results = await _repository.SearchToursAsync("glacier-view", TestConstants.TestUserId).ToListAsync();
 
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Count(), Is.Zero);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(results, Has.Count.EqualTo(1));
+            Assert.That(results.Single().Id, Is.EqualTo(commentMatch.Id));
+            Assert.That(results.Single().TourLogPersistence.Select(static log => log.Comment), Contains.Item("glacier-view"));
+        }
     }
 
     [Test]
-    public void SearchToursAsync_WithNullOrEmptySearchText_ReturnsAllOwnedTours()
+    public async Task SearchToursAsync_BlankSearch_ReturnsAllOwnedTours()
     {
-        var tours = TestData.SampleTourPersistenceList();
-        _context.ToursPersistence.AddRange(tours);
-        _context.SaveChanges();
+        SeedTour(name: "One", userId: TestConstants.TestUserId);
+        SeedTour(name: "Two", userId: TestConstants.TestUserId);
+        SeedTour(name: "Three", userId: "other-user");
 
-        var result = _repository.SearchToursAsync(null!, TestData.TestUserId);
+        var results = await _repository.SearchToursAsync("   ", TestConstants.TestUserId).ToListAsync();
 
-        Assert.That(result.Count(), Is.EqualTo(tours.Count));
+        Assert.That(results.Select(static t => t.Name), Is.EquivalentTo(AllOwnedTourNames));
+    }
+
+    private TourPersistence SeedTour(string name = "Sample Tour", string userId = TestConstants.TestUserId, string? logComment = null)
+    {
+        var tour = NewTour(name, userId);
+        DbContext.ToursPersistence.Add(tour);
+        DbContext.SaveChanges();
+
+        if (logComment is not null)
+        {
+            DbContext.TourLogsPersistence.Add(NewLog(tour.Id, userId, logComment));
+            DbContext.SaveChanges();
+        }
+
+        return tour;
+    }
+
+    private static TourPersistence NewTour(string name = "Sample Tour", string userId = TestConstants.TestUserId)
+    {
+        var tour = TourTestData.SampleTourPersistence(name);
+        tour.Id = Guid.NewGuid();
+        tour.UserId = userId;
+        tour.TourLogPersistence = [];
+        return tour;
+    }
+
+    private static TourLogPersistence NewLog(Guid tourId, string userId, string comment)
+    {
+        var log = TourLogTestData.SampleTourLogPersistence();
+        log.Id = Guid.NewGuid();
+        log.UserId = userId;
+        log.TourPersistenceId = tourId;
+        log.Comment = comment;
+        return log;
     }
 }

@@ -20,6 +20,11 @@ public class FileService(ITourService tourService, IPdfReportService pdfReportSe
 
     public async Task<bool> ImportTourFromJsonAsync(string json, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return false;
+        }
+
         TourDomain? tour;
         try
         {

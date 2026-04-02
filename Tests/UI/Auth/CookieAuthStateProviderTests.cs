@@ -11,7 +11,7 @@ public class CookieAuthStateProviderTests
     public async Task GetAuthenticationStateAsync_SuccessfulResponse_ReturnsAuthenticatedState()
     {
         var handler = new Mock<HttpMessageHandler>();
-        TestData.SetupHttpMessageHandlerSuccess(handler,
+        HttpTestHelper.SetupSuccess(handler,
             new { userId = "test-id", email = "test@example.com" });
         var httpClient = new HttpClient(handler.Object) { BaseAddress = new Uri("http://localhost") };
 
@@ -30,7 +30,7 @@ public class CookieAuthStateProviderTests
     public async Task GetAuthenticationStateAsync_HttpError_ReturnsAnonymousState()
     {
         var handler = new Mock<HttpMessageHandler>();
-        TestData.SetupHttpMessageHandlerError(handler, HttpStatusCode.InternalServerError, "error");
+        HttpTestHelper.SetupError(handler, HttpStatusCode.InternalServerError, "error");
         var httpClient = new HttpClient(handler.Object) { BaseAddress = new Uri("http://localhost") };
 
         var sut = new CookieAuthenticationStateProvider(httpClient);
@@ -43,7 +43,7 @@ public class CookieAuthStateProviderTests
     public void NotifyAuthStateChanged_RaisesEvent()
     {
         var handler = new Mock<HttpMessageHandler>();
-        TestData.SetupHttpMessageHandlerSuccess(handler,
+        HttpTestHelper.SetupSuccess(handler,
             new { userId = "test-id", email = "test@example.com" });
         var httpClient = new HttpClient(handler.Object) { BaseAddress = new Uri("http://localhost") };
 

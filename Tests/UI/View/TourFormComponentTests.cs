@@ -47,7 +47,7 @@ public sealed class TourFormComponentTests : BunitTestBase
     [Test]
     public async Task SaveTourSuccessfully()
     {
-        Services.ViewModel<TourViewModel>().SelectedTour = TestData.SampleTour(
+        Services.ViewModel<TourViewModel>().SelectedTour = TourTestData.SampleTour(
             id: Guid.Empty, name: "Valid Tour", from: "Vienna", to: "Paris", transportType: "Car");
         Services.SetupMockRouteData();
         Services.SetupMockPostTour();

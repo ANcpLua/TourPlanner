@@ -10,16 +10,16 @@ public class TourLogViewModelTests
     [SetUp]
     public void Setup()
     {
-        var (client, handler) = TestData.MockedHttpClient();
+        var (client, handler) = HttpTestHelper.MockedClient();
         _httpClient = client;
         _mockHandler = handler;
-        _mockToastService = TestData.MockToastService();
-        _mockJsRuntime = TestData.MockJsRuntime();
+        _mockToastService = TestMocks.ToastService();
+        _mockJsRuntime = TestMocks.JsRuntime();
 
         _viewModel = new TourLogViewModel(
             _httpClient,
             _mockToastService.Object,
-            TestData.MockTryCatchToastWrapper(),
+            TestMocks.TryCatchToastWrapper(),
             _mockJsRuntime.Object
         );
     }
@@ -48,7 +48,7 @@ public class TourLogViewModelTests
     [Test]
     public void LogFormTitle_ExistingLog_ShowsEditText()
     {
-        _viewModel.SelectedTourLog = TestData.SampleTourLog();
+        _viewModel.SelectedTourLog = TourLogTestData.SampleTourLog();
         Assert.That(_viewModel.LogFormTitle, Is.EqualTo("Edit Log"));
     }
 
@@ -86,7 +86,7 @@ public class TourLogViewModelTests
     [Test]
     public void SelectedTourLog_WhenSet_ShouldRaisePropertyChangedEvent()
     {
-        var newTourLog = TestData.SampleTourLog();
+        var newTourLog = TourLogTestData.SampleTourLog();
         var eventRaised = false;
         _viewModel.PropertyChanged += (_, _) => eventRaised = true;
 
@@ -117,9 +117,9 @@ public class TourLogViewModelTests
     [Test]
     public void SelectedTourId_WhenSetToValidGuid_ShouldLoadTourLogs()
     {
-        var newTourId = TestData.SampleTour().Id;
-        TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/bytour/{newTourId}",
-            TestData.SampleTourLogList(tourId: newTourId));
+        var newTourId = TourTestData.SampleTour().Id;
+        HttpTestHelper.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/bytour/{newTourId}",
+            TourLogTestData.SampleTourLogList(tourId: newTourId));
 
         _viewModel.SelectedTourId = newTourId;
 
@@ -129,7 +129,7 @@ public class TourLogViewModelTests
     [Test]
     public void ClearTourData_ShouldClearTourLogs()
     {
-        _viewModel.TourLogs.Add(TestData.SampleTourLog());
+        _viewModel.TourLogs.Add(TourLogTestData.SampleTourLog());
 
         _viewModel.ClearTourData();
 
@@ -140,7 +140,7 @@ public class TourLogViewModelTests
     public async Task OnTourSelectionChanged_WithNull_ShouldClearTourData()
     {
         _viewModel.SelectedTourId = Guid.NewGuid();
-        _viewModel.TourLogs.Add(TestData.SampleTourLog());
+        _viewModel.TourLogs.Add(TourLogTestData.SampleTourLog());
 
         _viewModel.SelectedTourId = null;
         await _viewModel.OnTourSelectionChangedAsync();
@@ -239,8 +239,8 @@ public class TourLogViewModelTests
     {
         var tourId = Guid.NewGuid();
         _viewModel.SelectedTourId = tourId;
-        var logs = TestData.SampleTourLogList(tourId: tourId);
-        TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/bytour/{tourId}",
+        var logs = TourLogTestData.SampleTourLogList(tourId: tourId);
+        HttpTestHelper.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/bytour/{tourId}",
             logs);
 
         await _viewModel.LoadTourLogsAsync();
@@ -255,26 +255,26 @@ public class TourLogViewModelTests
 
         await _viewModel.LoadTourLogsAsync();
 
-        TestData.VerifyHandler(_mockHandler, HttpMethod.Get, "api/tourlog", Times.Never());
+        HttpTestHelper.VerifyHandler(_mockHandler, HttpMethod.Get, "api/tourlog", Times.Never());
     }
 
     [Test]
     public async Task SaveTourLogAsync_WithValidNewLog_ShouldSaveSuccessfully()
     {
-        var newLog = TestData.SampleTourLog();
+        var newLog = TourLogTestData.SampleTourLog();
         newLog.Id = Guid.Empty;
-        _viewModel.SelectedTourId = TestData.SampleTour().Id;
+        _viewModel.SelectedTourId = TourTestData.SampleTour().Id;
         _viewModel.SelectedTourLog = newLog;
 
-        TestData.SetupHandler(_mockHandler, HttpMethod.Post, "api/tourlog", "{}");
-        TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/bytour/{_viewModel.SelectedTourId}",
-            TestData.SampleTourLogList());
+        HttpTestHelper.SetupHandler(_mockHandler, HttpMethod.Post, "api/tourlog", "{}");
+        HttpTestHelper.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/bytour/{_viewModel.SelectedTourId}",
+            TourLogTestData.SampleTourLogList());
 
         var result = await _viewModel.SaveTourLogAsync();
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.True);
-            TestData.VerifyHandler(_mockHandler, HttpMethod.Post, "api/tourlog", Times.Once());
+            HttpTestHelper.VerifyHandler(_mockHandler, HttpMethod.Post, "api/tourlog", Times.Once());
             _mockToastService.Verify(static t => t.ShowSuccess("Tour log created successfully."), Times.Once);
         }
     }
@@ -282,19 +282,19 @@ public class TourLogViewModelTests
     [Test]
     public async Task SaveTourLogAsync_WithValidExistingLog_ShouldUpdateSuccessfully()
     {
-        var existingLog = TestData.SampleTourLog();
-        _viewModel.SelectedTourId = TestData.SampleTour().Id;
+        var existingLog = TourLogTestData.SampleTourLog();
+        _viewModel.SelectedTourId = TourTestData.SampleTour().Id;
         _viewModel.SelectedTourLog = existingLog;
 
-        TestData.SetupHandler(_mockHandler, HttpMethod.Put, $"api/tourlog/{existingLog.Id}", "{}");
-        TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/bytour/{_viewModel.SelectedTourId}",
-            TestData.SampleTourLogList());
+        HttpTestHelper.SetupHandler(_mockHandler, HttpMethod.Put, $"api/tourlog/{existingLog.Id}", "{}");
+        HttpTestHelper.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/bytour/{_viewModel.SelectedTourId}",
+            TourLogTestData.SampleTourLogList());
 
         var result = await _viewModel.SaveTourLogAsync();
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.True);
-            TestData.VerifyHandler(_mockHandler, HttpMethod.Put, $"api/tourlog/{existingLog.Id}", Times.Once());
+            HttpTestHelper.VerifyHandler(_mockHandler, HttpMethod.Put, $"api/tourlog/{existingLog.Id}", Times.Once());
             _mockToastService.Verify(static t => t.ShowSuccess("Tour log updated successfully."), Times.Once);
         }
     }
@@ -302,7 +302,7 @@ public class TourLogViewModelTests
     [Test]
     public async Task SaveTourLogAsync_WithInvalidForm_ShouldReturnFalse()
     {
-        _viewModel.SelectedTourId = TestData.SampleTour().Id;
+        _viewModel.SelectedTourId = TourTestData.SampleTour().Id;
         _viewModel.SelectedTourLog = new TourLog();
 
         var result = await _viewModel.SaveTourLogAsync();
@@ -317,7 +317,7 @@ public class TourLogViewModelTests
     public async Task SaveTourLogAsync_WithNullTourId_ShouldReturnFalse()
     {
         _viewModel.SelectedTourId = null;
-        _viewModel.SelectedTourLog = TestData.SampleTourLog();
+        _viewModel.SelectedTourLog = TourLogTestData.SampleTourLog();
 
         var result = await _viewModel.SaveTourLogAsync();
         using (Assert.EnterMultipleScope())
@@ -331,13 +331,13 @@ public class TourLogViewModelTests
     public async Task EditHandleTourLogAction_WithExistingLog_ShouldLoadLogForEditing()
     {
         var logId = Guid.NewGuid();
-        var tourLog = TestData.SampleTourLog(id: logId);
+        var tourLog = TourLogTestData.SampleTourLog(id: logId);
         var tourId = tourLog.TourId;
 
-        TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/{logId}",
+        HttpTestHelper.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/{logId}",
             tourLog);
-        TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/bytour/{tourId}",
-            TestData.SampleTourLogList());
+        HttpTestHelper.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/bytour/{tourId}",
+            TourLogTestData.SampleTourLogList());
 
         _viewModel.SelectedTourId = tourId;
 
@@ -350,20 +350,20 @@ public class TourLogViewModelTests
             Assert.That(_viewModel.SelectedTourLog.TourId, Is.EqualTo(tourId));
         }
 
-        TestData.VerifyHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/{logId}", Times.Once());
+        HttpTestHelper.VerifyHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/{logId}", Times.Once());
     }
 
     [Test]
     public async Task EditHandleTourLogAction_WithSameLogIdWhenEditing_ShouldResetForm()
     {
         var logId = Guid.NewGuid();
-        var tourLog = TestData.SampleTourLog(id: logId);
+        var tourLog = TourLogTestData.SampleTourLog(id: logId);
         var tourId = tourLog.TourId;
 
-        TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/{logId}",
+        HttpTestHelper.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/{logId}",
             tourLog);
-        TestData.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/bytour/{tourId}",
-            TestData.SampleTourLogList());
+        HttpTestHelper.SetupHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/bytour/{tourId}",
+            TourLogTestData.SampleTourLogList());
 
         _viewModel.SelectedTourId = tourId;
 
@@ -384,7 +384,7 @@ public class TourLogViewModelTests
             Assert.That(_viewModel.SelectedTourLog.TourId, Is.EqualTo(tourId));
         }
 
-        TestData.VerifyHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/{logId}", Times.Once());
+        HttpTestHelper.VerifyHandler(_mockHandler, HttpMethod.Get, $"api/tourlog/{logId}", Times.Once());
     }
 
     [Test]
@@ -413,15 +413,15 @@ public class TourLogViewModelTests
     [TestCase(false)]
     public async Task DeleteTourLogAsync_WithUserResponse_ShouldHandleCorrectly(bool userConfirms)
     {
-        var logId = TestData.TestGuid;
+        var logId = TestConstants.TestGuid;
         _mockJsRuntime
             .Setup(static j => j.InvokeAsync<bool>(It.IsAny<string>(), It.IsAny<object[]>()))
             .ReturnsAsync(userConfirms);
 
         if (userConfirms)
         {
-            TestData.SetupHandler(_mockHandler, HttpMethod.Delete, $"api/tourlog/{logId}", "{}");
-            TestData.SetupHandler(_mockHandler, HttpMethod.Get, "api/tourlog/bytour/", "[]");
+            HttpTestHelper.SetupHandler(_mockHandler, HttpMethod.Delete, $"api/tourlog/{logId}", "{}");
+            HttpTestHelper.SetupHandler(_mockHandler, HttpMethod.Get, "api/tourlog/bytour/", "[]");
         }
 
         await _viewModel.DeleteTourLogAsync(logId);
@@ -429,13 +429,13 @@ public class TourLogViewModelTests
         if (userConfirms)
             using (Assert.EnterMultipleScope())
             {
-                TestData.VerifyHandler(_mockHandler, HttpMethod.Delete, $"api/tourlog/{logId}", Times.Once());
+                HttpTestHelper.VerifyHandler(_mockHandler, HttpMethod.Delete, $"api/tourlog/{logId}", Times.Once());
                 _mockToastService.Verify(static t => t.ShowSuccess("Tour log deleted successfully."), Times.Once);
             }
         else
             using (Assert.EnterMultipleScope())
             {
-                TestData.VerifyHandler(_mockHandler, HttpMethod.Delete, $"api/tourlog/{logId}", Times.Never());
+                HttpTestHelper.VerifyHandler(_mockHandler, HttpMethod.Delete, $"api/tourlog/{logId}", Times.Never());
                 _mockToastService.Verify(static t => t.ShowSuccess(It.IsAny<string>()), Times.Never);
             }
     }
@@ -449,7 +449,7 @@ public class TourLogViewModelTests
 
         await _viewModel.DeleteTourLogAsync(Guid.Empty);
 
-        TestData.VerifyHandler(_mockHandler, HttpMethod.Delete, "api/tourlog/", Times.Never());
+        HttpTestHelper.VerifyHandler(_mockHandler, HttpMethod.Delete, "api/tourlog/", Times.Never());
     }
 
     [Test]
@@ -494,7 +494,7 @@ public class TourLogViewModelTests
         _viewModel.SelectedTourId = tourId;
         _viewModel.IsLogFormVisible = true;
         _viewModel.IsEditing = true;
-        _viewModel.SelectedTourLog = TestData.SampleTourLog(tourId: Guid.NewGuid());
+        _viewModel.SelectedTourLog = TourLogTestData.SampleTourLog(tourId: Guid.NewGuid());
 
         _viewModel.ResetForm();
         using (Assert.EnterMultipleScope())

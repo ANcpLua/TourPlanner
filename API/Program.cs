@@ -2,12 +2,14 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using API.Endpoints;
 using API.Infrastructure;
+using API.Extensions;
 using BL.Interface;
 using BL.Module;
 using DAL.Infrastructure;
 using DAL.Module;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi;
 using Serilog;
 
@@ -20,12 +22,12 @@ builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
 {
     containerBuilder.RegisterModule(new PostgreContextModule(builder.Configuration));
-    containerBuilder.RegisterModule(new BusinessLogicModule(builder.Configuration));
+    containerBuilder.RegisterModule(new BusinessLogicModule());
     containerBuilder.RegisterModule(new OrmModule());
 });
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowUI", policy =>
+    options.AddPolicy(ApiRoute.CorsPolicy, policy =>
         policy
             .WithOrigins(
                 "http://localhost:7226",
@@ -76,9 +78,23 @@ builder.Services.AddOpenApi(options =>
     });
 });
 builder.Services.AddHttpClient("OpenRouteService").AddStandardResilienceHandler();
-builder.Services.AddHealthChecks().AddCheck<PostgreSqlHealthCheck>("postgres");
+builder.Services.AddHealthChecks()
+    .AddCheck(
+        ApiRoute.HealthChecks.SelfCheckName,
+        () => HealthCheckResult.Healthy("Self check passed."),
+        tags: [HealthEndpointExtensions.SelfTag]
+    )
+    .AddCheck<PostgreSqlHealthCheck>(
+        ApiRoute.HealthChecks.ReadyCheckName,
+        tags: [HealthEndpointExtensions.ReadyTag]
+    );
 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+    {
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+        options.Lockout.MaxFailedAccessAttempts = 5;
+        options.Lockout.AllowedForNewUsers = true;
+    })
     .AddEntityFrameworkStores<TourPlannerContext>()
     .AddDefaultTokenProviders();
 
@@ -108,7 +124,7 @@ var app = builder.Build();
 
 
 app.UseRouting();
-app.UseCors("AllowUI");
+app.UseCors(ApiRoute.CorsPolicy);
 app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -118,6 +134,6 @@ app.MapControllers();
 app.MapAuthEndpoints();
 app.MapRouteEndpoints();
 app.MapReportEndpoints();
-app.MapHealthChecks("/health").AllowAnonymous();
-app.MapOpenApi().AllowAnonymous();
+app.MapHealthEndpoints();
+app.MapOpenApi(ApiRoute.OpenApiDocument).AllowAnonymous();
 app.Run();

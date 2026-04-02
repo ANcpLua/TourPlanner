@@ -1,4 +1,5 @@
 using System.Net;
+using API.Endpoints;
 using API.AOP;
 using BL.DomainModel;
 using BL.Interface;
@@ -9,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [ApiController]
-[Route("api/tourlog")]
+[Route(ApiRoute.TourLog.Base)]
 public class TourLogController(ITourLogService tourLogService, IMapper mapper) : ControllerBase
 {
     [ApiMethodDecorator]
@@ -55,6 +56,8 @@ public class TourLogController(ITourLogService tourLogService, IMapper mapper) :
         CancellationToken cancellationToken = default
     )
     {
+        if (id != tourLogDto.Id) return BadRequest("ID mismatch");
+
         var tourLog = mapper.Map<TourLogDomain>(tourLogDto);
         var updatedTourLog = await tourLogService.UpdateTourLogAsync(tourLog, cancellationToken);
         var updatedTourLogDto = mapper.Map<TourLogDto>(updatedTourLog);

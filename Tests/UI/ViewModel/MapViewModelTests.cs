@@ -9,14 +9,14 @@ public class MapViewModelTests
     [SetUp]
     public void Setup()
     {
-        _mockJsRuntime = TestData.MockJsRuntime();
-        _mockToastService = TestData.MockToastService();
+        _mockJsRuntime = TestMocks.JsRuntime();
+        _mockToastService = TestMocks.ToastService();
 
         _viewModel = new MapViewModel(
             _mockJsRuntime.Object,
             new HttpClient(),
             _mockToastService.Object,
-            TestData.MockTryCatchToastWrapper()
+            TestMocks.TryCatchToastWrapper()
         );
     }
 

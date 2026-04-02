@@ -42,7 +42,7 @@ public sealed class CustomFileInputTests : BunitTestBase
 
         var inputFile = cut.FindComponent<InputFile>();
         await cut.InvokeAsync(() => inputFile.Instance.OnChange.InvokeAsync(
-            new InputFileChangeEventArgs([TestData.MockBrowserFile("test.json").Object])));
+            new InputFileChangeEventArgs([TestMocks.BrowserFile("test.json").Object])));
 
         Assert.That(called, Is.True);
     }

@@ -47,10 +47,10 @@ public sealed class TourLogFormComponentTests : BunitTestBase
     public async Task SavesWhenValid()
     {
         var vm = Services.ViewModel<TourLogViewModel>();
-        vm.SelectedTourLog = TestData.SampleTourLog(id: Guid.Empty, tourId: TestData.TestGuid);
-        vm.SelectedTourId = TestData.TestGuid;
+        vm.SelectedTourLog = TourLogTestData.SampleTourLog(id: Guid.Empty, tourId: TestConstants.TestGuid);
+        vm.SelectedTourId = TestConstants.TestGuid;
         Services.SetupMockPostTourLog();
-        Services.SetupMockGetTourLogs(TestData.TestGuid, 1);
+        Services.SetupMockGetTourLogs(TestConstants.TestGuid, 1);
         var cut = Render();
         Assert.That(vm.IsFormValid, Is.True, "Form should be valid before submit");
         await cut.Find("button[type='submit']").ClickAsync(new MouseEventArgs());

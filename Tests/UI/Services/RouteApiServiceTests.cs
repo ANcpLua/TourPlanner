@@ -35,9 +35,9 @@ public class RouteApiServiceTests
     [TestCase("")]
     public async Task FetchRouteDataAsync_VariousTransportTypes_UsesBackendEndpoint(string transportType)
     {
-        var from = TestData.TestCoordinates;
+        var from = TestConstants.TestCoordinates;
         var to = (52.5200, 13.4050);
-        TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler,
+        HttpTestHelper.SetupSuccess(_mockHttpMessageHandler,
             new { distance = 1000.5, duration = 3600.0 });
 
         var (distance, duration) = await _sut.FetchRouteDataAsync(from, to, transportType);
@@ -47,16 +47,16 @@ public class RouteApiServiceTests
             Assert.That(duration, Is.EqualTo(3600.0));
         }
 
-        TestData.VerifyHttpPostRequest(_mockHttpMessageHandler, "api/routes/resolve");
+        HttpTestHelper.VerifyPostRequest(_mockHttpMessageHandler, "api/routes/resolve");
     }
 
     [Test]
     public async Task FetchRouteDataAsync_SuccessfulRequest_ReturnsCorrectData()
     {
-        var from = TestData.TestCoordinates;
+        var from = TestConstants.TestCoordinates;
         var to = (52.5200, 13.4050);
 
-        TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler,
+        HttpTestHelper.SetupSuccess(_mockHttpMessageHandler,
             new { distance = 523400.0, duration = 18000.0 });
 
         var (distance, duration) = await _sut.FetchRouteDataAsync(from, to, "Car");
@@ -70,39 +70,39 @@ public class RouteApiServiceTests
     [Test]
     public void FetchRouteDataAsync_HttpError_ThrowsHttpRequestException()
     {
-        var from = TestData.TestCoordinates;
+        var from = TestConstants.TestCoordinates;
         var to = (52.5200, 13.4050);
-        TestData.SetupHttpMessageHandlerError(_mockHttpMessageHandler, HttpStatusCode.BadRequest, "Bad Request");
+        HttpTestHelper.SetupError(_mockHttpMessageHandler, HttpStatusCode.BadRequest, "Bad Request");
 
         Assert.That(
             () => _sut.FetchRouteDataAsync(from, to, "Car"),
             Throws.TypeOf<HttpRequestException>());
-        TestData.VerifyHttpPostRequest(_mockHttpMessageHandler, "api/routes/resolve");
+        HttpTestHelper.VerifyPostRequest(_mockHttpMessageHandler, "api/routes/resolve");
     }
 
     [Test]
     public void FetchRouteDataAsync_EmptyContent_ThrowsHttpRequestException()
     {
-        var from = TestData.TestCoordinates;
+        var from = TestConstants.TestCoordinates;
         var to = (52.5200, 13.4050);
-        TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler, "");
+        HttpTestHelper.SetupSuccess(_mockHttpMessageHandler, "");
 
         Assert.That(
             () => _sut.FetchRouteDataAsync(from, to, "Car"),
             Throws.TypeOf<HttpRequestException>());
-        TestData.VerifyHttpPostRequest(_mockHttpMessageHandler, "api/routes/resolve");
+        HttpTestHelper.VerifyPostRequest(_mockHttpMessageHandler, "api/routes/resolve");
     }
 
     [Test]
     public async Task FetchRouteDataAsync_SendsBackendRouteRequestBody()
     {
-        var from = TestData.TestCoordinates;
+        var from = TestConstants.TestCoordinates;
         var to = (52.5200, 13.4050);
-        TestData.SetupHttpMessageHandlerSuccess(_mockHttpMessageHandler,
+        HttpTestHelper.SetupSuccess(_mockHttpMessageHandler,
             new { distance = 1000.0, duration = 3600.0 });
 
         await _sut.FetchRouteDataAsync(from, to, "Car");
-        TestData.VerifyHttpJsonContent<ResolveRouteRequest>(_mockHttpMessageHandler, static request =>
+        HttpTestHelper.VerifyJsonContent<ResolveRouteRequest>(_mockHttpMessageHandler, static request =>
             request is
             {
                 FromLatitude: 48.2082, FromLongitude: 16.3738, ToLatitude: 52.5200, ToLongitude: 13.4050,

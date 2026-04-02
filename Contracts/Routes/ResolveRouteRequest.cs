@@ -7,19 +7,19 @@ public sealed class ResolveRouteRequest
 {
     [Required]
     [JsonPropertyName("fromLatitude")]
-    public required double? FromLatitude { get; set; }
+    public required double FromLatitude { get; set; }
 
     [Required]
     [JsonPropertyName("fromLongitude")]
-    public required double? FromLongitude { get; set; }
+    public required double FromLongitude { get; set; }
 
     [Required]
     [JsonPropertyName("toLatitude")]
-    public required double? ToLatitude { get; set; }
+    public required double ToLatitude { get; set; }
 
     [Required]
     [JsonPropertyName("toLongitude")]
-    public required double? ToLongitude { get; set; }
+    public required double ToLongitude { get; set; }
 
     [Required]
     [JsonPropertyName("transportType")]

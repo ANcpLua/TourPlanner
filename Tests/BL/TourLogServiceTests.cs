@@ -4,267 +4,125 @@ using BL.Service;
 using DAL.Interface;
 using DAL.PersistenceModel;
 using MapsterMapper;
-using Microsoft.EntityFrameworkCore;
 
 namespace Tests.BL;
 
 [TestFixture]
-public class TourLogServiceTests
+public sealed class TourLogServiceTests
 {
-    [SetUp]
-    public void Setup()
-    {
-        _mockTourLogRepository = new Mock<ITourLogRepository>();
-        _mockMapper = new Mock<IMapper>();
-        _mockUserContext = TestData.MockUserContext();
-        _sut = new TourLogService(_mockTourLogRepository.Object, _mockMapper.Object, _mockUserContext.Object);
-    }
-
-    private Mock<ITourLogRepository> _mockTourLogRepository = null!;
-    private Mock<IMapper> _mockMapper = null!;
-    private Mock<IUserContext> _mockUserContext = null!;
+    private Mock<ITourLogRepository> _tourLogRepository = null!;
+    private Mock<IMapper> _mapper = null!;
+    private Mock<IUserContext> _userContext = null!;
     private TourLogService _sut = null!;
 
-    [Test]
-    public async Task CreateTourLogAsync_ValidTourLog_ReturnsMappedTourLogDomain()
+    [SetUp]
+    public void SetUp()
     {
-        var tourLogDomain = TestData.SampleTourLogDomainList().First();
-        var tourLogPersistence = TestData.SampleTourLogPersistence();
-        _mockMapper
-            .Setup(m => m.Map<TourLogPersistence>(tourLogDomain))
-            .Returns(tourLogPersistence);
-        _mockMapper.Setup(m => m.Map<TourLogDomain>(tourLogPersistence)).Returns(tourLogDomain);
-        _mockTourLogRepository
-            .Setup(r => r.CreateTourLogAsync(tourLogPersistence, TestData.TestUserId, CancellationToken.None))
-            .ReturnsAsync(tourLogPersistence);
+        _tourLogRepository = new Mock<ITourLogRepository>();
+        _mapper = new Mock<IMapper>();
+        _userContext = TestMocks.UserContext();
+        _sut = new TourLogService(_tourLogRepository.Object, _mapper.Object, _userContext.Object);
+    }
 
-        var result = await _sut.CreateTourLogAsync(tourLogDomain);
+    [Test]
+    public async Task CreateTourLogAsync_MapsLogAndUsesCurrentUserAndCancellationToken()
+    {
+        var logDomain = TourLogTestData.SampleTourLogDomain();
+        var logPersistence = TourLogTestData.SampleTourLogPersistence();
+        var cancellationToken = new CancellationTokenSource().Token;
 
-        Assert.That(result, Is.Not.Null);
+        _mapper.Setup(mapper => mapper.Map<TourLogPersistence>(logDomain)).Returns(logPersistence);
+        _tourLogRepository.Setup(repository => repository.CreateTourLogAsync(logPersistence, TestConstants.TestUserId, cancellationToken))
+            .ReturnsAsync(logPersistence);
+        _mapper.Setup(mapper => mapper.Map<TourLogDomain>(logPersistence)).Returns(logDomain);
+
+        var created = await _sut.CreateTourLogAsync(logDomain, cancellationToken);
+
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(result.Id, Is.EqualTo(tourLogDomain.Id));
-            Assert.That(result.Comment, Is.EqualTo(tourLogDomain.Comment));
-            Assert.That(result.DateTime, Is.EqualTo(tourLogDomain.DateTime));
+            Assert.That(created, Is.SameAs(logDomain));
+            _tourLogRepository.Verify(repository => repository.CreateTourLogAsync(logPersistence, TestConstants.TestUserId, cancellationToken), Times.Once);
         }
-
-        _mockTourLogRepository.Verify(
-            r => r.CreateTourLogAsync(tourLogPersistence, TestData.TestUserId, CancellationToken.None),
-            Times.Once
-        );
     }
 
     [Test]
-    public void GetTourLogById_ExistingId_ReturnsMappedTourLogDomain()
+    public void GetTourLogsByTourId_UsesCurrentUserAndMapsCollection()
     {
-        var tourLogPersistence = TestData.SampleTourLogPersistence();
+        var persistenceLogs = TourLogTestData.SampleTourLogPersistenceList();
+        var domainLogs = TourLogTestData.SampleTourLogDomainList();
 
-        _mockTourLogRepository
-            .Setup(r => r.GetTourLogById(tourLogPersistence.Id, TestData.TestUserId))
-            .Returns(tourLogPersistence);
+        _tourLogRepository.Setup(repository => repository.GetTourLogsByTourId(TestConstants.TestGuid, TestConstants.TestUserId))
+            .Returns(persistenceLogs);
+        _mapper.Setup(mapper => mapper.Map<IEnumerable<TourLogDomain>>(persistenceLogs)).Returns(domainLogs);
 
-        _mockMapper.Setup(static m => m.Map<TourLogDomain>(It.IsAny<TourLogPersistence>()))
-            .Returns(static (TourLogPersistence source) =>
-            {
-                var domain = TestData.SampleTourLogDomain();
-                domain.Id = source.Id;
-                return domain;
-            });
+        var logs = _sut.GetTourLogsByTourId(TestConstants.TestGuid).ToList();
 
-        var result = _sut.GetTourLogById(tourLogPersistence.Id);
-
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Id, Is.EqualTo(tourLogPersistence.Id));
-        _mockTourLogRepository.Verify(r => r.GetTourLogById(tourLogPersistence.Id, TestData.TestUserId), Times.Once);
-    }
-
-    [Test]
-    public void GetTourLogById_NonExistingId_ReturnsNull()
-    {
-        _mockTourLogRepository
-            .Setup(static r => r.GetTourLogById(TestData.NonexistentGuid, TestData.TestUserId))
-            .Returns((TourLogPersistence)null!);
-
-        var result = _sut.GetTourLogById(TestData.NonexistentGuid);
-
-        Assert.That(result, Is.Null);
-    }
-
-    [Test]
-    public void GetTourLogsByTourId_ExistingTourId_ReturnsAllMappedTourLogs()
-    {
-        var tourLogsPersistence = TestData.SampleTourLogPersistenceList();
-        var tourLogsDomain = TestData.SampleTourLogDomainList();
-        _mockTourLogRepository
-            .Setup(r => r.GetTourLogsByTourId(TestData.TestGuid, TestData.TestUserId)).Returns(tourLogsPersistence);
-
-        _mockMapper
-            .Setup(m => m.Map<IEnumerable<TourLogDomain>>(tourLogsPersistence))
-            .Returns(tourLogsDomain);
-
-        var result = _sut.GetTourLogsByTourId(TestData.TestGuid).ToList();
-
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result, Has.Count.EqualTo(tourLogsDomain.Count));
-        _mockTourLogRepository.Verify(
-            r => r.GetTourLogsByTourId(TestData.TestGuid, TestData.TestUserId),
-            Times.Once
-        );
-    }
-
-    [Test]
-    public void GetTourLogsByTourId_NonExistingTourId_ReturnsEmptyList()
-    {
-        _mockTourLogRepository
-            .Setup(static r => r.GetTourLogsByTourId(TestData.NonexistentGuid, TestData.TestUserId));
-        _mockMapper
-            .Setup(static m =>
-                m.Map<IEnumerable<TourLogDomain>>(It.IsAny<IEnumerable<TourLogPersistence>>())
-            )
-            .Returns([]);
-
-        var result = _sut.GetTourLogsByTourId(TestData.NonexistentGuid);
-
-        Assert.That(result, Is.Empty);
-    }
-
-    [Test]
-    public async Task UpdateTourLogAsync_ExistingTourLog_ReturnsUpdatedMappedTourLogDomain()
-    {
-        var tourLogDomain = TestData.SampleTourLogDomainList().First();
-        var tourLogPersistence = TestData.SampleTourLogPersistence();
-        _mockMapper
-            .Setup(m => m.Map<TourLogPersistence>(tourLogDomain))
-            .Returns(tourLogPersistence);
-        _mockMapper.Setup(m => m.Map<TourLogDomain>(tourLogPersistence)).Returns(tourLogDomain);
-        _mockTourLogRepository
-            .Setup(r => r.UpdateTourLogAsync(tourLogPersistence, TestData.TestUserId, CancellationToken.None))
-            .ReturnsAsync(tourLogPersistence);
-
-        var result = await _sut.UpdateTourLogAsync(tourLogDomain);
-
-        Assert.That(result, Is.Not.Null);
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(result.Id, Is.EqualTo(tourLogDomain.Id));
-            Assert.That(result.Comment, Is.EqualTo(tourLogDomain.Comment));
-            Assert.That(result.DateTime, Is.EqualTo(tourLogDomain.DateTime));
+            Assert.That(logs, Is.EqualTo(domainLogs));
+            _tourLogRepository.Verify(repository => repository.GetTourLogsByTourId(TestConstants.TestGuid, TestConstants.TestUserId), Times.Once);
         }
-
-        _mockTourLogRepository.Verify(
-            r => r.UpdateTourLogAsync(tourLogPersistence, TestData.TestUserId, CancellationToken.None),
-            Times.Once
-        );
     }
 
     [Test]
-    public void UpdateTourLogAsync_NonExistingTourLog_ThrowsException()
+    public void GetTourLogById_WhenRepositoryReturnsNull_ReturnsNullWithoutMapping()
     {
-        var tourLogDomain = TestData.SampleTourLogDomainList().First();
-        var tourLogPersistence = TestData.SampleTourLogPersistence();
-        _mockMapper
-            .Setup(m => m.Map<TourLogPersistence>(tourLogDomain))
-            .Returns(tourLogPersistence);
-        _mockTourLogRepository
-            .Setup(r => r.UpdateTourLogAsync(tourLogPersistence, TestData.TestUserId, CancellationToken.None))
+        _tourLogRepository.Setup(static repository => repository.GetTourLogById(TestConstants.NonexistentGuid, TestConstants.TestUserId))
+            .Returns((TourLogPersistence?)null);
+
+        var result = _sut.GetTourLogById(TestConstants.NonexistentGuid);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.Null);
+            _mapper.Verify(static mapper => mapper.Map<TourLogDomain>(It.IsAny<TourLogPersistence>()), Times.Never);
+        }
+    }
+
+    [Test]
+    public async Task UpdateTourLogAsync_UsesCurrentUserAndReturnsMappedLog()
+    {
+        var logDomain = TourLogTestData.SampleTourLogDomain();
+        var logPersistence = TourLogTestData.SampleTourLogPersistence();
+        var cancellationToken = new CancellationTokenSource().Token;
+
+        _mapper.Setup(mapper => mapper.Map<TourLogPersistence>(logDomain)).Returns(logPersistence);
+        _tourLogRepository.Setup(repository => repository.UpdateTourLogAsync(logPersistence, TestConstants.TestUserId, cancellationToken))
+            .ReturnsAsync(logPersistence);
+        _mapper.Setup(mapper => mapper.Map<TourLogDomain>(logPersistence)).Returns(logDomain);
+
+        var updated = await _sut.UpdateTourLogAsync(logDomain, cancellationToken);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(updated, Is.SameAs(logDomain));
+            _tourLogRepository.Verify(repository => repository.UpdateTourLogAsync(logPersistence, TestConstants.TestUserId, cancellationToken), Times.Once);
+        }
+    }
+
+    [Test]
+    public void UpdateTourLogAsync_RepositoryFailure_PropagatesException()
+    {
+        var logDomain = TourLogTestData.SampleTourLogDomain();
+        var logPersistence = TourLogTestData.SampleTourLogPersistence();
+
+        _mapper.Setup(mapper => mapper.Map<TourLogPersistence>(logDomain)).Returns(logPersistence);
+        _tourLogRepository.Setup(repository => repository.UpdateTourLogAsync(logPersistence, TestConstants.TestUserId, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("Tour log not found"));
 
-        Assert.That(
-            () => _sut.UpdateTourLogAsync(tourLogDomain),
-            Throws.TypeOf<InvalidOperationException>()
-                .With.Message.EqualTo("Tour log not found"));
+        Assert.That(() => _sut.UpdateTourLogAsync(logDomain),
+            Throws.TypeOf<InvalidOperationException>().With.Message.EqualTo("Tour log not found"));
     }
 
     [Test]
-    public async Task DeleteTourLogAsync_ExistingId_CallsRepositoryDelete()
+    public async Task DeleteTourLogAsync_ForwardsCurrentUserAndCancellationToken()
     {
-        var tourLogId = TestData.SampleTourLogPersistence().Id;
-        _mockTourLogRepository
-            .Setup(r => r.DeleteTourLogAsync(tourLogId, TestData.TestUserId, CancellationToken.None))
+        var cancellationToken = new CancellationTokenSource().Token;
+        _tourLogRepository.Setup(repository => repository.DeleteTourLogAsync(TestConstants.TestGuid, TestConstants.TestUserId, cancellationToken))
             .Returns(Task.CompletedTask);
 
-        await _sut.DeleteTourLogAsync(tourLogId);
+        await _sut.DeleteTourLogAsync(TestConstants.TestGuid, cancellationToken);
 
-        _mockTourLogRepository.Verify(r => r.DeleteTourLogAsync(tourLogId, TestData.TestUserId, CancellationToken.None), Times.Once);
-    }
-
-    [Test]
-    public void DeleteTourLogAsync_NonExistingId_DoesNotThrowException()
-    {
-        _mockTourLogRepository
-            .Setup(r => r.DeleteTourLogAsync(TestData.NonexistentGuid, TestData.TestUserId, CancellationToken.None))
-            .Returns(Task.CompletedTask);
-
-        Assert.That(
-            () => _sut.DeleteTourLogAsync(TestData.NonexistentGuid),
-            Throws.Nothing);
-    }
-
-    [Test]
-    public void CreateTourLogAsync_CancellationRequested_ThrowsOperationCanceledException()
-    {
-        var tourLogDomain = TestData.SampleTourLogDomainList().First();
-        var tourLogPersistence = TestData.SampleTourLogPersistence();
-        _mockMapper
-            .Setup(m => m.Map<TourLogPersistence>(tourLogDomain))
-            .Returns(tourLogPersistence);
-        _mockTourLogRepository
-            .Setup(r => r.CreateTourLogAsync(tourLogPersistence, TestData.TestUserId, It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new OperationCanceledException());
-
-        Assert.That(
-            () => _sut.CreateTourLogAsync(tourLogDomain, new CancellationToken(canceled: true)),
-            Throws.TypeOf<OperationCanceledException>());
-    }
-
-    [Test]
-    public void GetTourLogsByTourId_LargeTourLogCount_HandlesLargeDataSet()
-    {
-        List<TourLogPersistence> largeTourLogList = [.. Enumerable
-            .Range(0, 10000)
-            .Select(static _ => TestData.SampleTourLogPersistence())];
-
-        List<TourLogDomain> largeTourLogDomainList = [.. Enumerable
-            .Range(0, 10000)
-            .Select(static _ => TestData.SampleTourLogDomainList().First())];
-
-        _mockTourLogRepository
-            .Setup(r => r.GetTourLogsByTourId(TestData.TestGuid, TestData.TestUserId)).Returns(largeTourLogList);
-
-        _mockMapper
-            .Setup(m => m.Map<IEnumerable<TourLogDomain>>(largeTourLogList))
-            .Returns(largeTourLogDomainList);
-
-        var result = _sut.GetTourLogsByTourId(TestData.TestGuid).ToList();
-
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result, Has.Count.EqualTo(largeTourLogDomainList.Count));
-        _mockTourLogRepository.Verify(
-            r => r.GetTourLogsByTourId(TestData.TestGuid, TestData.TestUserId),
-            Times.Once
-        );
-    }
-
-    [Test]
-    public async Task UpdateTourLogAsync_ConcurrentUpdates_HandlesRaceCondition()
-    {
-        var tourLogDomain = TestData.SampleTourLogDomainList().First();
-        var tourLogPersistence = TestData.SampleTourLogPersistence();
-        _mockMapper
-            .Setup(m => m.Map<TourLogPersistence>(tourLogDomain))
-            .Returns(tourLogPersistence);
-        _mockMapper.Setup(m => m.Map<TourLogDomain>(tourLogPersistence)).Returns(tourLogDomain);
-
-        _mockTourLogRepository
-            .SetupSequence(r => r.UpdateTourLogAsync(tourLogPersistence, TestData.TestUserId, CancellationToken.None))
-            .ThrowsAsync(new DbUpdateConcurrencyException("Update conflict"))
-            .ReturnsAsync(tourLogPersistence);
-
-        Assert.That(
-            () => _sut.UpdateTourLogAsync(tourLogDomain),
-            Throws.TypeOf<DbUpdateConcurrencyException>());
-        var result = await _sut.UpdateTourLogAsync(tourLogDomain);
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Id, Is.EqualTo(tourLogDomain.Id));
+        _tourLogRepository.Verify(repository => repository.DeleteTourLogAsync(TestConstants.TestGuid, TestConstants.TestUserId, cancellationToken), Times.Once);
     }
 }

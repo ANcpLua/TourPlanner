@@ -12,7 +12,7 @@ public class BaseViewModelTests
     {
         _mockToastService = new Mock<IToastServiceWrapper>();
         _viewModel = new TestViewModel(
-            new HttpClient(), _mockToastService.Object, TestData.MockTryCatchToastWrapper());
+            new HttpClient(), _mockToastService.Object, TestMocks.TryCatchToastWrapper());
     }
 
     private Mock<IToastServiceWrapper> _mockToastService = null!;

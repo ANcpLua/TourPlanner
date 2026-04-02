@@ -13,6 +13,13 @@
 - `DAL` must not expose persistence entities to `UI.Client`.
 - `Contracts` owns shared transport models only.
 - `Contracts` must not contain UI logic, persistence logic, or business orchestration.
+- The backend must stay detached from any concrete UI implementation and expose a client-agnostic HTTP/OpenAPI contract.
+- Any UI must be replaceable as long as it consumes the backend through that contract.
+- `Contracts` models are transport models only; they must not become UI state by default.
+- Models and ViewModels must stay separate responsibilities in the UI.
+- UI models own UI-facing semantics, derived values, normalization, and mapping from transport.
+- ViewModels own UI state, commands, async workflows, loading state, and error presentation.
+- Review must explicitly reject designs that collapse model and ViewModel into the same type or let transport DTOs leak through as the UI model.
 - Secrets must not be stored in the client.
 - External services requiring secrets must be accessed through the backend.
 - JSON handling must use `System.Text.Json`.

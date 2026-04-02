@@ -1,4 +1,5 @@
 using System.Net;
+using API.Endpoints;
 using API.AOP;
 using BL.DomainModel;
 using BL.Interface;
@@ -9,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [ApiController]
-[Route("api/tour")]
+[Route(ApiRoute.Tour.Base)]
 public class TourController(ITourService tourService, IMapper mapper) : ControllerBase
 {
     [ApiMethodDecorator]

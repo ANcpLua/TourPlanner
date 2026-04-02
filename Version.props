@@ -57,17 +57,17 @@
         <MoqVersion>4.20.72</MoqVersion>
         <NUnitVersion>4.5.1</NUnitVersion>
         <NUnitAnalyzersVersion>4.12.0</NUnitAnalyzersVersion>
-
         <NUnit3TestAdapterVersion>6.1.0</NUnit3TestAdapterVersion>
 
         <!-- Integration Testing -->
         <MicrosoftAspNetCoreMvcTestingVersion>10.0.5</MicrosoftAspNetCoreMvcTestingVersion>
+        <TestcontainersPostgreSqlVersion>4.11.0</TestcontainersPostgreSqlVersion>
 
         <!-- HTTP Resilience -->
         <MicrosoftExtensionsHttpResilienceVersion>10.4.0</MicrosoftExtensionsHttpResilienceVersion>
 
         <!-- Code Quality -->
-        <ANcpLuaAnalyzersVersion>1.21.0</ANcpLuaAnalyzersVersion>
+        <ANcpLuaAnalyzersVersion>1.21.1</ANcpLuaAnalyzersVersion>
     </PropertyGroup>
 
 </Project>

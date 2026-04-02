@@ -1,39 +1,63 @@
-- The solution must be split into exactly these projects: `UI.Client`, `API`, `BL`, `DAL`, `Contracts`, `Tests`.
-- `UI.Client` must be implemented as a standalone Blazor WebAssembly app.
-- `UI.Client` must use the current `.NET 10` PWA host conventions.
-- `UI.Client` owns UI state, components, pages, navigation, and ViewModels.
-- `UI.Client` must not reference `BL` or `DAL`.
-- `API` owns HTTP endpoints, transport validation, and API documentation.
-- `API` must not use models from `UI.Client`.
-- `API` must expose an OpenAPI document using modern `.NET 10` APIs.
-- `API` must use `.NET 10` validation support at the HTTP boundary.
-- `BL` owns business rules and orchestration logic.
-- `BL` must not depend on `UI.Client`.
-- `DAL` owns persistence and external system access.
-- `DAL` must not expose persistence entities to `UI.Client`.
-- `Contracts` owns shared transport models only.
-- `Contracts` must not contain UI logic, persistence logic, or business orchestration.
-- Secrets must not be stored in the client.
-- External services requiring secrets must be accessed through the backend.
-- JSON handling must use `System.Text.Json`.
-- Time access must use `TimeProvider`.
-- The frontend must communicate only with the backend and never directly with protected third-party services.
-- The application must support tour CRUD.
-- The application must support tour log CRUD.
-- The application must support route calculation.
-- The application must support route visualization on a map.
-- The application must support PDF report generation.
-- The application must support import and export.
-- Tests must be present for the main behaviors of each relevant layer.
-- The repository must include setup instructions.
-- The repository must include build and test instructions.
-- Students must be able to explain which project owns which responsibility.
-- Students must be able to justify why a model belongs to `UI.Client`, `Contracts`, `BL`, or `DAL`.
-- Review must explicitly check ownership violations between layers.
-- Review must explicitly check whether `.NET 10` features were adopted correctly instead of older scaffolding patterns.
-- Razor pages must be pure MVVM templates: `@inject ViewModel`, `@code` has only `OnInitializedAsync` + `PropertyChanged` wiring.
-- ViewModels use `ExecuteAsync` (busy state + error handling) or `HandleApiRequestAsync` (error handling only). Never nest both.
-- ViewModels use `HttpClient` directly (no `IHttpService` abstraction). `BrowserCredentialsDelegatingHandler` handles credentials.
-- Private cohesive methods that return `bool`/`null` on failure, composed in the public orchestrator method.
-- No `Task.Delay` for UI timing. No `?? FallbackObject` to hide not-found errors.
-- Decorator `{@Arguments}` must never log raw args (security: passwords). Use `{ArgCount}` only.
+# CLAUDE.md
+
+## Project
+- course: SWEN2 2026
+- stack: Angular 21 + ASP.NET Core 10
+- type: Tour planning application
+- frontend: Angular MVVM with signals
+- backend: C# layered architecture (shared with Blazor variant)
+
+## Architecture
+- API: HTTP endpoints, transport validation, OpenAPI
+- BL: Business rules, orchestration, domain models
+- DAL: Persistence (EF Core + PostgreSQL), external services (OpenRouteService)
+- Contracts: Shared DTOs between API and frontend
+- Tests: NUnit + Moq, integration tests with real PostgreSQL
+- Angular: Components, ViewModels, services, routing
+
+## MVVM Rules
+- components: input() and output() only, no service injection
+- pages: inject ViewModel via inject(XViewModel), own the VM lifecycle
+- viewmodels: call services, expose signals, contain UI logic
+- services: HTTP-only, no state, no caching
+- auth-state: cross-cutting facade, used by guards/interceptor/navbar directly
+
+## Local Development
+- database: docker compose up -d postgres
+- backend: dotnet watch --project API
+- frontend: npm start
+- tests-angular: npm test
+- tests-dotnet: dotnet test
+
+## Backend Sync
+- source-of-truth: Blazor project at ~/TourPlanner
+- shared-layers: API, BL, DAL, Contracts
+- angular-additions: TourDomain computed properties (PopularityScore, FormattedPopularity, IsChildFriendly, AverageRating)
+- after-blazor-changes: sync Angular backend to match
+
+## Key Conventions
+- change-detection: ChangeDetectionStrategy.OnPush on all components
+- signal-inputs: readonly on all signal inputs/outputs
+- template-members: protected visibility
+- control-flow: @if/@for (no *ngIf/*ngFor)
+- dependency-injection: inject() function (no constructor injection)
+- nav-links: ariaCurrentWhenActive="page"
+- forms: reactive forms with FormGroup/FormControl
+- error-handling: ViewModels set errorMessage signal on catch
+
+## Testing
+- framework: Vitest 4 via Angular CLI (npx ng test)
+- angular-tests: 250 tests, 27 files
+- dotnet-tests: NUnit + Moq, 416 tests, integration tests with real PostgreSQL via Testcontainers
+- coverage-target: 95%+ per flag
+- vm-tests: TestBed + HttpTestingController + provideHttpClientTesting
+- component-tests: fixture.componentRef.setInput() for signal inputs
+- cleanup: afterEach(() => httpTesting.verify()) and vi.restoreAllMocks()
+- fixtures: Tests/Fixtures/ split by concern (TestConstants, TourTestData, TourLogTestData, TestMocks, HttpTestHelper, PdfAssertions)
+- auth-integration: explicit lockout, single DB lookup, 429 on brute force
+
+## CI/CD
+- workflow: .github/workflows/coverage.yml
+- angular-job: npm ci, npx ng test --coverage, upload to Codecov (angular flag)
+- dotnet-job: dotnet restore/build/test with coverlet, upload to Codecov (dotnet flag)
+- badges: CI status + Codecov coverage on README

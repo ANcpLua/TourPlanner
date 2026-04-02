@@ -402,3 +402,14 @@ FodyWeavers.xsd
 
 # macOS
 .DS_Store
+
+# Claude Code / agent artifacts
+.blackboard/
+.playwright-mcp/
+.idea/
+
+# Misgenerated Windows-style build output directories with literal backslashes
+bin\\Debug/
+bin\\Release/
+obj\\Debug/
+obj\\Release/

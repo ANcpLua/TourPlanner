@@ -2,6 +2,7 @@ using System.Text.Json;
 using BL.Interface;
 using Contracts.Tours;
 using MapsterMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace API.Endpoints;
@@ -16,7 +17,7 @@ public static class ReportEndpoints
 
     public static IEndpointRouteBuilder MapReportEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var reports = endpoints.MapGroup("/api/reports").WithTags("Reports");
+        var reports = endpoints.MapGroup(ApiRoute.Reports.Base).WithTags(ApiTag.Reports);
         reports.MapGet("/summary", GetSummaryReport);
         reports.MapGet("/tour/{tourId:guid}", GetTourReport);
         reports.MapGet("/export/{tourId:guid}", ExportTourToJson);
@@ -54,7 +55,7 @@ public static class ReportEndpoints
     }
 
     internal static async Task<Results<Ok<string>, BadRequest<string>>> ImportTourFromJsonAsync(
-        string json,
+        [FromBody] string json,
         IFileService fileService,
         CancellationToken cancellationToken)
     {

@@ -1,148 +1,150 @@
-using DAL.Infrastructure;
+using DAL.PersistenceModel;
 using DAL.Repository;
 using Microsoft.EntityFrameworkCore;
+using Tests.DAL.Infrastructure;
 
 namespace Tests.DAL;
 
 [TestFixture]
-public class TourLogRepositoryTests
+public sealed class TourLogRepositoryTests : SqliteRepositoryTestBase
 {
-    [SetUp]
-    public void Setup()
-    {
-        var options = new DbContextOptionsBuilder<TourPlannerContext>()
-            .UseInMemoryDatabase($"TourPlannerTestDb_{Guid.NewGuid()}")
-            .Options;
-        _context = new TourPlannerContext(options);
-        _repository = new TourLogRepository(_context);
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
-        _context.Database.EnsureDeleted();
-        _context.Dispose();
-    }
-
-    private TourPlannerContext _context = null!;
     private TourLogRepository _repository = null!;
 
-    [Test]
-    public async Task CreateTourLogAsync_WithValidTourLog_ReturnsSavedTourLog()
+    protected override void OnSetUp()
     {
-        var tourLog = TestData.SampleTourLogPersistence();
+        _repository = new TourLogRepository(DbContext);
+    }
 
-        var result = await _repository.CreateTourLogAsync(tourLog, TestData.TestUserId);
-        var logCount = await _context.TourLogsPersistence.CountAsync();
+    [Test]
+    public async Task CreateTourLogAsync_AssignsUserAndPersistsLog()
+    {
+        var tour = SeedTour();
+        var log = NewLog(tour.Id, userId: "ignored-user", comment: "created-log");
 
-        Assert.That(result, Is.Not.Null);
+        var created = await _repository.CreateTourLogAsync(log, TestConstants.TestUserId);
+
+        await using var verificationContext = CreateContext();
+        var persisted = await verificationContext.TourLogsPersistence.SingleAsync(entry => entry.Id == created.Id);
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(result.Id, Is.EqualTo(tourLog.Id));
-            Assert.That(result.UserId, Is.EqualTo(TestData.TestUserId));
-            Assert.That(logCount, Is.EqualTo(1));
+            Assert.That(created.UserId, Is.EqualTo(TestConstants.TestUserId));
+            Assert.That(persisted.Comment, Is.EqualTo("created-log"));
+            Assert.That(persisted.UserId, Is.EqualTo(TestConstants.TestUserId));
         }
     }
 
     [Test]
-    public void GetTourLogsByTourId_WithExistingTourId_ReturnsAllTourLogs()
+    public void CreateTourLogAsync_RequiresExistingTour()
     {
-        var tourLogs = TestData.SampleTourLogPersistenceList();
-        _context.TourLogsPersistence.AddRange(tourLogs);
-        _context.SaveChanges();
+        var log = NewLog(Guid.NewGuid(), TestConstants.TestUserId, "orphan-log");
 
-        var result = _repository.GetTourLogsByTourId(TestData.TestGuid, TestData.TestUserId).ToList();
-
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result, Has.Count.EqualTo(tourLogs.Count));
+        Assert.That(async () => await _repository.CreateTourLogAsync(log, TestConstants.TestUserId),
+            Throws.TypeOf<DbUpdateException>());
     }
 
     [Test]
-    public void GetTourLogsByTourId_WithNonExistentTourId_ReturnsEmptyList()
+    public void GetTourLogsByTourId_ReturnsOnlyOwnedLogs()
     {
-        var nonExistentTourId = Guid.NewGuid();
+        var tour = SeedTour();
+        SeedLog(tour.Id, TestConstants.TestUserId, "owned-log");
+        SeedLog(tour.Id, "other-user", "other-log");
 
-        var result = _repository.GetTourLogsByTourId(nonExistentTourId, TestData.TestUserId);
+        var logs = _repository.GetTourLogsByTourId(tour.Id, TestConstants.TestUserId).ToList();
 
-        Assert.That(result, Is.Empty);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(logs, Has.Count.EqualTo(1));
+            Assert.That(logs.Single().Comment, Is.EqualTo("owned-log"));
+            Assert.That(logs.Single().UserId, Is.EqualTo(TestConstants.TestUserId));
+        }
     }
 
     [Test]
-    public void GetTourLogsByTourId_WithDifferentUser_ReturnsEmpty()
+    public void GetTourLogById_WithDifferentUser_ReturnsNull()
     {
-        var tourLogs = TestData.SampleTourLogPersistenceList();
-        _context.TourLogsPersistence.AddRange(tourLogs);
-        _context.SaveChanges();
+        var tour = SeedTour();
+        var log = SeedLog(tour.Id, TestConstants.TestUserId, "private-log");
 
-        var result = _repository.GetTourLogsByTourId(TestData.TestGuid, "other-user-id").ToList();
-
-        Assert.That(result, Is.Empty);
-    }
-
-    [Test]
-    public void GetTourLogById_WithExistingId_ReturnsTourLog()
-    {
-        var tourLog = TestData.SampleTourLogPersistence();
-        _context.TourLogsPersistence.Add(tourLog);
-        _context.SaveChanges();
-
-        var result = _repository.GetTourLogById(tourLog.Id, TestData.TestUserId);
-
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Id, Is.EqualTo(tourLog.Id));
-    }
-
-    [Test]
-    public void GetTourLogById_WithNonExistingId_ReturnsNull()
-    {
-        var nonExistingId = Guid.NewGuid();
-
-        var result = _repository.GetTourLogById(nonExistingId, TestData.TestUserId);
+        var result = _repository.GetTourLogById(log.Id, "other-user");
 
         Assert.That(result, Is.Null);
     }
 
     [Test]
-    public async Task UpdateTourLogAsync_WithExistingTourLog_ReturnsUpdatedTourLog()
+    public async Task UpdateTourLogAsync_PersistsChangesForOwner()
     {
-        var tourLog = TestData.SampleTourLogPersistence();
-        _context.TourLogsPersistence.Add(tourLog);
-        await _context.SaveChangesAsync();
-        tourLog.Comment = "Updated comment";
+        var tour = SeedTour();
+        var log = SeedLog(tour.Id, TestConstants.TestUserId, "before-update");
+        log.Comment = "after-update";
+        log.Rating = 5;
 
-        var result = await _repository.UpdateTourLogAsync(tourLog, TestData.TestUserId);
-        var dbTourLog = await _context.TourLogsPersistence
-            .FirstAsync(t => t.Id == tourLog.Id);
+        var updated = await _repository.UpdateTourLogAsync(log, TestConstants.TestUserId);
 
-        Assert.That(result, Is.Not.Null);
+        await using var verificationContext = CreateContext();
+        var persisted = await verificationContext.TourLogsPersistence.SingleAsync(entry => entry.Id == log.Id);
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(result.Comment, Is.EqualTo("Updated comment"));
-            Assert.That(dbTourLog.Comment, Is.EqualTo("Updated comment"));
+            Assert.That(updated.Comment, Is.EqualTo("after-update"));
+            Assert.That(persisted.Comment, Is.EqualTo("after-update"));
+            Assert.That(persisted.Rating, Is.EqualTo(5));
         }
     }
 
     [Test]
-    public async Task DeleteTourLogAsync_WithExistingId_RemovesTourLogFromDatabase()
+    public void UpdateTourLogAsync_WithDifferentUser_ThrowsInvalidOperationException()
     {
-        var tourLog = TestData.SampleTourLogPersistence();
-        _context.TourLogsPersistence.Add(tourLog);
-        await _context.SaveChangesAsync();
+        var tour = SeedTour();
+        var log = SeedLog(tour.Id, TestConstants.TestUserId, "private-log");
+        log.Comment = "forbidden-update";
 
-        await _repository.DeleteTourLogAsync(tourLog.Id, TestData.TestUserId);
-
-        Assert.That(await _context.TourLogsPersistence.CountAsync(), Is.Zero);
+        Assert.That(async () => await _repository.UpdateTourLogAsync(log, "other-user"),
+            Throws.TypeOf<InvalidOperationException>()
+                .With.Message.EqualTo("Tour log not found or access denied."));
     }
 
     [Test]
-    public async Task DeleteTourLogAsync_WithDifferentUser_DoesNotDelete()
+    public async Task DeleteTourLogAsync_RemovesOnlyOwnedLog()
     {
-        var tourLog = TestData.SampleTourLogPersistence();
-        _context.TourLogsPersistence.Add(tourLog);
-        await _context.SaveChangesAsync();
+        var tour = SeedTour();
+        var ownedLog = SeedLog(tour.Id, TestConstants.TestUserId, "owned-log");
+        var otherLog = SeedLog(tour.Id, "other-user", "other-log");
 
-        await _repository.DeleteTourLogAsync(tourLog.Id, "other-user-id");
+        await _repository.DeleteTourLogAsync(ownedLog.Id, TestConstants.TestUserId);
 
-        Assert.That(await _context.TourLogsPersistence.CountAsync(), Is.EqualTo(1));
+        await using var verificationContext = CreateContext();
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(await verificationContext.TourLogsPersistence.AnyAsync(entry => entry.Id == ownedLog.Id), Is.False);
+            Assert.That(await verificationContext.TourLogsPersistence.AnyAsync(entry => entry.Id == otherLog.Id), Is.True);
+        }
+    }
+
+    private TourPersistence SeedTour(string userId = TestConstants.TestUserId)
+    {
+        var tour = TourTestData.SampleTourPersistence();
+        tour.Id = Guid.NewGuid();
+        tour.UserId = userId;
+        tour.TourLogPersistence = [];
+        DbContext.ToursPersistence.Add(tour);
+        DbContext.SaveChanges();
+        return tour;
+    }
+
+    private TourLogPersistence SeedLog(Guid tourId, string userId, string comment)
+    {
+        var log = NewLog(tourId, userId, comment);
+        DbContext.TourLogsPersistence.Add(log);
+        DbContext.SaveChanges();
+        return log;
+    }
+
+    private static TourLogPersistence NewLog(Guid tourId, string userId, string comment)
+    {
+        var log = TourLogTestData.SampleTourLogPersistence();
+        log.Id = Guid.NewGuid();
+        log.TourPersistenceId = tourId;
+        log.UserId = userId;
+        log.Comment = comment;
+        return log;
     }
 }

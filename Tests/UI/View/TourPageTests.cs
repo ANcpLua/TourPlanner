@@ -69,7 +69,7 @@ public sealed class TourPageTests : BunitTestBase
         var fileInput = cut.FindComponent<CustomFileInput>();
         await fileInput.InvokeAsync(() =>
             fileInput.Instance.OnChange.InvokeAsync(
-                new InputFileChangeEventArgs([TestData.MockBrowserFile(TestData.SampleTourJson()).Object])));
+                new InputFileChangeEventArgs([TestMocks.BrowserFile(TourTestData.SampleTourJson()).Object])));
         Services.VerifyMockPostTour(Times.Once());
     }
 
@@ -80,7 +80,7 @@ public sealed class TourPageTests : BunitTestBase
         var fileInput = cut.FindComponent<CustomFileInput>();
         await fileInput.InvokeAsync(() =>
             fileInput.Instance.OnChange.InvokeAsync(
-                new InputFileChangeEventArgs([TestData.MockBrowserFile("invalid json").Object])));
+                new InputFileChangeEventArgs([TestMocks.BrowserFile("invalid json").Object])));
         Services.Mock<IToastServiceWrapper>().Verify(t => t.ShowError(It.IsAny<string>()), Times.AtLeastOnce);
     }
 

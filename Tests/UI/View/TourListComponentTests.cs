@@ -64,7 +64,7 @@ public sealed class TourListComponentTests : BunitTestBase
     [Test]
     public void TourWithNullValues_ShowsNAForMissingFields()
     {
-        Services.ViewModel<TourViewModel>().Tours = [TestData.SampleTour(
+        Services.ViewModel<TourViewModel>().Tours = [TourTestData.SampleTour(
             name: "Null Tour", description: "", from: "A", to: "B",
             distance: null, estimatedTime: null)];
 
@@ -80,9 +80,9 @@ public sealed class TourListComponentTests : BunitTestBase
     [TestCase(false, "No")]
     public void ChildFriendly_DisplaysCorrectText(bool isChildFriendly, string expected)
     {
-        Services.ViewModel<TourViewModel>().Tours = [TestData.SampleTour(tourLogs: isChildFriendly
-            ? [TestData.SampleTourLog(rating: 5, difficulty: 1)]
-            : [TestData.SampleTourLog(rating: 1, difficulty: 5)])];
+        Services.ViewModel<TourViewModel>().Tours = [TourTestData.SampleTour(tourLogs: isChildFriendly
+            ? [TourLogTestData.SampleTourLog(rating: 5, difficulty: 1)]
+            : [TourLogTestData.SampleTourLog(rating: 1, difficulty: 5)])];
 
         Assert.That(Render().Markup, Does.Contain("Child Friendly:") & Does.Contain(expected));
     }
@@ -90,15 +90,15 @@ public sealed class TourListComponentTests : BunitTestBase
     [Test]
     public void TourWithNullAverageRating_ShowsNA()
     {
-        Services.ViewModel<TourViewModel>().Tours = [TestData.SampleTour()];
+        Services.ViewModel<TourViewModel>().Tours = [TourTestData.SampleTour()];
         Assert.That(Render().Markup, Does.Contain("Average Rating:") & Does.Contain("N/A"));
     }
 
     [Test]
     public void TourWithRating_ShowsFormattedValue()
     {
-        Services.ViewModel<TourViewModel>().Tours = [TestData.SampleTour(
-            tourLogs: [TestData.SampleTourLog(rating: 4.5)])];
+        Services.ViewModel<TourViewModel>().Tours = [TourTestData.SampleTour(
+            tourLogs: [TourLogTestData.SampleTourLog(rating: 4.5)])];
 
         Assert.That(Render().Markup, Does.Contain("4.5"));
     }

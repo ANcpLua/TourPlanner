@@ -66,7 +66,7 @@ public class ToastServiceTests
     [Test]
     public void ShowSuccess_WithValidationMessage_CallsToastService()
     {
-        const string message = TestData.ValidSearchText;
+        const string message = TestConstants.ValidSearchText;
 
         _sut.ShowSuccess(message);
 
@@ -78,7 +78,7 @@ public class ToastServiceTests
     [Test]
     public void ShowError_WithValidationMessage_CallsToastService()
     {
-        const string message = TestData.InvalidSearchText;
+        const string message = TestConstants.InvalidSearchText;
 
         _sut.ShowError(message);
 

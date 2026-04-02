@@ -46,16 +46,16 @@ public abstract class BunitTestBase
     private void RegisterServices()
     {
         var mockHandler = new Mock<HttpMessageHandler>();
-        TestData.SetupHandler(mockHandler, HttpMethod.Get, "api/tour",
-            TestData.SampleTourList(2));
+        HttpTestHelper.SetupHandler(mockHandler, HttpMethod.Get, "api/tour",
+            TourTestData.SampleTourList(2));
         var httpClient = new HttpClient(mockHandler.Object)
             { BaseAddress = new UriBuilder { Scheme = "https", Host = "test.invalid" }.Uri };
 
-        var toast = TestData.MockToastService();
-        var logger = TestData.MockLogger();
-        var config = TestData.MockConfiguration();
-        var route = TestData.MockRouteApiService();
-        var download = TestData.MockBlazorDownloadFileService();
+        var toast = TestMocks.ToastService();
+        var logger = TestMocks.Logger();
+        var config = TestMocks.Configuration();
+        var route = TestMocks.RouteApiService();
+        var download = TestMocks.BlazorDownloadFileService();
 
         Context.Services.AddSingleton(httpClient);
         Context.Services.AddSingleton(mockHandler);
@@ -72,7 +72,7 @@ public abstract class BunitTestBase
         Context.Services.AddSingleton(route);
         Context.Services.AddSingleton(download);
 
-        Context.Services.AddSingleton(TestData.MockTryCatchToastWrapper(toast.Object));
+        Context.Services.AddSingleton(TestMocks.TryCatchToastWrapper(toast.Object));
 
         Context.Services.AddScoped<MapViewModel>();
         Context.Services.AddScoped<AuthViewModel>();
@@ -93,7 +93,7 @@ public abstract class BunitTestBase
         var auth = Context.AddAuthorization();
         auth.SetAuthorized("test@example.com");
         auth.SetClaims(
-            new Claim(ClaimTypes.NameIdentifier, TestData.TestUserId),
+            new Claim(ClaimTypes.NameIdentifier, TestConstants.TestUserId),
             new Claim(ClaimTypes.Email, "test@example.com"));
     }
 }
@@ -109,11 +109,11 @@ public static class ViewTestExtensions
     // ── Tour ViewModel setup ──
 
     public static void WithTours(this IServiceProvider s, int count = 2) =>
-        s.ViewModel<TourViewModel>().Tours = [..TestData.SampleTourList(count)];
+        s.ViewModel<TourViewModel>().Tours = [..TourTestData.SampleTourList(count)];
 
     public static void WithEmptyTours(this IServiceProvider s)
     {
-        TestData.SetupHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
+        HttpTestHelper.SetupHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
             HttpMethod.Get, "api/tour", "[]");
         s.ViewModel<TourViewModel>().Tours = [];
     }
@@ -122,34 +122,34 @@ public static class ViewTestExtensions
         s.ViewModel<TourViewModel>().Tours.First().Id;
 
     public static void WithValidTourForm(this IServiceProvider s) =>
-        s.ViewModel<TourViewModel>().SelectedTour = TestData.SampleTour(
+        s.ViewModel<TourViewModel>().SelectedTour = TourTestData.SampleTour(
             name: "Valid Tour", from: "Vienna", to: "Paris", transportType: "Car");
 
     public static void WithEmptyTourForm(this IServiceProvider s) =>
         s.ViewModel<TourViewModel>().SelectedTour = Tour.Empty;
 
     public static void WithModalTour(this IServiceProvider s, string name = "Test Tour") =>
-        s.ViewModel<TourViewModel>().ModalTour = TestData.SampleTour(name);
+        s.ViewModel<TourViewModel>().ModalTour = TourTestData.SampleTour(name);
 
     public static void WithMinimalModalTour(this IServiceProvider s) =>
-        s.ViewModel<TourViewModel>().ModalTour = TestData.SampleTour(
+        s.ViewModel<TourViewModel>().ModalTour = TourTestData.SampleTour(
             name: "Tour", description: "", from: "A", to: "B", transportType: "Walk",
             distance: null, estimatedTime: null, imagePath: null, routeInformation: null);
 
     // ── TourLog ViewModel setup ──
 
     public static void WithTourLogs(this IServiceProvider s, int count = 2) =>
-        s.ViewModel<TourLogViewModel>().TourLogs = new ObservableCollection<TourLog>(TestData.SampleTourLogList(count));
+        s.ViewModel<TourLogViewModel>().TourLogs = new ObservableCollection<TourLog>(TourLogTestData.SampleTourLogList(count));
 
     public static void WithSingleTourLog(this IServiceProvider s) =>
-        s.ViewModel<TourLogViewModel>().TourLogs = [TestData.SampleTourLog()];
+        s.ViewModel<TourLogViewModel>().TourLogs = [TourLogTestData.SampleTourLog()];
 
     public static Guid FirstTourLogId(this IServiceProvider s) =>
         s.ViewModel<TourLogViewModel>().TourLogs.First().Id;
 
     public static void WithValidTourLogForm(this IServiceProvider s)
     {
-        var log = TestData.SampleTourLog();
+        var log = TourLogTestData.SampleTourLog();
         s.ViewModel<TourLogViewModel>().SelectedTourLog = log;
         s.ViewModel<TourLogViewModel>().SelectedTourId = log.TourId;
     }
@@ -162,7 +162,7 @@ public static class ViewTestExtensions
         var vm = s.ViewModel<TourLogViewModel>();
         vm.SelectedTourId = s.FirstTourId();
         vm.IsLogFormVisible = true;
-        vm.SelectedTourLog = TestData.SampleTourLog(
+        vm.SelectedTourLog = TourLogTestData.SampleTourLog(
             id: newLog ? Guid.Empty : Guid.NewGuid(),
             tourId: vm.SelectedTourId ?? Guid.Empty);
     }
@@ -170,17 +170,17 @@ public static class ViewTestExtensions
     // ── Search ViewModel setup ──
 
     public static void WithSearchResults(this IServiceProvider s, int count = 1) =>
-        s.ViewModel<SearchViewModel>().SearchResults = [..TestData.SampleTourList(count)];
+        s.ViewModel<SearchViewModel>().SearchResults = [..TourTestData.SampleTourList(count)];
 
     public static void WithSearchResultWithLogs(this IServiceProvider s)
     {
-        var id = TestData.TestGuid;
-        s.ViewModel<SearchViewModel>().SearchResults = [TestData.SampleTour(id: id,
-            tourLogs: [TestData.SampleTourLog(tourId: id)])];
+        var id = TestConstants.TestGuid;
+        s.ViewModel<SearchViewModel>().SearchResults = [TourTestData.SampleTour(id: id,
+            tourLogs: [TourLogTestData.SampleTourLog(tourId: id)])];
     }
 
     public static void WithSearchResultWithoutLogs(this IServiceProvider s) =>
-        s.ViewModel<SearchViewModel>().SearchResults = [TestData.SampleTour()];
+        s.ViewModel<SearchViewModel>().SearchResults = [TourTestData.SampleTour()];
 
     public static Guid FirstSearchResultId(this IServiceProvider s) =>
         s.ViewModel<SearchViewModel>().SearchResults.First().Id;
@@ -188,34 +188,34 @@ public static class ViewTestExtensions
     // ── Mock setup helpers ──
 
     public static void SetupMockDeleteTour(this IServiceProvider s, Guid id) =>
-        TestData.SetupHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
+        HttpTestHelper.SetupHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
             HttpMethod.Delete, $"api/tour/{id}", "{}");
 
     public static void SetupMockGetTour(this IServiceProvider s, Guid id) =>
-        TestData.SetupHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
-            HttpMethod.Get, $"api/tour/{id}", TestData.SampleTour(id: id));
+        HttpTestHelper.SetupHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
+            HttpMethod.Get, $"api/tour/{id}", TourTestData.SampleTour(id: id));
 
     public static void SetupMockPostTour(this IServiceProvider s)
     {
         var handler = s.GetRequiredService<Mock<HttpMessageHandler>>();
-        TestData.SetupHandler(handler, HttpMethod.Post, "api/tour", "{}");
+        HttpTestHelper.SetupHandler(handler, HttpMethod.Post, "api/tour", "{}");
     }
 
     public static void SetupMockGetTourLogs(this IServiceProvider s, Guid tourId, int count = 3) =>
-        TestData.SetupHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
+        HttpTestHelper.SetupHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
             HttpMethod.Get, $"api/tourlog/bytour/{tourId}",
-            TestData.SampleTourLogList(count, tourId));
+            TourLogTestData.SampleTourLogList(count, tourId));
 
     public static void SetupMockGetTourLog(this IServiceProvider s, Guid logId) =>
-        TestData.SetupHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
-            HttpMethod.Get, $"api/tourlog/{logId}", TestData.SampleTourLog(id: logId));
+        HttpTestHelper.SetupHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
+            HttpMethod.Get, $"api/tourlog/{logId}", TourLogTestData.SampleTourLog(id: logId));
 
     public static void SetupMockPostTourLog(this IServiceProvider s) =>
-        TestData.SetupHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
+        HttpTestHelper.SetupHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
             HttpMethod.Post, "api/tourlog", "{}");
 
     public static void SetupMockDeleteTourLog(this IServiceProvider s, Guid id) =>
-        TestData.SetupHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
+        HttpTestHelper.SetupHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
             HttpMethod.Delete, $"api/tourlog/{id}", "{}");
 
     public static void SetupMockRouteData(this IServiceProvider s) =>
@@ -223,7 +223,7 @@ public static class ViewTestExtensions
             It.IsAny<(double, double)>(), It.IsAny<(double, double)>(), It.IsAny<string>())).ReturnsAsync((100.5, 60.5));
 
     public static void SetupMockReportBytes(this IServiceProvider s, string uri) =>
-        TestData.SetupHandlerBytes(s.GetRequiredService<Mock<HttpMessageHandler>>(),
+        HttpTestHelper.SetupHandlerBytes(s.GetRequiredService<Mock<HttpMessageHandler>>(),
             uri, [1, 2, 3]);
 
     public static void SetupMockDownloadFile(this IServiceProvider s) =>
@@ -233,29 +233,29 @@ public static class ViewTestExtensions
     // ── Mock verify helpers ──
 
     public static void VerifyMockDeleteTour(this IServiceProvider s, Guid id, Times times) =>
-        TestData.VerifyHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
+        HttpTestHelper.VerifyHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
             HttpMethod.Delete, $"api/tour/{id}", times);
 
     public static void VerifyMockPostTour(this IServiceProvider s, Times times) =>
-        TestData.VerifyHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
+        HttpTestHelper.VerifyHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
             HttpMethod.Post, "api/tour", times);
 
     public static void VerifyMockGetTour(this IServiceProvider s, Guid id, Times times) =>
-        TestData.VerifyHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
+        HttpTestHelper.VerifyHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
             HttpMethod.Get, $"api/tour/{id}", times);
 
     public static void VerifyMockPostTourLog(this IServiceProvider s, Times times) =>
-        TestData.VerifyHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
+        HttpTestHelper.VerifyHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
             HttpMethod.Post, "api/tourlog", times);
 
     public static void VerifyMockDeleteTourLog(this IServiceProvider s, Guid id, Times times) =>
-        TestData.VerifyHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
+        HttpTestHelper.VerifyHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
             HttpMethod.Delete, $"api/tourlog/{id}", times);
 
     // ── Auth helpers ──
 
     public static void SetupAuthHandler(this IServiceProvider s, HttpStatusCode statusCode, string? content = null) =>
-        TestData.SetupHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
+        HttpTestHelper.SetupHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
             HttpMethod.Post, "api/auth",
             content ?? """{"userId":"id","email":"e@e.com"}""",
             statusCode);

@@ -17,4 +17,5 @@ global using Microsoft.JSInterop.Infrastructure;
 global using Moq;
 global using Moq.Protected;
 global using Serilog;
+global using Tests.Fixtures;
 global using UI.View.SharedComponents;

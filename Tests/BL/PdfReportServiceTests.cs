@@ -14,21 +14,21 @@ public class PdfReportServiceTests
     [Test]
     public void GenerateTourReport_ValidTour_ReturnsPdfBytes()
     {
-        var result = _pdfReportService.GenerateTourReport(TestData.SampleTourDomain());
-        TestData.AssertValidPdf(result);
+        var result = _pdfReportService.GenerateTourReport(TourTestData.SampleTourDomain());
+        PdfAssertions.AssertValidPdf(result);
     }
 
     [Test]
     public void GenerateSummaryReport_ValidTours_ReturnsPdfBytes()
     {
-        var result = _pdfReportService.GenerateSummaryReport(TestData.SampleTourDomainList());
-        TestData.AssertValidPdf(result);
+        var result = _pdfReportService.GenerateSummaryReport(TourTestData.SampleTourDomainList());
+        PdfAssertions.AssertValidPdf(result);
     }
 
     [Test]
     public void GenerateReport_NullValues_HandlesNullsGracefully()
     {
-        var tour = TestData.SampleTourDomain();
+        var tour = TourTestData.SampleTourDomain();
 
         tour.Distance = null;
         tour.EstimatedTime = null;
@@ -47,14 +47,14 @@ public class PdfReportServiceTests
         ];
 
         var result = _pdfReportService.GenerateTourReport(tour);
-        TestData.AssertValidPdf(result);
+        PdfAssertions.AssertValidPdf(result);
     }
 
     [Test]
     public void GenerateReport_HandlesSpecialCharactersAndLargeData()
     {
         const string specialChars = "Special: áéíóú ñ ¿¡ € &<>\"'";
-        var tour = TestData.SampleTourDomain();
+        var tour = TourTestData.SampleTourDomain();
 
         tour.Name = specialChars;
         tour.Description = new string('A', 1000);
@@ -72,28 +72,28 @@ public class PdfReportServiceTests
             })];
 
         var result = _pdfReportService.GenerateTourReport(tour);
-        TestData.AssertValidPdf(result);
+        PdfAssertions.AssertValidPdf(result);
     }
 
     [Test]
     public void GenerateTourReport_NullImagePath_HandlesGracefully()
     {
-        var tour = TestData.SampleTourDomain();
+        var tour = TourTestData.SampleTourDomain();
         tour.ImagePath = null;
 
         var result = _pdfReportService.GenerateTourReport(tour);
-        TestData.AssertValidPdf(result);
+        PdfAssertions.AssertValidPdf(result);
     }
 
     [TestCase("")]
     [TestCase("invalid/path/to/image.png")]
     public void GenerateTourReport_InvalidImagePaths_HandlesGracefully(string imagePath)
     {
-        var tour = TestData.SampleTourDomain();
+        var tour = TourTestData.SampleTourDomain();
         tour.ImagePath = imagePath;
 
         var result = _pdfReportService.GenerateTourReport(tour);
-        TestData.AssertValidPdf(result);
+        PdfAssertions.AssertValidPdf(result);
     }
 
     [Test]
@@ -105,7 +105,7 @@ public class PdfReportServiceTests
             image.Save(tempPath, new PngEncoder());
         }
 
-        var tour = TestData.SampleTourDomain();
+        var tour = TourTestData.SampleTourDomain();
         tour.ImagePath = tempPath;
 
         var pdfWithImage = _pdfReportService.GenerateTourReport(tour);
@@ -123,13 +123,13 @@ public class PdfReportServiceTests
         var tempPath = Path.GetTempFileName();
         File.WriteAllText(tempPath, "Not an image");
 
-        var tour = TestData.SampleTourDomain();
+        var tour = TourTestData.SampleTourDomain();
         tour.ImagePath = tempPath;
 
         Assert.DoesNotThrow(() =>
         {
             var result = _pdfReportService.GenerateTourReport(tour);
-            TestData.AssertValidPdf(result);
+            PdfAssertions.AssertValidPdf(result);
         });
     }
 
@@ -137,10 +137,10 @@ public class PdfReportServiceTests
     public void GenerateTourReport_ImageReadThrowsIOException_ShowsErrorGracefully()
     {
         var service = new PdfReportService(static _ => throw new IOException("Disk read error"));
-        var tour = TestData.SampleTourDomain();
+        var tour = TourTestData.SampleTourDomain();
         tour.ImagePath = Path.GetTempFileName();
 
         var result = service.GenerateTourReport(tour);
-        TestData.AssertValidPdf(result);
+        PdfAssertions.AssertValidPdf(result);
     }
 }

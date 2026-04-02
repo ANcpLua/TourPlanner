@@ -24,7 +24,7 @@ public class MappingConfigurationTests
         var tourPersistence = new TourPersistence
         {
             Id = Guid.NewGuid(),
-            UserId = TestData.TestUserId,
+            UserId = TestConstants.TestUserId,
             Name = "Test Tour",
             Description = "Test Description",
             From = "Start Location",
@@ -39,7 +39,7 @@ public class MappingConfigurationTests
                 new TourLogPersistence
                 {
                     Id = Guid.NewGuid(),
-                    UserId = TestData.TestUserId,
+                    UserId = TestConstants.TestUserId,
                     Comment = "Test comment",
                     DateTime = TimeProvider.System.GetUtcNow().UtcDateTime,
                     Difficulty = 3.0,
@@ -118,8 +118,8 @@ public class MappingConfigurationTests
     [Test]
     public void TourDomain_To_TourDto_MapsAllPropertiesCorrectly()
     {
-        var tourDomain = TestData.SampleTourDomain();
-        tourDomain.Logs = [TestData.SampleTourLogDomain()];
+        var tourDomain = TourTestData.SampleTourDomain();
+        tourDomain.Logs = [TourLogTestData.SampleTourLogDomain()];
 
         var tour = _mapper.Map<TourDto>(tourDomain);
         using (Assert.EnterMultipleScope())
@@ -133,8 +133,8 @@ public class MappingConfigurationTests
     [Test]
     public void TourDto_To_TourDomain_MapsAllPropertiesCorrectly()
     {
-        var tour = TestData.SampleTourDto();
-        tour.TourLogs = [TestData.SampleTourLogDto()];
+        var tour = TourTestData.SampleTourDto();
+        tour.TourLogs = [TourLogTestData.SampleTourLogDto()];
 
         var tourDomain = _mapper.Map<TourDomain>(tour);
         using (Assert.EnterMultipleScope())
@@ -180,7 +180,7 @@ public class MappingConfigurationTests
         var tourLogPersistence = new TourLogPersistence
         {
             Id = Guid.NewGuid(),
-            UserId = TestData.TestUserId,
+            UserId = TestConstants.TestUserId,
             DateTime = TimeProvider.System.GetUtcNow().UtcDateTime,
             Comment = "Persistence test comment",
             Difficulty = 2.5,
@@ -207,7 +207,7 @@ public class MappingConfigurationTests
     [Test]
     public void TourLogDomain_To_TourLogDto_MapsAllPropertiesCorrectly()
     {
-        var tourLogDomain = TestData.SampleTourLogDomain();
+        var tourLogDomain = TourLogTestData.SampleTourLogDomain();
 
         var tourLog = _mapper.Map<TourLogDto>(tourLogDomain);
         using (Assert.EnterMultipleScope())
@@ -226,7 +226,7 @@ public class MappingConfigurationTests
     [Test]
     public void TourLogDto_To_TourLogDomain_MapsAllPropertiesCorrectly()
     {
-        var tourLog = TestData.SampleTourLogDto();
+        var tourLog = TourLogTestData.SampleTourLogDto();
 
         var tourLogDomain = _mapper.Map<TourLogDomain>(tourLog);
         using (Assert.EnterMultipleScope())
@@ -247,7 +247,7 @@ public class MappingConfigurationTests
     {
         var tourLogPersistence = new TourLogPersistence
         {
-            UserId = TestData.TestUserId,
+            UserId = TestConstants.TestUserId,
             Comment = "Default DateTime test"
         };
 
@@ -257,10 +257,10 @@ public class MappingConfigurationTests
     [Test]
     public void TourLogPersistence_WithTourPersistence_NavigationPropertyWorks()
     {
-        var tour = new TourPersistence { UserId = TestData.TestUserId, Name = "Navigation Test Tour", Description = "", From = "", To = "", TransportType = "" };
+        var tour = new TourPersistence { UserId = TestConstants.TestUserId, Name = "Navigation Test Tour", Description = "", From = "", To = "", TransportType = "" };
         var tourLog = new TourLogPersistence
         {
-            UserId = TestData.TestUserId,
+            UserId = TestConstants.TestUserId,
             TourPersistence = tour,
             Comment = "Navigation test"
         };
