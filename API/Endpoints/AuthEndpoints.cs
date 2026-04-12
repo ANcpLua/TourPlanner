@@ -70,7 +70,7 @@ public static class AuthEndpoints
         return Results.Ok();
     }
 
-    private static IResult GetCurrentUser(HttpContext httpContext)
+    internal static IResult GetCurrentUser(HttpContext httpContext)
     {
         var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
         var email = httpContext.User.FindFirstValue(ClaimTypes.Email)

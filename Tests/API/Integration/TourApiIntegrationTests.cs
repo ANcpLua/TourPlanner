@@ -103,6 +103,47 @@ public sealed class TourApiIntegrationTests : ApiIntegrationTestBase
     }
 
     [Test]
+    public async Task GetTourById_ExistingTour_ReturnsTour()
+    {
+        await AuthenticateAsync();
+        var createdTour = await CreateTourAsync(request: NewTourDto(name: "Findable Tour"));
+
+        var response = await Client.GetAsync(ApiRoute.Tour.ById(createdTour.Id));
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK), await response.Content.ReadAsStringAsync());
+
+        var tour = (await response.Content.ReadFromJsonAsync<Contracts.Tours.TourDto>())!;
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(tour.Id, Is.EqualTo(createdTour.Id));
+            Assert.That(tour.Name, Is.EqualTo("Findable Tour"));
+        }
+    }
+
+    [Test]
+    public async Task GetTourById_NonExistentTour_ReturnsNotFound()
+    {
+        await AuthenticateAsync();
+
+        var response = await Client.GetAsync(ApiRoute.Tour.ById(Guid.NewGuid()));
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+    }
+
+    [Test]
+    public async Task UpdateTourAsync_ValidUpdate_ReturnsUpdatedTour()
+    {
+        await AuthenticateAsync();
+        var createdTour = await CreateTourAsync(request: NewTourDto(name: "Original Name"));
+
+        createdTour.Name = "Updated Name";
+        var response = await Client.PutAsJsonAsync(ApiRoute.Tour.ById(createdTour.Id), createdTour);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK), await response.Content.ReadAsStringAsync());
+
+        var updatedTour = (await response.Content.ReadFromJsonAsync<Contracts.Tours.TourDto>())!;
+        Assert.That(updatedTour.Name, Is.EqualTo("Updated Name"));
+    }
+
+    [Test]
     public async Task DeleteTourAsync_RemovesPersistedTour()
     {
         await AuthenticateAsync();

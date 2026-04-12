@@ -70,6 +70,16 @@ public sealed class ReportApiIntegrationTests : ApiIntegrationTestBase
     }
 
     [Test]
+    public async Task ExportTourToJson_WhenTourDoesNotExist_ReturnsNotFound()
+    {
+        await AuthenticateAsync();
+
+        var response = await Client.GetAsync(ApiRoute.Reports.ExportById(Guid.NewGuid()));
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+    }
+
+    [Test]
     public async Task ImportTourFromJsonAsync_InvalidPayload_ReturnsBadRequest()
     {
         await AuthenticateAsync();
