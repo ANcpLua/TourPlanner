@@ -1,7 +1,7 @@
 services:
   postgres:
     container_name: ${COMPOSE_PROJECT_NAME:-tourplanner}-postgres
-    image: postgres:17.2@sha256:3267c505060a0052e5aa6e5175a7b41ab6b04da2f8c4540fc6e98a37210aa2d3
+    image: postgres:17.9@sha256:5b96f1a16bd9768b060dd2ffe55cb6225c4d9ef4d214a8b21eb08134869a97e4
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
