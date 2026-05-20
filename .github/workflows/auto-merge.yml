@@ -35,6 +35,12 @@
 # as an antipattern (single point of failure across N repos, maintenance
 # overhead, and Renovate's platformAutomerge already does the bot tier
 # natively without it).
+#
+# Branch-prefix policy (2026-05-19):
+#   - claude/  — Claude Code agents
+#   - codex/   — Codex agents (added 2026-05-19; primary AI-agent tier now)
+#   - copilot/ — GitHub Copilot agents (kept; dormant when quota exhausted)
+#   - jules/   — REMOVED 2026-05-19 (Jules deprecated, no future use)
 
 name: Auto-merge
 
@@ -54,8 +60,8 @@ jobs:
     if: |
       github.event.pull_request.draft == false && (
         startsWith(github.event.pull_request.head.ref, 'claude/') ||
+        startsWith(github.event.pull_request.head.ref, 'codex/') ||
         startsWith(github.event.pull_request.head.ref, 'copilot/') ||
-        startsWith(github.event.pull_request.head.ref, 'jules/') ||
         (github.event_name == 'pull_request_review'
          && github.event.review.state == 'approved'
          && github.event.review.user.login == 'coderabbitai[bot]')
