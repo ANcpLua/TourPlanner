@@ -27,7 +27,7 @@ ENV ASPNETCORE_ENVIRONMENT=Production
 
 ENTRYPOINT ["dotnet", "API.dll"]
 
-FROM nginx:alpine@sha256:4001b8091adb507866f42c251759b40290995629415d46684a32d3ede850c976 AS ui
+FROM nginx:alpine@sha256:7e8ff0a32da368869608f285124b4375b901401d88f5027865d8f88984d35d38 AS ui
 WORKDIR /usr/share/nginx/html
 
 COPY --from=build /app/ui/publish/wwwroot ./
