@@ -24,7 +24,8 @@
 #
 # Renovate bot PRs do not need this workflow: Renovate enables native
 # auto-merge itself via `platformAutomerge: true` in the shared preset
-# (github>ANcpLua/renovate-config).
+# (github>ANcpLua/github-settings-automation — default.json preset, merged
+# from the archived ANcpLua/renovate-config repo on 2026-05-25).
 #
 # Prereqs (one-time per repo): Settings → General → "Allow auto-merge"
 # enabled. Branch protection on `main` lists the required status checks;
