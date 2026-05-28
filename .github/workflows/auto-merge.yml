@@ -1,5 +1,5 @@
 # Auto-merge — native GitHub auto-merge via GITHUB_TOKEN. No custom App, no
-# AUTOMERGE_* secrets, no reusable workflow. The 2026 pattern.
+# AUTOMERGE_* secrets, no reusable workflow.
 #
 # Synced from github-settings-automation/templates/auto-merge.yml by the
 # weekly enforce-repo-settings sweep. Do not hand-edit per-repo.
@@ -9,14 +9,13 @@
 # - THIS FILE (per-repo, event-driven):
 #     Fires immediately on PR open/sync/review-submit. Handles BOT and
 #     AI-AGENT PRs that should auto-merge with no human latency, plus
-#     CodeRabbit-approved manual PRs.
+#     Codex-approved manual PRs.
 #
 # - pr-heal.yml Job 0 (central cron, 15-min sweep):
 #     Handles OWNER-authored PRs (incl. agents acting via gh CLI auth as
-#     ANcpLua) with a 5-min cooldown so reviewer tiers (CodeRabbit, Codex,
-#     Claude PR review) land their advisory comments before merge-on-green
-#     fires. See PR#170 incident (2026-05-18) for the precedent: owner PR
-#     merged before CodeRabbit could submit its 5 actionable comments.
+#     ANcpLua) with a 5-min cooldown so reviewer tiers can land advisory
+#     comments before merge-on-green fires. See PR#170 incident (2026-05-18)
+#     for the precedent: owner PR merged before advisory review completed.
 #
 # The owner-clause that USED to live in this file's `if:` was removed in
 # the same change. Routing owner PRs through the cron tier gives them the
@@ -37,11 +36,9 @@
 # overhead, and Renovate's platformAutomerge already does the bot tier
 # natively without it).
 #
-# Branch-prefix policy (2026-05-19):
-#   - claude/  — Claude Code agents
-#   - codex/   — Codex agents (added 2026-05-19; primary AI-agent tier now)
+# Branch-prefix policy:
+#   - codex/   — Codex agents
 #   - copilot/ — GitHub Copilot agents (kept; dormant when quota exhausted)
-#   - jules/   — REMOVED 2026-05-19 (Jules deprecated, no future use)
 
 name: Auto-merge
 
@@ -60,12 +57,11 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       github.event.pull_request.draft == false && (
-        startsWith(github.event.pull_request.head.ref, 'claude/') ||
         startsWith(github.event.pull_request.head.ref, 'codex/') ||
         startsWith(github.event.pull_request.head.ref, 'copilot/') ||
         (github.event_name == 'pull_request_review'
          && github.event.review.state == 'approved'
-         && github.event.review.user.login == 'coderabbitai[bot]')
+         && github.event.review.user.login == 'chatgpt-codex-connector[bot]')
       )
     steps:
       - name: Enable native auto-merge (squash)
