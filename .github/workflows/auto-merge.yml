@@ -4,22 +4,10 @@
 # Synced from github-settings-automation/templates/auto-merge.yml by the
 # weekly enforce-repo-settings sweep. Do not hand-edit per-repo.
 #
-# Tier separation (this file vs. github-settings-automation/pr-heal.yml):
-#
-# - THIS FILE (per-repo, event-driven):
-#     Fires immediately on PR open/sync/review-submit. Handles BOT and
-#     AI-AGENT PRs that should auto-merge with no human latency, plus
-#     Codex-approved manual PRs.
-#
-# - pr-heal.yml Job 0 (central cron, 15-min sweep):
-#     Handles OWNER-authored PRs (incl. agents acting via gh CLI auth as
-#     ANcpLua) with a 5-min cooldown so reviewer tiers can land advisory
-#     comments before merge-on-green fires. See PR#170 incident (2026-05-18)
-#     for the precedent: owner PR merged before advisory review completed.
-#
-# The owner-clause that USED to live in this file's `if:` was removed in
-# the same change. Routing owner PRs through the cron tier gives them the
-# cooldown they need without blocking the bot tier.
+# This file is per-repo and event-driven. It enables native GitHub auto-merge
+# only for trusted automation branches (codex/, copilot/) and Codex-approved
+# manual PRs. There is no central PR-heal cron in the merge path, and no
+# review-bot (CodeRabbit etc.) approval ever triggers a merge.
 #
 # Renovate bot PRs do not need this workflow: Renovate enables native
 # auto-merge itself via `platformAutomerge: true` in the shared preset
@@ -38,7 +26,7 @@
 #
 # Branch-prefix policy:
 #   - codex/   — Codex agents
-#   - copilot/ — GitHub Copilot agents (kept; dormant when quota exhausted)
+#   - copilot/ — GitHub Copilot agents when enabled
 
 name: Auto-merge
 
