@@ -23,7 +23,13 @@
 #
 # Branch-prefix policy:
 #   - claude/  — Claude Code agents
-#   - copilot/ — GitHub Copilot agents when enabled
+#
+# Both jobs require head.repo.full_name == github.repository. A branch prefix
+# is chosen by whoever opens the PR, so under pull_request_target — which runs
+# with the base repo's write token even for fork PRs — the prefix alone gates
+# nothing. Without the same-repo check any fork can push a `claude/…` branch
+# and land it on main unreviewed (ancplua-claude-plugins#345, merged 10s after
+# open by an outside contributor while the policy trusted `codex/`).
 
 name: Auto-merge
 
@@ -40,10 +46,9 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       github.event.action != 'closed' &&
-      github.event.pull_request.draft == false && (
-        startsWith(github.event.pull_request.head.ref, 'claude/') ||
-        startsWith(github.event.pull_request.head.ref, 'copilot/')
-      )
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      startsWith(github.event.pull_request.head.ref, 'claude/')
     steps:
       - name: Enable native auto-merge (squash)
         env:
@@ -55,10 +60,8 @@ jobs:
     if: |
       github.event.action == 'closed' &&
       github.event.pull_request.merged == true &&
-      github.event.pull_request.head.repo.full_name == github.repository && (
-        startsWith(github.event.pull_request.head.ref, 'claude/') ||
-        startsWith(github.event.pull_request.head.ref, 'copilot/')
-      )
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      startsWith(github.event.pull_request.head.ref, 'claude/')
     steps:
       - name: Delete merged head branch
         env:
