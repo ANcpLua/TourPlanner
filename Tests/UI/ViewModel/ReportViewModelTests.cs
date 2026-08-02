@@ -20,7 +20,7 @@ public sealed class ReportViewModelTests
         _reportViewModel = new ReportViewModel(
             _httpClient,
             _mockToastService.Object,
-            TestMocks.TryCatchToastWrapper(),
+            TestMocks.TryCatchToastWrapper(_mockToastService.Object),
             _mockDownloadFileService.Object);
     }
 

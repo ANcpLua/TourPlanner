@@ -50,6 +50,7 @@
     <PackageVersion Include="SixLabors.ImageSharp" Version="$(SixLaborsImageSharpVersion)" />
     <!-- Integration Testing -->
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(MicrosoftAspNetCoreMvcTestingVersion)" />
+    <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlite3" Version="$(SQLitePCLRawBundleESqlite3Version)" />
     <PackageVersion Include="Testcontainers.PostgreSql" Version="$(TestcontainersPostgreSqlVersion)" />
     <!-- Testing (MTP) -->
     <PackageVersion Include="bunit" Version="$(bunitVersion)" />

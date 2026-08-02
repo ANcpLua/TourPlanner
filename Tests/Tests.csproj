@@ -14,6 +14,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite"/>
+        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3"/>
         <PackageReference Include="SixLabors.ImageSharp"/>
         <PackageReference Include="Autofac.Extensions.DependencyInjection"/>
         <PackageReference Include="coverlet.MTP"/>

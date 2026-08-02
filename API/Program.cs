@@ -125,7 +125,6 @@ var app = builder.Build();
 
 app.UseRouting();
 app.UseCors(ApiRoute.CorsPolicy);
-app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseSerilogRequestLogging();
