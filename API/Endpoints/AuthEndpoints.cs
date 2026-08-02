@@ -9,11 +9,15 @@ public static class AuthEndpoints
 {
     public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var auth = endpoints.MapGroup(ApiRoute.ApiBase)
-            .MapGroup(GetAuthSegment())
-            .WithTags(GetAuthTag());
-        auth.MapPost(ApiRoute.Auth.Register, RegisterAsync).AllowAnonymous();
-        auth.MapPost(ApiRoute.Auth.Login, LoginAsync).AllowAnonymous();
+        var auth = endpoints.MapGroup(ApiRoute.Auth.Base).WithTags(ApiTag.Auth);
+        auth.MapPost(ApiRoute.Auth.Register, RegisterAsync)
+            .Produces<UserInfo>(StatusCodes.Status200OK)
+            .ProducesValidationProblem()
+            .AllowAnonymous();
+        auth.MapPost(ApiRoute.Auth.Login, LoginAsync)
+            .Produces<UserInfo>(StatusCodes.Status200OK)
+            .ProducesValidationProblem()
+            .AllowAnonymous();
         auth.MapPost(ApiRoute.Auth.Logout, LogoutAsync).RequireAuthorization();
         auth.MapGet(ApiRoute.Auth.Me, GetCurrentUser).RequireAuthorization();
         return endpoints;
@@ -80,15 +84,5 @@ public static class AuthEndpoints
             return Results.Problem("Required identity claims missing.", statusCode: StatusCodes.Status401Unauthorized);
 
         return Results.Ok(new UserInfo { UserId = userId, Email = email });
-    }
-
-    private static string GetAuthSegment()
-    {
-        return nameof(AuthEndpoints)[..^nameof(Endpoints).Length].ToLowerInvariant();
-    }
-
-    private static string GetAuthTag()
-    {
-        return nameof(IdentityUser).Replace("User", string.Empty, StringComparison.Ordinal);
     }
 }

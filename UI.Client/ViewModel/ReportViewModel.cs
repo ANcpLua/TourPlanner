@@ -1,8 +1,8 @@
 using System.Collections.ObjectModel;
 using System.Net.Http.Json;
 using System.Text;
-using System.Text.Json;
 using Blazor.DownloadFileFast.Interfaces;
+using Contracts.Reports;
 using Microsoft.AspNetCore.Components.Forms;
 using UI.Decorator;
 using UI.Model;
@@ -18,12 +18,6 @@ public class ReportViewModel(
     IBlazorDownloadFileService blazorDownloadFile)
     : BaseViewModel(httpClient, toastServiceWrapper, tryCatchToastWrapper)
 {
-    private static readonly JsonSerializerOptions CamelCaseOptions = new()
-    {
-        WriteIndented = true,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-    };
-
     public string CurrentReportUrl
     {
         get;
@@ -37,7 +31,7 @@ public class ReportViewModel(
     } = Guid.Empty;
 
     public string SummaryButtonText => IsProcessing ? "Generating..." : "Generate Summary";
-    public string ExportButtonText => IsProcessing ? "Exporting..." : "Export";
+    public string ExportButtonText => IsProcessing ? "Exporting XML..." : "Export XML";
 
     public ObservableCollection<Tour> Tours
     {
@@ -108,57 +102,45 @@ public class ReportViewModel(
     }
 
     [UiMethodDecorator]
-    public Task ExportTourToJsonAsync(Guid tourId)
+    public Task ExportTourToXmlAsync(Guid tourId)
     {
         return ExecuteAsync(async () =>
         {
-            var json = await HttpClient.GetStringAsync($"api/reports/export/{tourId}");
-            if (string.IsNullOrEmpty(json))
+            var xml = await HttpClient.GetStringAsync($"api/reports/export/{tourId}");
+            if (string.IsNullOrWhiteSpace(xml))
             {
-                ToastServiceWrapper.ShowError("Error exporting tour: Invalid tour data.");
+                ToastServiceWrapper.ShowError("Error exporting tour XML: No data received.");
                 return;
             }
 
-            var fileName = $"Tour_{tourId}_{TimeProvider.System.GetUtcNow().UtcDateTime:yyyyMMdd_HHmmss}.json";
+            var fileName = $"Tour_{tourId}_{TimeProvider.System.GetUtcNow().UtcDateTime:yyyyMMdd_HHmmss}.xml";
             await blazorDownloadFile.DownloadFileAsync(
                 fileName,
-                Encoding.UTF8.GetBytes(json),
-                "application/json"
+                Encoding.UTF8.GetBytes(xml),
+                "application/xml"
             );
-            ToastServiceWrapper.ShowSuccess("Tour exported successfully.");
-        }, "Error exporting tour");
+            ToastServiceWrapper.ShowSuccess("Tour XML exported successfully.");
+        }, "Error exporting tour XML");
     }
 
     [UiMethodDecorator]
-    public Task ImportTourFromJsonAsync(InputFileChangeEventArgs e)
+    public Task ImportTourFromXmlAsync(InputFileChangeEventArgs e)
     {
         return HandleApiRequestAsync(
             async () =>
             {
-                await using var stream = e.File.OpenReadStream();
+                await using var stream = e.File.OpenReadStream(
+                    TourXmlDocument.MaximumDocumentCharacters * 4L);
                 using var reader = new StreamReader(stream);
-                var json = await reader.ReadToEndAsync();
-
-                var tour = JsonSerializer.Deserialize<Tour>(json, CamelCaseOptions);
-
-                if (tour is null)
-                {
-                    ToastServiceWrapper.ShowError("Error importing tour: Invalid tour data.");
-                    return;
-                }
-
-                var existingTour = Tours.FirstOrDefault(t => t.Id == tour.Id);
-                if (existingTour is not null)
-                {
-                    ToastServiceWrapper.ShowError($"Tour already exists. Delete {existingTour.Name} first.");
-                    return;
-                }
-
-                (await HttpClient.PostAsJsonAsync("api/tour", tour)).EnsureSuccessStatusCode();
+                var xml = await reader.ReadToEndAsync();
+                using var response = await HttpClient.PostAsJsonAsync(
+                    "api/reports/import",
+                    new ImportTourRequest { Xml = xml });
+                response.EnsureSuccessStatusCode();
                 await LoadToursAsync();
-                ToastServiceWrapper.ShowSuccess("Tour imported successfully.");
+                ToastServiceWrapper.ShowSuccess("Tour XML imported successfully.");
             },
-            "Error importing tour"
+            "Error importing tour XML"
         );
     }
 }

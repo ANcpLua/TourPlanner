@@ -9,6 +9,6 @@ public class RegisterRequest
     public required string Email { get; set; }
 
     [Required]
-    [MinLength(6)]
+    [StringLength(128, MinimumLength = 6)]
     public required string Password { get; set; }
 }

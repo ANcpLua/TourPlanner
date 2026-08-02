@@ -11,6 +11,9 @@ public class TourRepository(TourPlannerContext dbContext) : ITourRepository
         CancellationToken cancellationToken = default)
     {
         tour.UserId = userId;
+        foreach (var tourLog in tour.TourLogPersistence)
+            tourLog.UserId = userId;
+
         dbContext.Set<TourPersistence>().Add(tour);
         await dbContext.SaveChangesAsync(cancellationToken);
         return tour;

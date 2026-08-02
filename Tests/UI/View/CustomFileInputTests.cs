@@ -17,7 +17,7 @@ public sealed class CustomFileInputTests : BunitTestBase
             Assert.That(inputId, Is.Not.Null);
             Assert.That(inputId, Is.Not.Empty);
             Assert.That(label.GetAttribute("for"), Is.EqualTo(inputId));
-            Assert.That(input.GetAttribute("accept"), Is.EqualTo(".json"));
+            Assert.That(input.GetAttribute("accept"), Is.EqualTo(".xml,application/xml"));
         }
     }
 
@@ -42,7 +42,7 @@ public sealed class CustomFileInputTests : BunitTestBase
 
         var inputFile = cut.FindComponent<InputFile>();
         await cut.InvokeAsync(() => inputFile.Instance.OnChange.InvokeAsync(
-            new InputFileChangeEventArgs([TestMocks.BrowserFile("test.json").Object])));
+            new InputFileChangeEventArgs([TestMocks.BrowserFile("test.xml").Object])));
 
         Assert.That(called, Is.True);
     }

@@ -1,6 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Xml.Linq;
 using API.Endpoints;
+using Contracts.Reports;
+using Contracts.Tours;
 
 namespace Tests.API.Integration;
 
@@ -38,7 +41,7 @@ public sealed class ReportApiIntegrationTests : ApiIntegrationTestBase
     }
 
     [Test]
-    public async Task ExportTourToJson_ReturnsPersistedTourPayload()
+    public async Task ExportTourToXml_ReturnsPersistedTourWithoutIdentifiers()
     {
         await AuthenticateAsync();
         var tour = await CreateTourAsync(request: NewTourDto(name: "Exported Tour"));
@@ -46,31 +49,39 @@ public sealed class ReportApiIntegrationTests : ApiIntegrationTestBase
         var response = await Client.GetAsync(ApiRoute.Reports.ExportById(tour.Id));
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK), await response.Content.ReadAsStringAsync());
 
-        var exportedTour = (await response.Content.ReadFromJsonAsync<Contracts.Tours.TourDto>())!;
+        var xml = await response.Content.ReadAsStringAsync();
+        var document = XDocument.Parse(xml);
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(exportedTour.Id, Is.EqualTo(tour.Id));
-            Assert.That(exportedTour.Name, Is.EqualTo("Exported Tour"));
+            Assert.That(response.Content.Headers.ContentType?.MediaType, Is.EqualTo("application/xml"));
+            Assert.That(document.Root?.Element(TourXmlDocument.NameElementName)?.Value, Is.EqualTo("Exported Tour"));
+            Assert.That(document.Descendants("id"), Is.Empty);
         }
     }
 
     [Test]
-    public async Task ImportTourFromJsonAsync_ValidPayload_CreatesTourVisibleThroughApi()
+    public async Task ImportTourFromXmlAsync_ValidPayload_CreatesTourVisibleThroughApi()
     {
         await AuthenticateAsync();
 
-        var importedTour = TourTestData.SampleTourDomain("Imported Tour");
-        importedTour.Id = Guid.NewGuid();
+        var response = await Client.PostAsJsonAsync(ApiRoute.Reports.Import, new ImportTourRequest
+        {
+            Xml = TourTestData.SampleTourXml("Imported Tour")
+        });
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Created), await response.Content.ReadAsStringAsync());
 
-        var response = await Client.PostAsJsonAsync(ApiRoute.Reports.Import, JsonSerializer.Serialize(importedTour));
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK), await response.Content.ReadAsStringAsync());
-
+        var importedTour = (await response.Content.ReadFromJsonAsync<TourDto>())!;
         var tours = await GetToursAsync();
-        Assert.That(tours.Select(static t => t.Name), Contains.Item("Imported Tour"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(importedTour.Id, Is.Not.EqualTo(Guid.Empty));
+            Assert.That(importedTour.Name, Is.EqualTo("Imported Tour"));
+            Assert.That(tours.Select(static t => t.Name), Contains.Item("Imported Tour"));
+        }
     }
 
     [Test]
-    public async Task ExportTourToJson_WhenTourDoesNotExist_ReturnsNotFound()
+    public async Task ExportTourToXml_WhenTourDoesNotExist_ReturnsNotFound()
     {
         await AuthenticateAsync();
 
@@ -80,13 +91,13 @@ public sealed class ReportApiIntegrationTests : ApiIntegrationTestBase
     }
 
     [Test]
-    public async Task ImportTourFromJsonAsync_InvalidPayload_ReturnsBadRequest()
+    public async Task ImportTourFromXmlAsync_InvalidPayload_ReturnsValidationProblem()
     {
         await AuthenticateAsync();
 
-        var response = await Client.PostAsJsonAsync(ApiRoute.Reports.Import, "not-json");
+        var response = await Client.PostAsJsonAsync(ApiRoute.Reports.Import, new ImportTourRequest { Xml = "not-xml" });
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
-        Assert.That(await response.Content.ReadAsStringAsync(), Does.Contain("Invalid or empty tour data."));
+        Assert.That(await response.Content.ReadAsStringAsync(), Does.Contain("Malformed XML"));
     }
 }

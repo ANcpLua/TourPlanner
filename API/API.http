@@ -1,0 +1,66 @@
+@host = http://localhost:7102
+@email = xml-example@example.com
+@password = Example-password1
+@tourId = 00000000-0000-0000-0000-000000000000
+
+### Valid typed registration (establishes the authentication cookie)
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### Invalid typed registration
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "not-an-email",
+  "password": "short"
+}
+
+### Valid typed route request
+POST {{host}}/api/routes/resolve
+Content-Type: application/json
+
+{
+  "fromLatitude": 48.2082,
+  "fromLongitude": 16.3738,
+  "toLatitude": 52.52,
+  "toLongitude": 13.405,
+  "transportType": "Car"
+}
+
+### Invalid typed route request (latitude and transport type)
+POST {{host}}/api/routes/resolve
+Content-Type: application/json
+
+{
+  "fromLatitude": 91,
+  "fromLongitude": 16.3738,
+  "toLatitude": 52.52,
+  "toLongitude": 13.405,
+  "transportType": "Train"
+}
+
+### Valid XML tour import in the typed JSON envelope
+POST {{host}}/api/reports/import
+Content-Type: application/json
+
+{
+  "xml": "<tour><name>Vienna City Ride</name><description>Imported XML example</description><from>Vienna</from><to>Vienna</to><imagePath xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:nil=\"true\" /><routeInformation xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:nil=\"true\" /><distance>12.5</distance><estimatedTime>45</estimatedTime><transportType>Bike</transportType><tourLog><dateTime>2026-08-02T10:00:00Z</dateTime><comment>Clear weather</comment><difficulty>2</difficulty><totalDistance>12.5</totalDistance><totalTime>45</totalTime><rating>5</rating></tourLog></tour>"
+}
+
+### Invalid XML tour import (unknown element)
+POST {{host}}/api/reports/import
+Content-Type: application/json
+
+{
+  "xml": "<tour><name>Invalid Tour</name><description>Unknown node</description><from>Vienna</from><to>Berlin</to><transportType>Car</transportType><unknown>true</unknown></tour>"
+}
+
+### Export a tour as application/xml
+GET {{host}}/api/reports/export/{{tourId}}
+Accept: application/xml

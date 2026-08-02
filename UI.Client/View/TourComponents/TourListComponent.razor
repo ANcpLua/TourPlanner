@@ -56,7 +56,7 @@
                         @if (ReportViewModel != null)
                         {
                             <button class="btn btn-info btn-export"
-                                    @onclick="() => ReportViewModel.ExportTourToJsonAsync(tour.Id)"
+                                    @onclick="() => ReportViewModel.ExportTourToXmlAsync(tour.Id)"
                                     disabled="@ReportViewModel.IsProcessing">
                                 @ReportViewModel.ExportButtonText
                             </button>

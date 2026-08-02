@@ -62,25 +62,26 @@ public sealed class TourPageTests : BunitTestBase
     }
 
     [Test]
-    public async Task FileImport_WithValidJson_ImportsTour()
+    public async Task FileImport_WithValidXml_ImportsTour()
     {
-        Services.SetupMockPostTour();
+        Services.SetupMockImportTour();
         var cut = RenderComponent<TourPage>();
         var fileInput = cut.FindComponent<CustomFileInput>();
         await fileInput.InvokeAsync(() =>
             fileInput.Instance.OnChange.InvokeAsync(
-                new InputFileChangeEventArgs([TestMocks.BrowserFile(TourTestData.SampleTourJson()).Object])));
-        Services.VerifyMockPostTour(Times.Once());
+                new InputFileChangeEventArgs([TestMocks.BrowserFile(TourTestData.SampleTourXml()).Object])));
+        Services.VerifyMockImportTour(Times.Once());
     }
 
     [Test]
-    public async Task FileImport_WithInvalidJson_ShowsError()
+    public async Task FileImport_WithInvalidXml_ShowsError()
     {
+        Services.SetupMockInvalidImportTour();
         var cut = RenderComponent<TourPage>();
         var fileInput = cut.FindComponent<CustomFileInput>();
         await fileInput.InvokeAsync(() =>
             fileInput.Instance.OnChange.InvokeAsync(
-                new InputFileChangeEventArgs([TestMocks.BrowserFile("invalid json").Object])));
+                new InputFileChangeEventArgs([TestMocks.BrowserFile("invalid xml").Object])));
         Services.Mock<IToastServiceWrapper>().Verify(t => t.ShowError(It.IsAny<string>()), Times.AtLeastOnce);
     }
 

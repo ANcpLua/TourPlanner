@@ -21,6 +21,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{437B2A5D-ED8
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contracts", "Contracts\Contracts.csproj", "{EAF0814F-9AC7-477E-A69C-73D09B2F4A55}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TourPlanner.XmlGenerator", "TourPlanner.XmlGenerator\TourPlanner.XmlGenerator.csproj", "{A3E130A2-61BC-49A4-93AE-F14AF6CF2B58}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -103,6 +105,18 @@ Global
 		{EAF0814F-9AC7-477E-A69C-73D09B2F4A55}.Release|x64.Build.0 = Release|Any CPU
 		{EAF0814F-9AC7-477E-A69C-73D09B2F4A55}.Release|x86.ActiveCfg = Release|Any CPU
 		{EAF0814F-9AC7-477E-A69C-73D09B2F4A55}.Release|x86.Build.0 = Release|Any CPU
+		{A3E130A2-61BC-49A4-93AE-F14AF6CF2B58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3E130A2-61BC-49A4-93AE-F14AF6CF2B58}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3E130A2-61BC-49A4-93AE-F14AF6CF2B58}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A3E130A2-61BC-49A4-93AE-F14AF6CF2B58}.Debug|x64.Build.0 = Debug|Any CPU
+		{A3E130A2-61BC-49A4-93AE-F14AF6CF2B58}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A3E130A2-61BC-49A4-93AE-F14AF6CF2B58}.Debug|x86.Build.0 = Debug|Any CPU
+		{A3E130A2-61BC-49A4-93AE-F14AF6CF2B58}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3E130A2-61BC-49A4-93AE-F14AF6CF2B58}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3E130A2-61BC-49A4-93AE-F14AF6CF2B58}.Release|x64.ActiveCfg = Release|Any CPU
+		{A3E130A2-61BC-49A4-93AE-F14AF6CF2B58}.Release|x64.Build.0 = Release|Any CPU
+		{A3E130A2-61BC-49A4-93AE-F14AF6CF2B58}.Release|x86.ActiveCfg = Release|Any CPU
+		{A3E130A2-61BC-49A4-93AE-F14AF6CF2B58}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

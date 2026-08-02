@@ -1,4 +1,4 @@
-- The solution must be split into exactly these projects: `UI.Client`, `API`, `BL`, `DAL`, `Contracts`, `Tests`.
+- The solution must contain these six application projects: `UI.Client`, `API`, `BL`, `DAL`, `Contracts`, `Tests`; compile-time tooling projects such as `TourPlanner.XmlGenerator` may be added and must preserve the layer rules below.
 - `UI.Client` must be implemented as a standalone Blazor WebAssembly app.
 - `UI.Client` must use the current `.NET 10` PWA host conventions.
 - `UI.Client` owns UI state, components, pages, navigation, and ViewModels.

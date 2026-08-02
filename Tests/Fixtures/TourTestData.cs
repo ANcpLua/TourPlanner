@@ -1,4 +1,5 @@
 using BL.DomainModel;
+using Contracts.Reports;
 using Contracts.Tours;
 using DAL.PersistenceModel;
 using UI.Model;
@@ -144,13 +145,20 @@ public static class TourTestData
         ];
     }
 
-    public static string SampleTourJson()
+    public static string SampleTourXml(string name = "Sample Tour")
     {
-        return JsonSerializer.Serialize(SampleTourDto());
-    }
-
-    public static string SampleTourDomainJson()
-    {
-        return JsonSerializer.Serialize(SampleTourDomain());
+        return new TourXmlDocument
+        {
+            Name = name,
+            Description = "Sample tour for testing",
+            From = "City1",
+            To = "City2",
+            Distance = 100.5,
+            EstimatedTime = 60,
+            TransportType = "Car",
+            ImagePath = "/images/sample.png",
+            RouteInformation = "Sample route information",
+            TourLogs = []
+        }.WriteToXml();
     }
 }

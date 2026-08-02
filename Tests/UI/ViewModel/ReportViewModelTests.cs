@@ -1,3 +1,4 @@
+using System.Net;
 using UI.Model;
 using UI.Service.Interface;
 using UI.ViewModel;
@@ -37,8 +38,8 @@ public sealed class ReportViewModelTests
         Assert.That(_reportViewModel.SummaryButtonText, Is.EqualTo(expected));
     }
 
-    [TestCase(true, "Exporting...")]
-    [TestCase(false, "Export")]
+    [TestCase(true, "Exporting XML...")]
+    [TestCase(false, "Export XML")]
     public void ExportButtonText_ReflectsProcessing(bool processing, string expected)
     {
         _reportViewModel.IsProcessing = processing;
@@ -135,63 +136,55 @@ public sealed class ReportViewModelTests
     }
 
     [Test]
-    public async Task ExportTourToJsonAsync_Valid_Exports()
+    public async Task ExportTourToXmlAsync_Valid_Exports()
     {
         var id = Guid.NewGuid();
-        var json = TourTestData.SampleTourJson();
-        HttpTestHelper.SetupHandler(_mockHandler, HttpMethod.Get, $"api/reports/export/{id}", json);
+        var xml = TourTestData.SampleTourXml();
+        HttpTestHelper.SetupHandler(_mockHandler, HttpMethod.Get, $"api/reports/export/{id}", xml);
 
-        await _reportViewModel.ExportTourToJsonAsync(id);
+        await _reportViewModel.ExportTourToXmlAsync(id);
 
         _mockDownloadFileService.Verify(f => f.DownloadFileAsync(
-            It.IsRegex($@"Tour_{id}_\d{{8}}_\d{{6}}\.json"),
-            It.Is<byte[]>(b => Encoding.UTF8.GetString(b) == json),
-            "application/json"), Times.Once);
+            It.IsRegex($@"Tour_{id}_\d{{8}}_\d{{6}}\.xml"),
+            It.Is<byte[]>(b => Encoding.UTF8.GetString(b) == xml),
+            "application/xml"), Times.Once);
     }
 
     [Test]
-    public async Task ExportTourToJsonAsync_Empty_ShowsError()
+    public async Task ExportTourToXmlAsync_Empty_ShowsError()
     {
         var id = Guid.NewGuid();
         HttpTestHelper.SetupHandler(_mockHandler, HttpMethod.Get, $"api/reports/export/{id}", "");
 
-        await _reportViewModel.ExportTourToJsonAsync(id);
+        await _reportViewModel.ExportTourToXmlAsync(id);
 
-        _mockToastService.Verify(static t => t.ShowError("Error exporting tour: Invalid tour data."), Times.Once);
+        _mockToastService.Verify(static t => t.ShowError("Error exporting tour XML: No data received."), Times.Once);
     }
 
     [Test]
-    public async Task ImportTourFromJsonAsync_NewTour_Imports()
+    public async Task ImportTourFromXmlAsync_ImportsClone()
     {
-        var newTour = TourTestData.SampleTour();
-        HttpTestHelper.SetupHandler(_mockHandler, HttpMethod.Post, "api/tour", "{}");
+        HttpTestHelper.SetupHandler(_mockHandler, HttpMethod.Post, "api/reports/import", "{}", HttpStatusCode.Created);
         HttpTestHelper.SetupHandler(_mockHandler, HttpMethod.Get, "api/tour", "[]");
 
-        var json = JsonSerializer.Serialize(newTour);
-        await _reportViewModel.ImportTourFromJsonAsync(TestMocks.MakeFile(json));
+        await _reportViewModel.ImportTourFromXmlAsync(TestMocks.MakeFile(TourTestData.SampleTourXml()));
 
-        HttpTestHelper.VerifyHandler(_mockHandler, HttpMethod.Post, "api/tour", Times.Once());
-        _mockToastService.Verify(static t => t.ShowSuccess("Tour imported successfully."), Times.Once);
+        HttpTestHelper.VerifyHandler(_mockHandler, HttpMethod.Post, "api/reports/import", Times.Once());
+        _mockToastService.Verify(static t => t.ShowSuccess("Tour XML imported successfully."), Times.Once);
     }
 
     [Test]
-    public async Task ImportTourFromJsonAsync_Duplicate_ShowsError()
+    public async Task ImportTourFromXmlAsync_InvalidXml_ShowsError()
     {
-        var duplicate = TourTestData.SampleTour();
-        HttpTestHelper.SetupHandler(_mockHandler, HttpMethod.Get, "api/tour",
-            new List<Tour> { duplicate });
-        await _reportViewModel.InitializeAsync();
+        HttpTestHelper.SetupHandler(
+            _mockHandler,
+            HttpMethod.Post,
+            "api/reports/import",
+            "invalid XML",
+            HttpStatusCode.BadRequest);
 
-        await _reportViewModel.ImportTourFromJsonAsync(TestMocks.MakeFile(JsonSerializer.Serialize(duplicate)));
+        await _reportViewModel.ImportTourFromXmlAsync(TestMocks.MakeFile("not-xml"));
 
-        _mockToastService.Verify(static t => t.ShowError(It.Is<string>(static s => s.Contains("already exists"))), Times.Once);
-    }
-
-    [Test]
-    public async Task ImportTourFromJsonAsync_NullJson_ShowsError()
-    {
-        await _reportViewModel.ImportTourFromJsonAsync(TestMocks.MakeFile("null"));
-
-        _mockToastService.Verify(static t => t.ShowError("Error importing tour: Invalid tour data."), Times.Once);
+        _mockToastService.Verify(static t => t.ShowError(It.Is<string>(static s => s.Contains("Error importing tour XML"))), Times.Once);
     }
 }

@@ -93,6 +93,16 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for layer ownership rules.
 | DAL        | Persistence, external service access  |
 | Contracts  | Shared DTOs (including auth models)   |
 | Tests      | Unit tests across all layers          |
+| TourPlanner.XmlGenerator | Compile-time XML export writer |
+
+## Tour Import and Export
+
+Tour exports use one XML document format and intentionally omit tour, log, and user IDs. Importing a document therefore creates a cloned tour with new identities.
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/reports/export/{tourId}` | Download a tour as `application/xml` |
+| `POST /api/reports/import` | Import `{ "xml": "..." }` and create a new tour |
 
 ## Authentication
 

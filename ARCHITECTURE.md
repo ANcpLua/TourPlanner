@@ -6,10 +6,11 @@
 |---------|---------------|
 | `UI.Client` | Blazor WASM, ViewModels, components, pages, navigation, map |
 | `API` | Minimal API endpoints, auth (ASP.NET Core Identity), OpenAPI, transport validation |
-| `BL` | Business rules, orchestration, PDF reports, import/export |
+| `BL` | Business rules, orchestration, PDF reports |
 | `DAL` | EF Core persistence, repositories, external service adapters (OpenRouteService) |
 | `Contracts` | Shared DTOs and request/response models for transport only |
 | `Tests` | Unit tests across all layers (NUnit + bUnit + Moq) |
+| `TourPlanner.XmlGenerator` | Compile-time XML writer generation used by transport contracts |
 
 ## Layer Rules
 
@@ -58,5 +59,13 @@ Cookie-based via ASP.NET Core Identity. `CookieAuthenticationStateProvider` chec
 
 - Single catch point per operation (ViewModel layer via `TryCatchToastWrapper`)
 - HTTP services throw on failure — no silent swallowing
-- `FileService` returns `null`/`bool` for not-found — caller decides HTTP semantics
+- Report endpoints depend directly on tour and PDF services; no forwarding file-service layer is retained
 - Fody decorators log entry/exit timing and arg count (never arg values)
+
+## Tour Import and Export
+
+- `Contracts.Reports.TourXmlDocument` is the single XML transport format
+- Exported documents omit database and user identifiers, so every import creates a new aggregate identity
+- The generated writer handles export without runtime reflection or `XmlSerializer`
+- API parses imports at the transport boundary with a DTD-disabled, size-limited XML reader and rejects unknown, duplicate, malformed, non-finite, or out-of-range values before persistence
+- `POST /api/reports/import` accepts a JSON envelope containing the XML string; `GET /api/reports/export/{tourId}` returns `application/xml`

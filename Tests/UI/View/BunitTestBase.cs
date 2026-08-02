@@ -201,6 +201,14 @@ public static class ViewTestExtensions
         HttpTestHelper.SetupHandler(handler, HttpMethod.Post, "api/tour", "{}");
     }
 
+    public static void SetupMockImportTour(this IServiceProvider s) =>
+        HttpTestHelper.SetupHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
+            HttpMethod.Post, "api/reports/import", "{}", HttpStatusCode.Created);
+
+    public static void SetupMockInvalidImportTour(this IServiceProvider s) =>
+        HttpTestHelper.SetupHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
+            HttpMethod.Post, "api/reports/import", "invalid XML", HttpStatusCode.BadRequest);
+
     public static void SetupMockGetTourLogs(this IServiceProvider s, Guid tourId, int count = 3) =>
         HttpTestHelper.SetupHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
             HttpMethod.Get, $"api/tourlog/bytour/{tourId}",
@@ -239,6 +247,10 @@ public static class ViewTestExtensions
     public static void VerifyMockPostTour(this IServiceProvider s, Times times) =>
         HttpTestHelper.VerifyHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
             HttpMethod.Post, "api/tour", times);
+
+    public static void VerifyMockImportTour(this IServiceProvider s, Times times) =>
+        HttpTestHelper.VerifyHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),
+            HttpMethod.Post, "api/reports/import", times);
 
     public static void VerifyMockGetTour(this IServiceProvider s, Guid id, Times times) =>
         HttpTestHelper.VerifyHandler(s.GetRequiredService<Mock<HttpMessageHandler>>(),

@@ -53,8 +53,8 @@ public sealed class TourListComponentTests : BunitTestBase
         Assert.That(Render().FindAll("button").First(static b => b.TextContent.Trim() == "Edit"), Is.Not.Null);
     }
 
-    [TestCase(true, "Exporting...")]
-    [TestCase(false, "Export")]
+    [TestCase(true, "Exporting XML...")]
+    [TestCase(false, "Export XML")]
     public void ExportButton_ReflectsProcessingState(bool processing, string expected)
     {
         Services.ViewModel<ReportViewModel>().IsProcessing = processing;

@@ -20,7 +20,6 @@ public sealed class BusinessLogicModuleTests
             Assert.That(scope.Resolve<IRouteService>(), Is.Not.Null);
             Assert.That(scope.Resolve<ITourService>(), Is.Not.Null);
             Assert.That(scope.Resolve<ITourLogService>(), Is.Not.Null);
-            Assert.That(scope.Resolve<IFileService>(), Is.Not.Null);
             Assert.That(scope.Resolve<IPdfReportService>(), Is.Not.Null);
         }
     }

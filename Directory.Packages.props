@@ -25,7 +25,9 @@
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="$(MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(MicrosoftExtensionsConfigurationAbstractionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsHttpVersion)" />
-    <PackageVersion Include="Microsoft.NET.ILLink.Tasks" Version="$(MicrosoftNETILLinkTasksVersion)" />
+    <PackageVersion Include="Microsoft.NET.ILLink.Tasks"
+                    Version="$(MicrosoftNETILLinkTasksVersion)"
+                    Condition="'$(MSBuildProjectName)' == 'UI.Client'" />
     <PackageVersion Include="Microsoft.NET.Sdk.WebAssembly.Pack" Version="$(MicrosoftNETSdkWebAssemblyPackVersion)" />
     <!-- Serilog -->
     <PackageVersion Include="Serilog" Version="$(SerilogVersion)" />
@@ -60,5 +62,7 @@
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="$(MicrosoftExtensionsHttpResilienceVersion)" />
     <!-- Code Quality -->
     <PackageVersion Include="ANcpLua.Analyzers" Version="$(ANcpLuaAnalyzersVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="$(MicrosoftCodeAnalysisAnalyzersVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftCodeAnalysisCSharpVersion)" />
   </ItemGroup>
 </Project>
