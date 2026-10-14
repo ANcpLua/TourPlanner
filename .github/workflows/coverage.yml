@@ -73,10 +73,9 @@ jobs:
         uses: ANcpLua/dotcov/.github/actions/badge@v4.1.0
         with:
           reports: TestResults
-          min-line: 80
-          min-branch: 60
+          min-line: 90
+          min-branch: 75
           publish: ${{ github.ref == 'refs/heads/main' }}
-          fail-on-gate: false
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
