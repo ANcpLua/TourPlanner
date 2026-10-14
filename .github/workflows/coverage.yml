@@ -67,6 +67,20 @@ jobs:
             --coverlet-exclude-by-attribute CompilerGeneratedAttribute \
             --results-directory TestResults
 
+      - name: Probe report contents (temporary)
+        run: |
+          python3 - <<'EOF'
+          import collections, pathlib, xml.etree.ElementTree as ET
+          for report in pathlib.Path('TestResults').glob('**/*cobertura*.xml'):
+              root = ET.parse(report).getroot()
+              print('report', report, 'sources', [s.text for s in root.iter('source')])
+              counts = collections.Counter()
+              for pkg in root.iter('package'):
+                  files = {c.get('filename') for c in pkg.iter('class')}
+                  counts[pkg.get('name')] = len(files)
+              for name, n in counts.most_common(): print(f'{n:5} files  package {name}')
+          EOF
+
       - name: Coverage badge (dotcov)
         uses: ANcpLua/dotcov/.github/actions/badge@v4.1.0
         with:
