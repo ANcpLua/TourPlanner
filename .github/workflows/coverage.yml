@@ -9,6 +9,8 @@ on:
 jobs:
   build-test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # the dotcov badge step pushes the badge to the badges branch on main
 
     services:
       postgres:
@@ -54,6 +56,8 @@ jobs:
         run: |
           ./Tests/bin/Release/net10.0/Tests \
             --coverlet --coverlet-output-format cobertura \
+            --coverlet-include "[API]*" --coverlet-include "[BL]*" --coverlet-include "[DAL]*" \
+            --coverlet-include "[Contracts]*" --coverlet-include "[UI]*" \
             --coverlet-exclude-by-file "**/Program.cs" \
             --coverlet-exclude-by-file "**/*.g.cs" \
             --coverlet-exclude-by-file "**/*.g.i.cs" \
@@ -64,6 +68,14 @@ jobs:
             --coverlet-exclude-by-attribute GeneratedCodeAttribute \
             --coverlet-exclude-by-attribute CompilerGeneratedAttribute \
             --results-directory TestResults
+
+      - name: Coverage badge (dotcov)
+        uses: ANcpLua/dotcov/.github/actions/badge@v4.1.0
+        with:
+          reports: TestResults
+          min-line: 90
+          min-branch: 75
+          publish: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
